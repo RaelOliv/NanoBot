@@ -2835,7 +2835,7 @@ function iniciarWebSocketMarkPrice() {
 
             let returnPos = await abrirPosicao(sideOrd, quantity);
 
-
+/*
             let novoStopMm = null;
             if (sideOrd == 'BUY') {
               novoStopMm = parseFloat(menorMedia3m) - parseFloat(tickSize * 10);
@@ -2857,7 +2857,7 @@ function iniciarWebSocketMarkPrice() {
             } else if (sideOrd == 'SELL') {
               novoTakeLt = parseFloat(ltaltb5m.lta) + parseFloat(tickSize * 3);
             }
-
+*/
 
 
             //let novoStop = novoStop50;
@@ -2872,7 +2872,7 @@ function iniciarWebSocketMarkPrice() {
               oldStop = undefined;
               novoStop = undefined;
 
-                    posicaoAberta = await verificarSeTemPosicao(1);
+              posicaoAberta = await verificarSeTemPosicao(1);
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
@@ -2888,6 +2888,8 @@ function iniciarWebSocketMarkPrice() {
 
             }
           } else {
+
+
             if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
               if (posicaoAberta.positionAmt > 0) {
@@ -2900,28 +2902,23 @@ function iniciarWebSocketMarkPrice() {
 
               let novoStop = null;
 
-
-
               //novoStop = novoStopMm;
 
-              let novoStop30 = await precoAlvoPorPercent(sideOrd, -50, parseFloat(posicaoAberta.entryPrice), symbol);
-              let novoTake50 = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -50, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
               if (stopAtivo !== undefined) {
                 if (stopAtivo.price == null) {
-                  stopAtivo = takeAtivo = await criarTakeProfit(novoTake50);
-
+                  stopAtivo = await criarTakeProfit(novoTake);
                 }
 
               }
 
               if (stopAtivo === null || stopAtivo === undefined) {
 
-                stopAtivo = await criarStopLoss(sideOrd, novoStop30);
-
-              
+                stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
               }
 
@@ -2944,7 +2941,8 @@ function iniciarWebSocketMarkPrice() {
 
               if (takeAtivo !== undefined) {
                 if (takeAtivo.price == null) {
-                  takeAtivo = takeAtivo = await criarTakeProfit(novoTake50);
+
+                  takeAtivo = await criarTakeProfit(novoTake);
 
                 }
 
@@ -2952,15 +2950,15 @@ function iniciarWebSocketMarkPrice() {
               if (takeAtivo === null || takeAtivo === undefined) {
 
                 //takeAtivo = await criarTakeProfit(novoTakeLt);
-                takeAtivo = await criarTakeProfit(novoTake50);
+                takeAtivo = await criarTakeProfit(novoTake);
 
               }
               else if (takeAtivo !== null && takeAtivo !== undefined) {
-                if (parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision) !== parseFloat(parseFloat(novoTakeLt).toFixed(precisions.pricePrecision))) {
+                if (parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision) !== parseFloat(parseFloat(novoTake).toFixed(precisions.pricePrecision))) {
                   //await cancelarTodasOrdens();
 
-                  console.log(`Take alterado: ${takeAtivo.price} / ${novoTakeLt}`);
-                  await atualizarTake(novoTakeLt);
+                  console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
+                  await atualizarTake(novoTake);
                   //takeAtivo = await criarTakeProfit(novoTakeLt);  
                 }
               }
@@ -2984,7 +2982,7 @@ function iniciarWebSocketMarkPrice() {
         sideOrd = 'SELL';
       }
 
-      let novoStop = null;
+      //let novoStop = null;
 
       /*
             let novoStoplt = null;
@@ -3215,14 +3213,12 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop30 = await precoAlvoPorPercent(sideOrd, -50, parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake50 = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
-
-
+      let novoStop = await precoAlvoPorPercent(sideOrd, -50, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined) {
         if (stopAtivo.price == null) {
-          stopAtivo = takeAtivo = await criarTakeProfit(novoTake50);
+          stopAtivo = await criarTakeProfit(novoStop);
 
         }
 
@@ -3235,7 +3231,7 @@ function iniciarWebSocketMarkPrice() {
         //let novoStop = novoStoplt;
         //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-        stopAtivo = await criarStopLoss(sideOrd, novoStop30);
+        stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
         //}
 
@@ -3266,26 +3262,27 @@ function iniciarWebSocketMarkPrice() {
               novoTakeLt = parseFloat(ltaltb15m.lta) + parseFloat(tickSize * 3);
             }
       */
+
       if (takeAtivo !== undefined) {
         if (takeAtivo.price == null) {
-          takeAtivo = takeAtivo = await criarTakeProfit(novoTake50);
+          takeAtivo = await criarTakeProfit(novoTake);
 
         }
 
       }
       if (takeAtivo === null || takeAtivo === undefined) {
 
-        //takeAtivo = await criarTakeProfit(novoTakeLt);
-        takeAtivo = await criarTakeProfit(novoTake50);
+        //takeAtivo = await criarTakeProfit(novoTake);
+        takeAtivo = await criarTakeProfit(novoTake);
 
       }
       else if (takeAtivo !== null && takeAtivo !== undefined) {
-        if (parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision) !== parseFloat(parseFloat(novoTakeLt).toFixed(precisions.pricePrecision))) {
+        if (parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision) !== parseFloat(parseFloat(novoTake).toFixed(precisions.pricePrecision))) {
           //await cancelarTodasOrdens();
 
-          console.log(`Take alterado: ${takeAtivo.price} / ${novoTakeLt}`);
-          await atualizarTake(novoTakeLt);
-          //takeAtivo = await criarTakeProfit(novoTakeLt);  
+          console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
+          await atualizarTake(novoTake);
+          //takeAtivo = await criarTakeProfit(novoTake);  
         }
       }
 
