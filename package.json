@@ -1,0 +1,51 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "start": "node -r dotenv/config index ADAUSDT",
+    "start2": "npx nodemon -r dotenv/config index",
+    "start:delayed": "npx nodemon --delay 3000 -r dotenv/config index",
+    "bott": "forever -m 1 -c \"npx node -r dotenv/config index\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "hist": "npx nodemon -r dotenv/config hist.js",
+    "restart": "npm run stop && npm run start",
+    "stop": "taskkill /F /IM node.exe"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ixjb94/indicators": "^1.2.4",
+    "app-cache": "^0.1.0",
+    "async-mutex": "^0.4.1",
+    "audio-loader": "^1.0.3",
+    "audio-play": "^2.3.1",
+    "axios": "^0.26.1",
+    "axios-retry": "^4.5.0",
+    "big.js": "^6.2.2",
+    "decimal.js": "^10.4.3",
+    "dotenv": "^16.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.3",
+    "find-cache-dir": "^5.0.0",
+    "firebase": "^9.23.0",
+    "firebase-admin": "^13.4.0",
+    "howler": "^2.2.4",
+    "json5": "^2.2.3",
+    "luxon": "^3.6.1",
+    "node-cache": "^5.1.2",
+    "node-cooldown": "^0.0.4",
+    "node-cron": "^3.0.2",
+    "node-notifier": "^10.0.1",
+    "play-sound": "^1.1.6",
+    "rimraf": "^5.0.5",
+    "technicalindicators": "^3.1.0",
+    "trendline": "^0.3.1",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
