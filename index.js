@@ -902,8 +902,8 @@ const cryptSymbols = {
         */
 
     pepe: '1000PEPEUSDT',
-    pump: 'PUMPUSDT',
-    pyth: 'PYTHUSDT',
+    //pump: 'PUMPUSDT',
+    //pyth: 'PYTHUSDT',
     sand: 'SANDUSDT',
     bonk: '1000BONKUSDT',
     ondo: 'ONDOUSDT',
@@ -911,7 +911,7 @@ const cryptSymbols = {
     near: 'NEARUSDT',
     ena: 'ENAUSDT',
     sol: 'SOLUSDT',
-    shib: '1000SHIBUSDT',
+    //shib: '1000SHIBUSDT',
     bat: 'BATUSDT',
     doge: 'DOGEUSDT',
     nxpc: 'NXPCUSDT',
