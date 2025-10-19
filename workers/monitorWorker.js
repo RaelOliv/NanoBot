@@ -1964,13 +1964,13 @@ async function verificarTakeAtivo() {
 
     if (sideOrd == "BUY") {
       takeProfit = res.data
-        .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT')
+        .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
         .reduce((max, obj) => parseFloat(obj.stopPrice || obj.takeProfitPrice) > parseFloat(max.stopPrice || max.takeProfitPrice) ? obj : max, { stopPrice: '-Infinity', takeProfitPrice: '-Infinity' });
     }
 
     if (sideOrd == "SELL") {
       takeProfit = res.data
-        .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT')
+        .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
         .reduce((min, obj) => parseFloat(obj.stopPrice || obj.takeProfitPrice) < parseFloat(min.stopPrice || min.takeProfitPrice) ? obj : min, { stopPrice: 'Infinity', takeProfitPrice: 'Infinity' });
     }
 
