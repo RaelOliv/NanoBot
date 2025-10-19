@@ -914,7 +914,7 @@ function tpfdListGen(zzList) {
 
 function calcularZigZag(candlesParam) {
 
-  if(candlesParam === undefined){
+  if(candlesParam === undefined || candlesParam === null){
     return null;
   }
 
@@ -998,6 +998,10 @@ function calcularZigZag(candlesParam) {
 
     // Retornar os últimos 4 pontos encontrados
     //return pontos.slice(-4);
+
+    if (pontosUnificados === undefined || pontosUnificados === null) {
+      return null;
+    }
 
     const dir = parseFloat(pontosUnificados[0].valor) < parseFloat(pontosUnificados[1].valor) ? -1 : 1;
 
