@@ -848,7 +848,7 @@ var cryptSymbol = undefined;
 const cryptSymbols = {
     //aion: 'AIONUSDT',
     //algo: 'ALGOUSDT',
-    /*
+    
         aave: 'AAVEUSDT',
         ada: 'ADAUSDT',
         ain: 'AINUSDT',
@@ -899,8 +899,8 @@ const cryptSymbols = {
         wlfi: 'WLFIUSDT',
         xpl: 'XPLUSDT',
         xrp: 'XRPUSDT'
-        */
-
+        
+/*
     pepe: '1000PEPEUSDT',
     //pump: 'PUMPUSDT',
     //pyth: 'PYTHUSDT',
@@ -918,7 +918,7 @@ const cryptSymbols = {
     wld: 'WLDUSDT',
     ta: 'TAUSDT',
     vet: 'VETUSDT'
-
+*/
 };
 
 
