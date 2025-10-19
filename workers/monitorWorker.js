@@ -1965,19 +1965,19 @@ async function verificarTakeAtivo() {
     if (sideOrd == "BUY") {
       takeProfit = res.data
         .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
-        .reduce((max, obj) => parseFloat(obj.stopPrice || obj.takeProfitPrice) > parseFloat(max.stopPrice || max.takeProfitPrice) ? obj : max, { stopPrice: '-Infinity', takeProfitPrice: '-Infinity' });
+        .reduce((max, obj) => parseFloat(obj.stopPrice) > parseFloat(max.stopPrice) ? obj : max, { stopPrice: '-Infinity'});
     }
 
     if (sideOrd == "SELL") {
       takeProfit = res.data
         .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
-        .reduce((min, obj) => parseFloat(obj.stopPrice || obj.takeProfitPrice) < parseFloat(min.stopPrice || min.takeProfitPrice) ? obj : min, { stopPrice: 'Infinity', takeProfitPrice: 'Infinity' });
+        .reduce((min, obj) => parseFloat(obj.stopPrice) < parseFloat(min.stopPrice) ? obj : min, { stopPrice: 'Infinity'});
     }
 
     if (takeProfit) {
       let takeAtvAux = {
         orderId: takeProfit.orderId,
-        price: parseFloat(takeProfit.stopPrice || takeProfit.takeProfitPrice),
+        price: parseFloat(takeProfit.stopPrice),
         side: takeProfit.side,
         quantity: parseFloat(takeProfit.origQty),
         type: takeProfit.type
