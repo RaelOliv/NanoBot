@@ -1638,7 +1638,7 @@ async function criarTakeProfit(takePrice) {
   }
 }
 
-async function criarStopLoss(side, stopPrice) {
+async function criarStopLoss(stopPrice) {
   parentPort.postMessage(`✅ Worker - criarStopLoss`);
   let oppositeSide = sideOrd === 'BUY' ? 'SELL' : 'BUY';
 
@@ -2061,7 +2061,7 @@ async function atualizarStop(side, novoStop) {
   oldStop2 = oldStop;
   oldStop = stopAtivo;
 
-  stopAtivo = await criarStopLoss(side, novoStop);
+  stopAtivo = await criarStopLoss(novoStop);
   /*
     if(stopAtivo === undefined || stopAtivo === null){
   stopAtivo = await criarStopLoss(sideOrd, novoStop);
@@ -2891,7 +2891,7 @@ function iniciarWebSocketMarkPrice() {
                 let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
                 let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
 
-                stopAtivo = await criarStopLoss(sideOrd, novoStop);
+                stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
 
 
@@ -2923,14 +2923,14 @@ function iniciarWebSocketMarkPrice() {
 
               if (stopAtivo !== undefined && stopAtivo !== null) {
                 if (stopAtivo.price == null) {
-                  stopAtivo = await criarTakeProfit(novoStop);
+                  stopAtivo = await criarStopLoss(novoStop);
                 }
 
               }
 
               if (stopAtivo === null || stopAtivo === undefined) {
 
-                stopAtivo = await criarStopLoss(sideOrd, novoStop);
+                stopAtivo = await criarStopLoss(novoStop);
 
               }
 
@@ -3230,7 +3230,7 @@ function iniciarWebSocketMarkPrice() {
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
-          stopAtivo = await criarTakeProfit(novoStop);
+          stopAtivo = await criarStopLoss(novoStop);
 
         }
 
@@ -3243,7 +3243,7 @@ function iniciarWebSocketMarkPrice() {
         //let novoStop = novoStoplt;
         //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-        stopAtivo = await criarStopLoss(sideOrd, novoStop);
+        stopAtivo = await criarStopLoss(novoStop);
 
         //}
 
@@ -3394,7 +3394,7 @@ async function gerenciarOrdemEStop(/*markPrice */) {
 
   if (posicaoAberta !== null && posicaoAberta !== undefined) {
     if (stopAtivo === null || stopAtivo === undefined) {
-      stopAtivo = await criarStopLoss(sideOrd, novoStop);
+      stopAtivo = await criarStopLoss(novoStop);
 
     } else if (stopAtivo !== null && stopAtivo !== undefined) {
       if (stopAtivo.price !== parseFloat(parseFloat(novoStop).toFixed(precisions.pricePrecision))) {
@@ -5485,7 +5485,7 @@ async function iniciarWebSocketContinuo() {
           //let novoStop = novoStoplt;
           //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-          stopAtivo = await criarStopLoss(sideOrd, novoStop);
+          stopAtivo = await criarStopLoss(novoStop);
 
           //}
 
