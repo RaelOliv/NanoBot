@@ -914,6 +914,7 @@ function calcularZigZag(candlesParam) {
   if(candlesParam === undefined){
     return null;
   }
+  
   var pontos = [];
   var candles = candlesParam;
   //var candlesI = inverterLista(candlesP);

@@ -35,19 +35,33 @@
       "isOpen": true,
       "openedAt": 1760751804006
     },
-    "WLDUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1760753164821
-    },
     "1000BONKUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
       "openedAt": 1760755098232
+    },
+    "SANDUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1760793040074
+    },
+    "WLDUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1760793132358
+    },
+    "NXPCUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1760793482517
     }
   },
   "history": [
@@ -2669,7 +2683,79 @@
       "roiFinal": 0,
       "openedAt": 1760769482524,
       "closedAt": 1760769544175
+    },
+    {
+      "tradeId": 292,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760753164821,
+      "closedAt": 1760786104909
+    },
+    {
+      "tradeId": 293,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760786170435,
+      "closedAt": 1760786286712
+    },
+    {
+      "tradeId": 294,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760786344799,
+      "closedAt": 1760786346664
+    },
+    {
+      "tradeId": 295,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760786407362,
+      "closedAt": 1760786535887
+    },
+    {
+      "tradeId": 296,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760786544439,
+      "closedAt": 1760786599233
+    },
+    {
+      "tradeId": 297,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760786658723,
+      "closedAt": 1760787261560
+    },
+    {
+      "tradeId": 298,
+      "symbol": "WLDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760787279487,
+      "closedAt": 1760787279862
+    },
+    {
+      "tradeId": 299,
+      "symbol": "SANDUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1760787365359,
+      "closedAt": 1760793027843
     }
   ],
-  "lastId": 291
+  "lastId": 299
 }

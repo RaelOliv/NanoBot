@@ -1791,11 +1791,11 @@ async function monitorarMargem() {
     } else if (percReal < 5.0) {
 
       //let res = await fecharTodasPosicoes();
-      if (res == true) {
+      //if (res == true) {
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
 
-      }
+      //}
       await salvarCache(balance, 'Balance');
     }
 
