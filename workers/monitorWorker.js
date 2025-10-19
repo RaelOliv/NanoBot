@@ -2178,7 +2178,7 @@ async function limparTakes(symbol, side) {
     const takes = res.data.filter(o =>
       o.symbol === symbol &&
       o.status === 'NEW' &&
-      o.type === 'TAKE_PROFIT' //&&
+      o.type === 'TAKE_PROFIT_MARKET' //&&
       // o.side === side
     );
 
