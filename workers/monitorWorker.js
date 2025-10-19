@@ -1592,6 +1592,13 @@ async function criarTakeProfit(takePrice) {
   parentPort.postMessage(`✅ Worker - criarTakeProfit`);
   let oppositeSide = sideOrd === 'BUY' ? 'SELL' : 'BUY';
 
+    takeAtivo = await verificarTakeAtivo();
+
+  if (takeAtivo !== undefined && takeAtivo !== null) {
+    if (parseFloat(parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision)) === parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision))) return;
+  }
+
+
   if (ordemAtiva) {
     quantity = Math.abs(ordemAtiva.quantity);
     oppositeSide = ordemAtiva.side === 'BUY' ? 'SELL' : 'BUY';
@@ -1995,7 +2002,6 @@ async function verificarTakeAtivo() {
     return null;
   }
 }
-
 
 async function verificarSeTemPosicao(type = 1) {
 
@@ -4229,6 +4235,11 @@ async function iniciarWebSocketContinuo() {
       await cancelarTodasOrdens();
     }
 
+    takeAtivo = await verificarTakeAtivo();
+    parentPort.postMessage(`iniciarWebSocketContinuo / takeAtivo: ${JSON.stringify(stopAtivo, null, 2)} `);
+
+
+
   }
 
   ws.on('open', () => {
@@ -4834,6 +4845,8 @@ async function iniciarWebSocketContinuo() {
 
         stopAtivo = await verificarStopAtivo();
         parentPort.postMessage(`iniciarWebSocketContinuo / StopAtivo: ${JSON.stringify(stopAtivo, null, 2)} `);
+  takeAtivo = await verificarTakeAtivo();
+        parentPort.postMessage(`iniciarWebSocketContinuo / takeAtivo: ${JSON.stringify(takeAtivo, null, 2)} `);
 
         liquidationPrice = await getLiquidationPrice(symbol);
         cacheJsonAux = await carregarCache(symbol);
