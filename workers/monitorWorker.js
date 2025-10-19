@@ -63,10 +63,13 @@ let ultimaPosicao = undefined;
 let posicaoAberta = 0;
 let ordemAtiva = undefined;
 let takeAtivo = undefined;
-let stopAtivo = undefined;
+let oldTake = null;
+let oldTake2 = null;
+let novoTake = null;
 let anterior2 = null;
 let alvoAtual = null;
 let alvoAnterior = null;
+let stopAtivo = undefined;
 let oldStop = null;
 let oldStop2 = null;
 let novoStop = null;
@@ -914,7 +917,7 @@ function calcularZigZag(candlesParam) {
   if(candlesParam === undefined){
     return null;
   }
-  
+
   var pontos = [];
   var candles = candlesParam;
   //var candlesI = inverterLista(candlesP);
