@@ -1595,7 +1595,7 @@ async function criarTakeProfit(takePrice) {
     takeAtivo = await verificarTakeAtivo();
 
   if (takeAtivo !== undefined && takeAtivo !== null) {
-    if (parseFloat(parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision)) === parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision))) return;
+    if (parseFloat(parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision)) === parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision))) return;
   }
 
 
@@ -1617,7 +1617,7 @@ async function criarTakeProfit(takePrice) {
     side: oppositeSide,
     type: 'TAKE_PROFIT_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
-    stopprice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
+    stopPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
     timestamp: timestamp,
     closePosition: true,
