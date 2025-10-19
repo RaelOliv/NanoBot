@@ -2917,7 +2917,7 @@ function iniciarWebSocketMarkPrice() {
 
 
 
-              if (stopAtivo !== undefined) {
+              if (stopAtivo !== undefined && stopAtivo !== null) {
                 if (stopAtivo.price == null) {
                   stopAtivo = await criarTakeProfit(novoStop);
                 }
@@ -2947,7 +2947,7 @@ function iniciarWebSocketMarkPrice() {
                 }
               }
 
-              if (takeAtivo !== undefined) {
+              if (takeAtivo !== undefined && takeAtivo !== null) {
                 if (takeAtivo.price == null) {
 
                   takeAtivo = await criarTakeProfit(novoTake);
@@ -3224,7 +3224,7 @@ function iniciarWebSocketMarkPrice() {
       let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
       let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
 
-      if (stopAtivo !== undefined) {
+      if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
           stopAtivo = await criarTakeProfit(novoStop);
 
@@ -3271,7 +3271,7 @@ function iniciarWebSocketMarkPrice() {
             }
       */
 
-      if (takeAtivo !== undefined) {
+      if (takeAtivo !== undefined && takeAtivo !== null) {
         if (takeAtivo.price == null) {
           takeAtivo = await criarTakeProfit(novoTake);
 
