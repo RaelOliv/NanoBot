@@ -2894,8 +2894,8 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
-                let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
                 stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
@@ -2922,8 +2922,8 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
-              novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
@@ -3231,8 +3231,8 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
@@ -4891,7 +4891,7 @@ async function iniciarWebSocketContinuo() {
 
         await salvarCache(cacheRisk, 'Risk');
 
-        let novoStop50 = await precoAlvoPorPercent(sideOrd, -50, parseFloat(posicaoAberta.entryPrice), symbol);
+        let novoStop50 = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
 
         let stopRange50 = parseFloat(pnlRoiAtual.roi) - parseFloat(50.0);
 
@@ -5485,11 +5485,11 @@ async function iniciarWebSocketContinuo() {
         }
 
 
-        novoStop = novoStopMm;
+        //novoStop = novoStopMm;
 
 
-        novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
-        novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
 
@@ -5766,7 +5766,7 @@ async function iniciarWebSocketContinuo() {
       */
     }
 
-    if (posicaoAberta == 0 && ultimaPosicao !== 0 && ultimaPosicao !== undefined) {
+    if (posicaoAberta == 0 && ultimaPosicao !== 0 && ultimaPosicao !== undefined ) {
 
       parentPort.postMessage(`✅ Posição encerrada. Parando STOP.`);
 

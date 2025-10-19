@@ -1788,7 +1788,7 @@ async function monitorarMargem() {
       //}
       await salvarCache(balance, 'Balance');
 
-    } else if (percReal < 5.0) {
+    } else if (percReal < 30.0) {
 
       //let res = await fecharTodasPosicoes();
       //if (res == true) {
