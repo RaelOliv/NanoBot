@@ -1617,7 +1617,7 @@ async function criarTakeProfit(takePrice) {
     side: oppositeSide,
     type: 'TAKE_PROFIT_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
-    stopPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
+    stopprice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
     timestamp: timestamp,
     closePosition: true,
