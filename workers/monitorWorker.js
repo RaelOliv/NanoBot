@@ -2835,29 +2835,29 @@ function iniciarWebSocketMarkPrice() {
 
             let returnPos = await abrirPosicao(sideOrd, quantity);
 
-/*
-            let novoStopMm = null;
-            if (sideOrd == 'BUY') {
-              novoStopMm = parseFloat(menorMedia3m) - parseFloat(tickSize * 10);
-            } else if (sideOrd == 'SELL') {
-              novoStopMm = parseFloat(maiorMedia3m) + parseFloat(tickSize * 10);
-            }
-
-
-            let novoStopCdl = null;
-            if (sideOrd == 'BUY') {
-              novoStopCdl = parseFloat(candles1m.slice(-1)[0].low) - parseFloat(tickSize * 10);
-            } else if (sideOrd == 'SELL') {
-              novoStopCdl = parseFloat(candles1m.slice(-1)[0].high) + parseFloat(tickSize * 10);
-            }
-
-            let novoTakeLt = null;
-            if (sideOrd == 'BUY') {
-              novoTakeLt = parseFloat(ltaltb5m.ltb) - parseFloat(tickSize * 3);
-            } else if (sideOrd == 'SELL') {
-              novoTakeLt = parseFloat(ltaltb5m.lta) + parseFloat(tickSize * 3);
-            }
-*/
+            /*
+                        let novoStopMm = null;
+                        if (sideOrd == 'BUY') {
+                          novoStopMm = parseFloat(menorMedia3m) - parseFloat(tickSize * 10);
+                        } else if (sideOrd == 'SELL') {
+                          novoStopMm = parseFloat(maiorMedia3m) + parseFloat(tickSize * 10);
+                        }
+            
+            
+                        let novoStopCdl = null;
+                        if (sideOrd == 'BUY') {
+                          novoStopCdl = parseFloat(candles1m.slice(-1)[0].low) - parseFloat(tickSize * 10);
+                        } else if (sideOrd == 'SELL') {
+                          novoStopCdl = parseFloat(candles1m.slice(-1)[0].high) + parseFloat(tickSize * 10);
+                        }
+            
+                        let novoTakeLt = null;
+                        if (sideOrd == 'BUY') {
+                          novoTakeLt = parseFloat(ltaltb5m.ltb) - parseFloat(tickSize * 3);
+                        } else if (sideOrd == 'SELL') {
+                          novoTakeLt = parseFloat(ltaltb5m.lta) + parseFloat(tickSize * 3);
+                        }
+            */
 
 
             //let novoStop = novoStop50;
@@ -5463,12 +5463,22 @@ async function iniciarWebSocketContinuo() {
         novoStop = novoStopMm;
 
 
-        if (stopAtivo === null || stopAtivo === undefined) {
-          if (novoStop !== null && novoStop !== undefined) {
-            stopAtivo = await criarStopLoss(sideOrd, novoStop);
-          }
+        novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
 
-        } else if (stopAtivo !== null && stopAtivo !== undefined) {
+        if (stopAtivo === null || stopAtivo === undefined) {
+
+          //if (novoStop !== null && novoStop !== undefined) {
+
+          //let novoStop = novoStoplt;
+          //stopAtivo = await criarStopLoss(sideOrd, novoStop);
+
+          stopAtivo = await criarStopLoss(sideOrd, novoStop);
+
+          //}
+
+        }
+        else if (stopAtivo !== null && stopAtivo !== undefined) {
           if (stopAtivo.price !== parseFloat(parseFloat(novoStop).toFixed(precisions.pricePrecision))) {
             //await cancelarTodasOrdens();
             if ((sideOrd == 'BUY' && stopAtivo.price < novoStop) ||
@@ -5477,13 +5487,37 @@ async function iniciarWebSocketContinuo() {
 
 
               console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-              //await atualizarStop(sideOrd, novoStop);
+              await atualizarStop(sideOrd, novoStop);
               if (stopAtivo.price !== null) {
                 //await abrirPosicao(sideOrd, (quantity / 4));
               }
             }
           }
         }
+
+        if (takeAtivo !== undefined) {
+          if (takeAtivo.price == null) {
+            takeAtivo = await criarTakeProfit(novoTake);
+
+          }
+
+        }
+        if (takeAtivo === null || takeAtivo === undefined) {
+
+          //takeAtivo = await criarTakeProfit(novoTake);
+          takeAtivo = await criarTakeProfit(novoTake);
+
+        }
+        else if (takeAtivo !== null && takeAtivo !== undefined) {
+          if (parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision) !== parseFloat(parseFloat(novoTake).toFixed(precisions.pricePrecision))) {
+            //await cancelarTodasOrdens();
+
+            console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
+            await atualizarTake(novoTake);
+            //takeAtivo = await criarTakeProfit(novoTake);  
+          }
+        }
+
 
         //novoStop = await precoAlvoPorPercent(sideOrd, percent, parseFloat(posicaoAberta.entryPrice), symbol);
         /*
