@@ -1698,7 +1698,7 @@ async function monitorarMargem() {
 
   // ---- GATILHOS DE STOP ----
   if (
-    perc <= -50.0 || percReal >= 1.0 
+    percReal <= -5.0 || percReal >= 1.0 
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||
@@ -1788,9 +1788,9 @@ async function monitorarMargem() {
       //}
       await salvarCache(balance, 'Balance');
 
-    } else if (perc < 0) {
+    } else if (percReal < 5.0) {
 
-      let res = await fecharTodasPosicoes();
+      //let res = await fecharTodasPosicoes();
       if (res == true) {
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
