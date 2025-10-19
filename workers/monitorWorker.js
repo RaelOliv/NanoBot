@@ -999,7 +999,7 @@ function calcularZigZag(candlesParam) {
     // Retornar os últimos 4 pontos encontrados
     //return pontos.slice(-4);
 
-    if (pontosUnificados === undefined || pontosUnificados === null) {
+    if (pontosUnificados[0] === undefined || pontosUnificados[0] === null) {
       return null;
     }
 
