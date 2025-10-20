@@ -2854,13 +2854,13 @@ function iniciarWebSocketMarkPrice() {
             quantity = await getQntbyBalance();
 
             ////////////////////////////
-            /*
+            
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-              */
+              
             ///////////////////////////////////
             await cancelarTodasOrdens();
 
@@ -2907,8 +2907,8 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                let novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
-                let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoTake = await precoAlvoPorPercent(sideOrd, 15, parseFloat(posicaoAberta.entryPrice), symbol);
 
                 stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
@@ -2935,8 +2935,8 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
-              novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, 15, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
@@ -3244,8 +3244,8 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, 15, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
@@ -5515,8 +5515,8 @@ async function iniciarWebSocketContinuo() {
         //novoStop = novoStopMm;
 
 
-        novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
-        novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, 15, parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
 
