@@ -2848,7 +2848,7 @@ function iniciarWebSocketMarkPrice() {
 
         ) {
 
-          if (contPos < 3) {
+          if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,
