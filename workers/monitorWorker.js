@@ -2765,6 +2765,7 @@ function iniciarWebSocketMarkPrice() {
       parentPort.postMessage(`🔎 Posição aberta_preOP: ${JSON.stringify(posicaoAberta)}`);
 
       if (posicaoAberta === 0) {
+        await cancelarTodasOrdens();
 
         //releaseLock(symbol); // Unlock
         //console.log(`🔓 Lock inexistente em ${symbol}`);
@@ -2871,9 +2872,10 @@ function iniciarWebSocketMarkPrice() {
             }
             */
             ///////////////////////////////////
-            await cancelarTodasOrdens();
 
             let returnPos = await abrirPosicao(sideOrd, quantity);
+
+            await cancelarTodasOrdens();
 
             /*
                         let novoStopMm = null;
@@ -2903,7 +2905,7 @@ function iniciarWebSocketMarkPrice() {
             //let novoStop = novoStop50;
 
             if (returnPos !== null && returnPos !== undefined) {
-              //await cancelarTodasOrdens();
+              await cancelarTodasOrdens();
 
 
               gatilhoAtivado = false;
