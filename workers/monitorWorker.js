@@ -1772,6 +1772,13 @@ async function abrirPosicao(side, quantityX) {
   // Lado oposto para fechar a posição
   //const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
 
+  posicaoAberta = await verificarSeTemPosicao(1);
+
+  if (posicaoAberta) {
+    parentPort.postMessage(`⚠️ Já existe uma posição aberta para ${symbol}. Abortando abertura de nova posição.`);
+    return null;
+  }
+
   let timestamp = Date.now() + offset;
 
   const params = {
@@ -2839,7 +2846,7 @@ function iniciarWebSocketMarkPrice() {
 
         ) {
 
-          if (contPos < 1) {
+          if (contPos < 3) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,
