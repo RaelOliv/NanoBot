@@ -2783,7 +2783,8 @@ function iniciarWebSocketMarkPrice() {
           (
             sideOrd == 'BUY' &&
 
-        parseFloat(sRsiLast3m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
             //parseFloat(sRsiLast3m.k) <= parseFloat(20.0) &&
             //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
@@ -2821,7 +2822,8 @@ function iniciarWebSocketMarkPrice() {
             sideOrd == 'SELL' &&
             (
 
-        parseFloat(sRsiLast3m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
               //parseFloat(sRsiLast3m.k) >= parseFloat(80.0) &&
               //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
@@ -2861,13 +2863,13 @@ function iniciarWebSocketMarkPrice() {
             quantity = await getQntbyBalance();
 
             ////////////////////////////
-            
+            /*
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-              
+            */
             ///////////////////////////////////
             await cancelarTodasOrdens();
 
@@ -4241,7 +4243,7 @@ async function iniciarWebSocketContinuo() {
   
   */
 
-  posicaoAberta = await verificarSeTemPosicao();
+  posicaoAberta = await verificarSeTemPosicao(1);
   if (posicaoAberta === null || posicaoAberta === undefined) {
 
     stopAtivo = await verificarStopAtivo();
@@ -4558,9 +4560,11 @@ async function iniciarWebSocketContinuo() {
 */
        // )
        // &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(30.0) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
 
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
@@ -4667,9 +4671,11 @@ async function iniciarWebSocketContinuo() {
        // )
 
         //&&
-        parseFloat(sRsiLast3m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast5m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(70.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
 
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
@@ -4802,7 +4808,7 @@ async function iniciarWebSocketContinuo() {
 
       // getOpenPositions();
 
-      posicaoAberta = await verificarSeTemPosicao();
+      posicaoAberta = await verificarSeTemPosicao(1);
 
       // parentPort.postMessage(`✅ iniciarWebSocketContinuo / Posição: ${JSON.stringify(posicaoAberta, null, 2)} `);
 
