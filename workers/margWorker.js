@@ -1698,7 +1698,7 @@ async function monitorarMargem() {
 
   // ---- GATILHOS DE STOP ----
   if (
-    percReal <= -15.0 || percReal >= 1.0 
+    /*percReal <= -15.0 ||*/ percReal >= 1.0 
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||

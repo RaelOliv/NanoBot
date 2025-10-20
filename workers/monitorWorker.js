@@ -2697,6 +2697,7 @@ function iniciarWebSocketMarkPrice() {
     parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(posicaoAberta)}`);
 
     parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
+    
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
@@ -2706,18 +2707,26 @@ function iniciarWebSocketMarkPrice() {
           dPeriod: 3
         });
     
-        const stochRsi5m = StochasticRSI.calculate({
+        stochRsi5m = StochasticRSI.calculate({
           values: candles5m.map(c => c.close),
           rsiPeriod: 14,
           stochasticPeriod: 14,
           kPeriod: 3,
           dPeriod: 3
         });
-    
     */
+    
 
     //let sRsiLast3m = stochRsi3m.slice(-1)[0];
     //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
+
+    let sRsiLast3m = null;
+    let sRsiLast3m_2 = null;
+
+    if (stochRsi3m !== null) {
+      sRsiLast3m = stochRsi3m.slice(-1)[0];
+      sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
+    }
 
     let sRsiLast5m = null;
     let sRsiLast5m_2 = null;
@@ -2767,7 +2776,8 @@ function iniciarWebSocketMarkPrice() {
           (
             sideOrd == 'BUY' &&
 
-            parseFloat(sRsiLast5m.k) <= parseFloat(30.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
             //parseFloat(sRsiLast3m.k) <= parseFloat(20.0) &&
             //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
 
@@ -2786,8 +2796,8 @@ function iniciarWebSocketMarkPrice() {
           )
 */
               (
-                parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.lta) + (parseFloat(tickSize) * 5) &&
-                parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ltaltb1m.lta) - (parseFloat(tickSize) * 5) &&
+                parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.ltb) + (parseFloat(tickSize) * 5) &&
+                parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ltaltb1m.ltb) - (parseFloat(tickSize) * 5) &&
                 parseFloat(preco_atual) >= parseFloat(candles1m.slice(-1)[0].close) //&&
                 //parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
               )
@@ -2804,7 +2814,8 @@ function iniciarWebSocketMarkPrice() {
             sideOrd == 'SELL' &&
             (
 
-              parseFloat(sRsiLast5m.k) >= parseFloat(70.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
               //parseFloat(sRsiLast3m.k) >= parseFloat(80.0) &&
               //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
 
@@ -2816,8 +2827,8 @@ function iniciarWebSocketMarkPrice() {
               ) ||
               */
               (
-                parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ltaltb1m.ltb) - (parseFloat(tickSize) * 5) &&
-                parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ltaltb1m.ltb) + (parseFloat(tickSize) * 5) &&
+                parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ltaltb1m.lta) - (parseFloat(tickSize) * 5) &&
+                parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ltaltb1m.lta) + (parseFloat(tickSize) * 5) &&
                 parseFloat(preco_atual) <= parseFloat(candles1m.slice(-1)[0].close) //&&
                 //parseFloat(preco_atual) <= parseFloat(ltaltb1m.ltb) //&&
               )
@@ -2843,11 +2854,13 @@ function iniciarWebSocketMarkPrice() {
             quantity = await getQntbyBalance();
 
             ////////////////////////////
+            /*
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
+              */
             ///////////////////////////////////
             await cancelarTodasOrdens();
 
@@ -2894,8 +2907,8 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-                let novoTake = await precoAlvoPorPercent(sideOrd, 10, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
                 stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
@@ -2922,8 +2935,8 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-              novoTake = await precoAlvoPorPercent(sideOrd, 10, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
@@ -3231,8 +3244,8 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake = await precoAlvoPorPercent(sideOrd, 10, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
@@ -4336,15 +4349,15 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-
-      const stochRsi3m = StochasticRSI.calculate({
+*/
+      stochRsi3m = StochasticRSI.calculate({
         values: candles3m.map(c => c.close),
         rsiPeriod: 14,
         stochasticPeriod: 14,
         kPeriod: 3,
         dPeriod: 3
       });
-*/
+
       stochRsi5m = StochasticRSI.calculate({
         values: candles5m.map(c => c.close),
         rsiPeriod: 14,
@@ -4398,6 +4411,15 @@ async function iniciarWebSocketContinuo() {
       //let sRsiLast1m_2 = stochRsi1m.slice(-2)[0];
       //let sRsiLast3m = stochRsi3m.slice(-1)[0];
       //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
+
+      let sRsiLast3m = null;
+      let sRsiLast3m_2 = null;
+
+      if (stochRsi3m !== null) {
+        sRsiLast3m = stochRsi3m.slice(-1)[0];
+        sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
+      }
+
 
       let sRsiLast5m = null;
       let sRsiLast5m_2 = null;
@@ -4506,7 +4528,7 @@ async function iniciarWebSocketContinuo() {
 
       )
 */
-        (
+       // (
           /*
           (
             parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
@@ -4515,7 +4537,7 @@ async function iniciarWebSocketContinuo() {
             parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
             parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
           )
-            */
+            *
 
           (
             fibo5m.dir == 1 &&
@@ -4526,15 +4548,17 @@ async function iniciarWebSocketContinuo() {
             parseFloat(ltaltb1m.lta) <= parseFloat(fibo5m.retr0382) &&
             parseFloat(ltaltb1m.lta) >= parseFloat(fibo5m.retr0)
           )
-
-        )
-        &&
-        parseFloat(sRsiLast5m.k) <= parseFloat(30.0)
-
+*/
+       // )
+       // &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
 
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) &&
-        //parseFloat(preco_atual) >= parseFloat(menorMedia3m)
+        parseFloat(preco_atual) >= parseFloat(menorMedia3m)
 
 
 
@@ -4612,7 +4636,7 @@ async function iniciarWebSocketContinuo() {
 
       )
 */
-        (
+        //(
           /*
           (
             parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
@@ -4621,7 +4645,7 @@ async function iniciarWebSocketContinuo() {
             parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
             parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
           )
-            */
+            *
 
           (
             fibo5m.dir == 1 &&
@@ -4632,15 +4656,18 @@ async function iniciarWebSocketContinuo() {
             parseFloat(ltaltb1m.ltb) <= parseFloat(fibo5m.retr1) &&
             parseFloat(ltaltb1m.ltb) >= parseFloat(fibo5m.retr0618)
           )
+*/
+       // )
 
-        )
-
-        &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(70.0)
+        //&&
+        parseFloat(sRsiLast3m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
 
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) &&
-        //parseFloat(preco_atual) <= parseFloat(maiorMedia3m)
+        parseFloat(preco_atual) <= parseFloat(maiorMedia3m)
 
       ) {
 
@@ -5488,8 +5515,8 @@ async function iniciarWebSocketContinuo() {
         //novoStop = novoStopMm;
 
 
-        novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-        novoTake = await precoAlvoPorPercent(sideOrd, 10, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, -15, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, 30, parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
 
