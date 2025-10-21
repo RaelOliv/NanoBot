@@ -56,6 +56,7 @@ let candles1h = [];
 let candles4h = [];
 let medias1m = null;
 let medias3m = null;
+let m20p3m = null;
 let medias5m = null;
 let medias15m = null;
 let medias1h = null;
@@ -95,6 +96,8 @@ let maiorMedia1m = undefined;
 let menorMedia1m = undefined;
 let maiorMedia3m = undefined;
 let menorMedia3m = undefined;
+let maiorM3m20p = undefined;
+let menorM3m20p = undefined;
 let maiorMedia5m = undefined;
 let menorMedia5m = undefined;
 let maiorMedia15m = undefined;
@@ -144,15 +147,13 @@ let stochRsi5m = null;
 let stochRsi15m = null;
 let stochRsi30m = null;
 let stochRsi1h = null;
-
-
+let stochRsi4h = null;
 
 let plus = 0;
 
 const { setLock, getLock, hasAnyLock, countLocks, releaseLock } = require("../lockManager");
 
 const roiTracker = require('../roiTracker');
-
 
 /*
 // abrir posição
@@ -914,7 +915,7 @@ function tpfdListGen(zzList) {
 
 function calcularZigZag(candlesParam) {
 
-  if(candlesParam === undefined || candlesParam === null){
+  if (candlesParam === undefined || candlesParam === null) {
     return null;
   }
 
@@ -1301,6 +1302,10 @@ async function carregarCandlesHistoricos() {
       medias3m = [s100, s110, e100, e110];
     }
 
+    if (s20 && e20) {
+      m20p3m = [s20, e20];
+    }
+
   } catch (err) {
     parentPort.postMessage(`❌ Erro ao carregar histórico de candles3m: ${JSON.stringify(err.message)}`);
   }
@@ -1592,7 +1597,7 @@ async function criarTakeProfit(takePrice) {
   parentPort.postMessage(`✅ Worker - criarTakeProfit`);
   let oppositeSide = sideOrd === 'BUY' ? 'SELL' : 'BUY';
 
-    takeAtivo = await verificarTakeAtivo();
+  takeAtivo = await verificarTakeAtivo();
 
   if (takeAtivo !== undefined && takeAtivo !== null) {
     if (parseFloat(parseFloat(takeAtivo.price).toFixed(precisions.pricePrecision)) === parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision))) return;
@@ -1979,13 +1984,13 @@ async function verificarTakeAtivo() {
     if (sideOrd == "BUY") {
       takeProfit = res.data
         .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
-        .reduce((max, obj) => parseFloat(obj.stopPrice) > parseFloat(max.stopPrice) ? obj : max, { stopPrice: '-Infinity'});
+        .reduce((max, obj) => parseFloat(obj.stopPrice) > parseFloat(max.stopPrice) ? obj : max, { stopPrice: '-Infinity' });
     }
 
     if (sideOrd == "SELL") {
       takeProfit = res.data
         .filter(o => o.symbol === symbol && o.status === 'NEW' && o.type === 'TAKE_PROFIT_MARKET')
-        .reduce((min, obj) => parseFloat(obj.stopPrice) < parseFloat(min.stopPrice) ? obj : min, { stopPrice: 'Infinity'});
+        .reduce((min, obj) => parseFloat(obj.stopPrice) < parseFloat(min.stopPrice) ? obj : min, { stopPrice: 'Infinity' });
     }
 
     if (takeProfit) {
@@ -2323,13 +2328,21 @@ function iniciarWebSocketcandles3m() {
       }  
       */
 
+      const s20 = calcularSMA(20, candles3m);
+      const e20 = calcularEMA(20, candles3m);
+
       const s100 = calcularSMA(100, candles3m);
-      const s110 = calcularSMA(110, candles3m);
       const e100 = calcularEMA(100, candles3m);
+
+      const s110 = calcularSMA(110, candles3m);
       const e110 = calcularEMA(110, candles3m);
 
       if (s100 && s110 && e100 && e110) {
         medias3m = [s100, s110, e100, e110];
+      }
+
+      if (s20 && e20) {
+        m20p3m = [s20, e20];
       }
 
     }
@@ -2385,7 +2398,7 @@ function iniciarWebSocketcandles5m() {
       if (s50 && s60 && e50 && e60) {  
         medias5m = [s50, s60, e50, e60];  
       }  
-      */
+      *
 
       const s100 = calcularSMA(100, candles5m);
       const s110 = calcularSMA(110, candles5m);
@@ -2396,6 +2409,7 @@ function iniciarWebSocketcandles5m() {
         medias5m = [s100, s110, e100, e110];
       }
 
+      */
     }
     //parentPort.postMessage("medias5m", medias5m);
   });
@@ -2449,7 +2463,7 @@ function iniciarWebSocketcandles15m() {
       if (s50 && s60 && e50 && e60) {  
         medias15m = [s50, s60, e50, e60];  
       }  
-      */
+      *
 
       const s100 = calcularSMA(100, candles15m);
       const s110 = calcularSMA(110, candles15m);
@@ -2460,6 +2474,7 @@ function iniciarWebSocketcandles15m() {
         medias15m = [s100, s110, e100, e110];
       }
 
+      */
     }
     //parentPort.postMessage("medias15m", medias15m);
   });
@@ -2513,7 +2528,7 @@ function iniciarWebSocketcandles30m() {
       if (s50 && s60 && e50 && e60) {  
         medias30m = [s50, s60, e50, e60];  
       }  
-      */
+      *
 
       const s100 = calcularSMA(100, candles30m);
       const s110 = calcularSMA(110, candles30m);
@@ -2524,6 +2539,7 @@ function iniciarWebSocketcandles30m() {
         medias30m = [s100, s110, e100, e110];
       }
 
+      */
     }
     //parentPort.postMessage("medias30m", medias30m);
   });
@@ -2577,7 +2593,7 @@ function iniciarWebSocketcandles1h() {
       if (s50 && s60 && e50 && e60) {  
         medias1h = [s50, s60, e50, e60];  
       }  
-      */
+      *
 
       const s100 = calcularSMA(100, candles1h);
       const s110 = calcularSMA(110, candles1h);
@@ -2587,6 +2603,8 @@ function iniciarWebSocketcandles1h() {
       if (s100 && s110 && e100 && e110) {
         medias1h = [s100, s110, e100, e110];
       }
+
+      */
 
     }
     //parentPort.postMessage("medias1h", medias1h);
@@ -2641,7 +2659,7 @@ function iniciarWebSocketcandles4h() {
       if (s50 && s60 && e50 && e60) {  
         medias4h = [s50, s60, e50, e60];  
       }  
-      */
+      *
 
       const s100 = calcularSMA(100, candles4h);
       const s110 = calcularSMA(110, candles4h);
@@ -2652,6 +2670,7 @@ function iniciarWebSocketcandles4h() {
         medias4h = [s100, s110, e100, e110];
       }
 
+      */
     }
     //parentPort.postMessage("medias4h", medias4h);
   });
@@ -2694,6 +2713,9 @@ function iniciarWebSocketMarkPrice() {
     maiorMedia3m = Math.max(...medias3m);
     menorMedia3m = Math.min(...medias3m);
 
+    maiorM3m20p = Math.max(...m20p3m);
+    menorM3m20p = Math.min(...m20p3m);
+
     //nLocks = countLocks();
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
@@ -2704,7 +2726,7 @@ function iniciarWebSocketMarkPrice() {
     parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(posicaoAberta)}`);
 
     parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
-    
+
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
@@ -2722,11 +2744,10 @@ function iniciarWebSocketMarkPrice() {
           dPeriod: 3
         });
     */
-    
 
     //let sRsiLast3m = stochRsi3m.slice(-1)[0];
     //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
-
+/*
     let sRsiLast3m = null;
     let sRsiLast3m_2 = null;
 
@@ -2742,9 +2763,39 @@ function iniciarWebSocketMarkPrice() {
       sRsiLast5m = stochRsi5m.slice(-1)[0];
       sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
     }
+    /*
+        let sRsiLast15m = null;
+        let sRsiLast15m_2 = null;
+    
+        if (stochRsi15m !== null) {
+          sRsiLast15m = stochRsi15m.slice(-1)[0];
+          sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
+        }
+    *
+    let sRsiLast30m = null;
+    let sRsiLast30m_2 = null;
 
+    if (stochRsi30m !== null) {
+      sRsiLast30m = stochRsi30m.slice(-1)[0];
+      sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
+    }
 
+    let sRsiLast1h = null;
+    let sRsiLast1h_2 = null;
 
+    if (stochRsi1h !== null) {
+      sRsiLast1h = stochRsi1h.slice(-1)[0];
+      sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
+    }
+
+    let sRsiLast4h = null;
+    let sRsiLast4h_2 = null;
+
+    if (stochRsi4h !== null) {
+      sRsiLast4h = stochRsi4h.slice(-1)[0];
+      sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
+    }
+*/
     /*
         zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
         fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
@@ -2782,14 +2833,16 @@ function iniciarWebSocketMarkPrice() {
         if (
           (
             sideOrd == 'BUY' &&
+            parseFloat(preco_atual) >= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3))
 
-        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+
+            //parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+            //parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+            //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
             //parseFloat(sRsiLast3m.k) <= parseFloat(20.0) &&
             //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
 
-
+/*
             (
               /*
 
@@ -2802,7 +2855,7 @@ function iniciarWebSocketMarkPrice() {
             parseFloat(ltaltb5m.lta) <= parseFloat(fibo5m.retr0382) &&
             parseFloat(ltaltb5m.lta) >= parseFloat(fibo5m.retr0)
           )
-*/
+*
               (
                 parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.lta) + (parseFloat(tickSize) * 5) &&
                 parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ltaltb1m.lta) - (parseFloat(tickSize) * 5) &&
@@ -2815,16 +2868,19 @@ function iniciarWebSocketMarkPrice() {
                 parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) &&
                 parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
               )
-                */
+                *
             )
+            */
           ) || (
 
             sideOrd == 'SELL' &&
+            parseFloat(preco_atual) <= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
+            /*
             (
 
-        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+              parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+              parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+              parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
               //parseFloat(sRsiLast3m.k) >= parseFloat(80.0) &&
               //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
 
@@ -2834,7 +2890,7 @@ function iniciarWebSocketMarkPrice() {
                 parseFloat(preco_atual) <= parseFloat(ltaltb1m.lta) &&
                 parseFloat(preco_atual) <= parseFloat(ltaltb1m.lta) //&&
               ) ||
-              */
+              *
               (
                 parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ltaltb1m.ltb) - (parseFloat(tickSize) * 5) &&
                 parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ltaltb1m.ltb) + (parseFloat(tickSize) * 5) &&
@@ -2844,6 +2900,7 @@ function iniciarWebSocketMarkPrice() {
 
 
             )
+            */
           )
 
         ) {
@@ -2870,7 +2927,8 @@ function iniciarWebSocketMarkPrice() {
               sideOrd = 'BUY';
             }
             */
-            ///////////////////////////////////
+            //////////////////////////////
+
             await cancelarTodasOrdens();
 
             let returnPos = await abrirPosicao(sideOrd, quantity);
@@ -2916,15 +2974,13 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-                let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
                 stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
 
-
               }
-
 
             }
           } else {
@@ -2944,8 +3000,8 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-              novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
@@ -3253,8 +3309,8 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
@@ -4324,6 +4380,7 @@ async function iniciarWebSocketContinuo() {
       zigZag5m = calcularZigZag(candles5m); // Defina o threshold adequado
       fibo5m = calcularRetracoesFibonacci(zigZag5m.pontosUnificados);
       ltaltb5m = calcularLinhasTendencia(candles5m, zigZag5m.topos, zigZag5m.fundos);
+
       /*
             zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
             fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
@@ -4359,6 +4416,7 @@ async function iniciarWebSocketContinuo() {
         dPeriod: 3
       });
 */
+
       stochRsi3m = StochasticRSI.calculate({
         values: candles3m.map(c => c.close),
         rsiPeriod: 14,
@@ -4383,37 +4441,32 @@ async function iniciarWebSocketContinuo() {
               kPeriod: 3,
               dPeriod: 3
             });
-      
-      
-            const stochRsi30m = StochasticRSI.calculate({
-              values: candles30m.map(c => c.close),
-              rsiPeriod: 14,
-              stochasticPeriod: 14,
-              kPeriod: 3,
-              dPeriod: 3
-            });
-      
-            const stochRsi1h = StochasticRSI.calculate({
-              values: candles1h.map(c => c.close),
-              rsiPeriod: 14,
-              stochasticPeriod: 14,
-              kPeriod: 3,
-              dPeriod: 3
-            });
-      
-      
-            /*
-            /*
-       
-            /*
-                  const stochRsi4h = StochasticRSI.calculate({
-                    values: candles4h.map(c => c.close),
-                    rsiPeriod: 14,
-                    stochasticPeriod: 14,
-                    kPeriod: 3,
-                    dPeriod: 3
-                  });
-            */
+      */
+
+      stochRsi30m = StochasticRSI.calculate({
+        values: candles30m.map(c => c.close),
+        rsiPeriod: 14,
+        stochasticPeriod: 14,
+        kPeriod: 3,
+        dPeriod: 3
+      });
+
+      stochRsi1h = StochasticRSI.calculate({
+        values: candles1h.map(c => c.close),
+        rsiPeriod: 14,
+        stochasticPeriod: 14,
+        kPeriod: 3,
+        dPeriod: 3
+      });
+
+      stochRsi4h = StochasticRSI.calculate({
+        values: candles4h.map(c => c.close),
+        rsiPeriod: 14,
+        stochasticPeriod: 14,
+        kPeriod: 3,
+        dPeriod: 3
+      });
+
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
 
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
@@ -4429,7 +4482,6 @@ async function iniciarWebSocketContinuo() {
         sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
       }
 
-
       let sRsiLast5m = null;
       let sRsiLast5m_2 = null;
 
@@ -4438,32 +4490,44 @@ async function iniciarWebSocketContinuo() {
         sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
       }
 
-      /*
-      let sRsiLast15m = stochRsi15m.slice(-1)[0];
-      let sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
-      let sRsiLast30m = stochRsi30m.slice(-1)[0];
-      let sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
 
-      let sRsiLast1h = stochRsi1h.slice(-1)[0];
-      let sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
+      let sRsiLast30m = null;
+      let sRsiLast30m_2 = null;
+
+      if (stochRsi30m !== null) {
+        sRsiLast30m = stochRsi30m.slice(-1)[0];
+        sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
+      }
 
       /*
-      let sRsiLast5m = stochRsi5m.slice(-1)[0];
-      let sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
-      let sRsiLast1h = stochRsi1h.slice(-1)[0];
-      let sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
-      /*
-            //let sRsiLast3m = stochRsi3m.slice(-1)[0];
-            //let sRsiLast5m = stochRsi5m.slice(-1)[0];
-            //let sRsiLast15m = stochRsi15m.slice(-1)[0];
-            let sRsiLast1h = stochRsi1h.slice(-1)[0];
-            let sRsiLast4h = stochRsi4h.slice(-1)[0];
+          let sRsiLast15m = null;
+          let sRsiLast15m_2 = null;
       
-            //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
-            let sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
-            let sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
-            let sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
+          if (stochRsi15m !== null) {
+            sRsiLast15m = stochRsi15m.slice(-1)[0];
+            sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
+          }
       */
+
+
+      let sRsiLast1h = null;
+      let sRsiLast1h_2 = null;
+
+      if (stochRsi1h !== null) {
+        sRsiLast1h = stochRsi1h.slice(-1)[0];
+        sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
+      }
+
+      let sRsiLast4h = null;
+      let sRsiLast4h_2 = null;
+
+      if (stochRsi4h !== null) {
+        sRsiLast4h = stochRsi4h.slice(-1)[0];
+        sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
+      }
+
+
+
       //parseFloat(candles15m.slice(-1)[0].open) < parseFloat(candles15m.slice(-1)[0].close) &&
       if (
 
@@ -4537,29 +4601,30 @@ async function iniciarWebSocketContinuo() {
 
       )
 */
-       // (
-          /*
-          (
-            parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
-            parseFloat(ltaltb1m.lta) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
-          ) || (
-            parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
-            parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
-          )
-            *
+        // (
+        /*
+        (
+          parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
+          parseFloat(ltaltb1m.lta) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
+        ) || (
+          parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
+          parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
+        )
+          *
 
-          (
-            fibo5m.dir == 1 &&
-            parseFloat(ltaltb1m.lta) <= parseFloat(fibo5m.retr0618) &&
-            parseFloat(ltaltb1m.lta) >= parseFloat(fibo5m.retr1)
-          ) || (
-            fibo5m.dir == -1 &&
-            parseFloat(ltaltb1m.lta) <= parseFloat(fibo5m.retr0382) &&
-            parseFloat(ltaltb1m.lta) >= parseFloat(fibo5m.retr0)
-          )
+        (
+          fibo5m.dir == 1 &&
+          parseFloat(ltaltb1m.lta) <= parseFloat(fibo5m.retr0618) &&
+          parseFloat(ltaltb1m.lta) >= parseFloat(fibo5m.retr1)
+        ) || (
+          fibo5m.dir == -1 &&
+          parseFloat(ltaltb1m.lta) <= parseFloat(fibo5m.retr0382) &&
+          parseFloat(ltaltb1m.lta) >= parseFloat(fibo5m.retr0)
+        )
 */
-       // )
-       // &&
+        // )
+        // &&
+        /*
         parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
@@ -4570,7 +4635,23 @@ async function iniciarWebSocketContinuo() {
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) &&
         parseFloat(preco_atual) >= parseFloat(menorMedia3m)
+*/
+        (
+          parseFloat(sRsiLast4h.k) <= parseFloat(10.0) ||
+          parseFloat(sRsiLast4h_2.k) <= parseFloat(10.0)
+        ) &&
+        (
+          parseFloat(sRsiLast1h.k) <= parseFloat(10.0) ||
+          parseFloat(sRsiLast1h_2.k) <= parseFloat(10.0)
+        ) &&
+        (
+          parseFloat(sRsiLast30m.k) <= parseFloat(30.0) ||
+          parseFloat(sRsiLast30m_2.k) <= parseFloat(30.0)
+        ) &&
 
+        parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(preco_anterior) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3))
 
 
       ) {
@@ -4648,27 +4729,27 @@ async function iniciarWebSocketContinuo() {
       )
 */
         //(
-          /*
-          (
-            parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
-            parseFloat(ltaltb1m.lta) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
-          ) || (
-            parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
-            parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
-          )
-            *
+        /*
+        (
+          parseFloat(ltaltb1m.lta) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
+          parseFloat(ltaltb1m.lta) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
+        ) || (
+          parseFloat(ltaltb1m.ltb) <= parseFloat(maiorMedia3m) + parseFloat(tickSize * 10) &&
+          parseFloat(ltaltb1m.ltb) >= parseFloat(menorMedia3m) - parseFloat(tickSize * 10)
+        )
+          *
 
-          (
-            fibo5m.dir == 1 &&
-            parseFloat(ltaltb1m.ltb) <= parseFloat(fibo5m.retr0) &&
-            parseFloat(ltaltb1m.ltb) >= parseFloat(fibo5m.retr0382)
-          ) || (
-            fibo5m.dir == -1 &&
-            parseFloat(ltaltb1m.ltb) <= parseFloat(fibo5m.retr1) &&
-            parseFloat(ltaltb1m.ltb) >= parseFloat(fibo5m.retr0618)
-          )
-*/
-       // )
+        (
+          fibo5m.dir == 1 &&
+          parseFloat(ltaltb1m.ltb) <= parseFloat(fibo5m.retr0) &&
+          parseFloat(ltaltb1m.ltb) >= parseFloat(fibo5m.retr0382)
+        ) || (
+          fibo5m.dir == -1 &&
+          parseFloat(ltaltb1m.ltb) <= parseFloat(fibo5m.retr1) &&
+          parseFloat(ltaltb1m.ltb) >= parseFloat(fibo5m.retr0618)
+        )
+*
+        // )
 
         //&&
         parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
@@ -4681,6 +4762,24 @@ async function iniciarWebSocketContinuo() {
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) &&
         parseFloat(preco_atual) <= parseFloat(maiorMedia3m)
+*/
+
+                (
+          parseFloat(sRsiLast4h.k) >= parseFloat(90.0) ||
+          parseFloat(sRsiLast4h_2.k) >= parseFloat(90.0)
+        ) &&
+        (
+          parseFloat(sRsiLast1h.k) >= parseFloat(90.0) ||
+          parseFloat(sRsiLast1h_2.k) >= parseFloat(90.0)
+        ) &&
+        (
+          parseFloat(sRsiLast30m.k) >= parseFloat(70.0) ||
+          parseFloat(sRsiLast30m_2.k) >= parseFloat(70.0)
+        ) &&
+        
+        parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(preco_anterior) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
 
       ) {
 
@@ -4885,7 +4984,7 @@ async function iniciarWebSocketContinuo() {
 
         stopAtivo = await verificarStopAtivo();
         parentPort.postMessage(`iniciarWebSocketContinuo / StopAtivo: ${JSON.stringify(stopAtivo, null, 2)} `);
-  takeAtivo = await verificarTakeAtivo();
+        takeAtivo = await verificarTakeAtivo();
         parentPort.postMessage(`iniciarWebSocketContinuo / takeAtivo: ${JSON.stringify(takeAtivo, null, 2)} `);
 
         liquidationPrice = await getLiquidationPrice(symbol);
@@ -4931,7 +5030,7 @@ async function iniciarWebSocketContinuo() {
 
         await salvarCache(cacheRisk, 'Risk');
 
-        let novoStop50 = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
+        let novoStop50 = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
 
         let stopRange50 = parseFloat(pnlRoiAtual.roi) - parseFloat(50.0);
 
@@ -5528,8 +5627,8 @@ async function iniciarWebSocketContinuo() {
         //novoStop = novoStopMm;
 
 
-        novoStop = await precoAlvoPorPercent(sideOrd, -30, parseFloat(posicaoAberta.entryPrice), symbol);
-        novoTake = await precoAlvoPorPercent(sideOrd, 20, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
 
@@ -5806,7 +5905,7 @@ async function iniciarWebSocketContinuo() {
       */
     }
 
-    if (posicaoAberta == 0 && ultimaPosicao !== 0 && ultimaPosicao !== undefined ) {
+    if (posicaoAberta == 0 && ultimaPosicao !== 0 && ultimaPosicao !== undefined) {
 
       parentPort.postMessage(`✅ Posição encerrada. Parando STOP.`);
 
@@ -5851,8 +5950,9 @@ async function startWorker() {
     iniciarWebSocketcandles3m();
     iniciarWebSocketcandles5m();
     //iniciarWebSocketcandles15m();
-    //iniciarWebSocketcandles30m();
-    //iniciarWebSocketcandles1h();
+    iniciarWebSocketcandles30m();
+    iniciarWebSocketcandles1h();
+    iniciarWebSocketcandles4h();
     //   await monitorarGatilho();
     iniciarWebSocketMarkPrice();
     await iniciarWebSocketContinuo();
