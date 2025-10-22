@@ -1293,9 +1293,13 @@ async function carregarCandlesHistoricos() {
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles3m carregado com sucesso.`);
 
+    const s20 = calcularSMA(20, candles3m);
+    const e20 = calcularEMA(20, candles3m);
+
     const s100 = calcularSMA(100, candles3m);
-    const s110 = calcularSMA(110, candles3m);
     const e100 = calcularEMA(100, candles3m);
+
+    const s110 = calcularSMA(110, candles3m);
     const e110 = calcularEMA(110, candles3m);
 
     if (s100 && s110 && e100 && e110) {
@@ -2747,55 +2751,55 @@ function iniciarWebSocketMarkPrice() {
 
     //let sRsiLast3m = stochRsi3m.slice(-1)[0];
     //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
-/*
-    let sRsiLast3m = null;
-    let sRsiLast3m_2 = null;
-
-    if (stochRsi3m !== null) {
-      sRsiLast3m = stochRsi3m.slice(-1)[0];
-      sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
-    }
-
-    let sRsiLast5m = null;
-    let sRsiLast5m_2 = null;
-
-    if (stochRsi5m !== null) {
-      sRsiLast5m = stochRsi5m.slice(-1)[0];
-      sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
-    }
     /*
-        let sRsiLast15m = null;
-        let sRsiLast15m_2 = null;
+        let sRsiLast3m = null;
+        let sRsiLast3m_2 = null;
     
-        if (stochRsi15m !== null) {
-          sRsiLast15m = stochRsi15m.slice(-1)[0];
-          sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
+        if (stochRsi3m !== null) {
+          sRsiLast3m = stochRsi3m.slice(-1)[0];
+          sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
         }
-    *
-    let sRsiLast30m = null;
-    let sRsiLast30m_2 = null;
-
-    if (stochRsi30m !== null) {
-      sRsiLast30m = stochRsi30m.slice(-1)[0];
-      sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
-    }
-
-    let sRsiLast1h = null;
-    let sRsiLast1h_2 = null;
-
-    if (stochRsi1h !== null) {
-      sRsiLast1h = stochRsi1h.slice(-1)[0];
-      sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
-    }
-
-    let sRsiLast4h = null;
-    let sRsiLast4h_2 = null;
-
-    if (stochRsi4h !== null) {
-      sRsiLast4h = stochRsi4h.slice(-1)[0];
-      sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
-    }
-*/
+    
+        let sRsiLast5m = null;
+        let sRsiLast5m_2 = null;
+    
+        if (stochRsi5m !== null) {
+          sRsiLast5m = stochRsi5m.slice(-1)[0];
+          sRsiLast5m_2 = stochRsi5m.slice(-2)[0];
+        }
+        /*
+            let sRsiLast15m = null;
+            let sRsiLast15m_2 = null;
+        
+            if (stochRsi15m !== null) {
+              sRsiLast15m = stochRsi15m.slice(-1)[0];
+              sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
+            }
+        *
+        let sRsiLast30m = null;
+        let sRsiLast30m_2 = null;
+    
+        if (stochRsi30m !== null) {
+          sRsiLast30m = stochRsi30m.slice(-1)[0];
+          sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
+        }
+    
+        let sRsiLast1h = null;
+        let sRsiLast1h_2 = null;
+    
+        if (stochRsi1h !== null) {
+          sRsiLast1h = stochRsi1h.slice(-1)[0];
+          sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
+        }
+    
+        let sRsiLast4h = null;
+        let sRsiLast4h_2 = null;
+    
+        if (stochRsi4h !== null) {
+          sRsiLast4h = stochRsi4h.slice(-1)[0];
+          sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
+        }
+    */
     /*
         zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
         fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
@@ -2842,35 +2846,35 @@ function iniciarWebSocketMarkPrice() {
             //parseFloat(sRsiLast3m.k) <= parseFloat(20.0) &&
             //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)&&
 
-/*
-            (
-              /*
-
-                                      (
-            fibo1h.dir == 1 &&
-            parseFloat(ltaltb5m.lta) <= parseFloat(fibo5m.retr0618) &&
-            parseFloat(ltaltb5m.lta) >= parseFloat(fibo5m.retr1)
-          ) || (
-            fibo1h.dir == -1 &&
-            parseFloat(ltaltb5m.lta) <= parseFloat(fibo5m.retr0382) &&
-            parseFloat(ltaltb5m.lta) >= parseFloat(fibo5m.retr0)
-          )
-*
-              (
-                parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.lta) + (parseFloat(tickSize) * 5) &&
-                parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ltaltb1m.lta) - (parseFloat(tickSize) * 5) &&
-                parseFloat(preco_atual) >= parseFloat(candles1m.slice(-1)[0].close) //&&
-                //parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
-              )
-              /*
-              || (
-                parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.ltb) + (parseFloat(tickSize) * 3) &&
-                parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) &&
-                parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
-              )
-                *
-            )
-            */
+            /*
+                        (
+                          /*
+            
+                                                  (
+                        fibo1h.dir == 1 &&
+                        parseFloat(ltaltb5m.lta) <= parseFloat(fibo5m.retr0618) &&
+                        parseFloat(ltaltb5m.lta) >= parseFloat(fibo5m.retr1)
+                      ) || (
+                        fibo1h.dir == -1 &&
+                        parseFloat(ltaltb5m.lta) <= parseFloat(fibo5m.retr0382) &&
+                        parseFloat(ltaltb5m.lta) >= parseFloat(fibo5m.retr0)
+                      )
+            *
+                          (
+                            parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.lta) + (parseFloat(tickSize) * 5) &&
+                            parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ltaltb1m.lta) - (parseFloat(tickSize) * 5) &&
+                            parseFloat(preco_atual) >= parseFloat(candles1m.slice(-1)[0].close) //&&
+                            //parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
+                          )
+                          /*
+                          || (
+                            parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ltaltb1m.ltb) + (parseFloat(tickSize) * 3) &&
+                            parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) &&
+                            parseFloat(preco_atual) >= parseFloat(ltaltb1m.ltb) //&&
+                          )
+                            *
+                        )
+                        */
           ) || (
 
             sideOrd == 'SELL' &&
@@ -2974,7 +2978,7 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, -25, parseFloat(posicaoAberta.entryPrice), symbol);
                 let novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
                 stopAtivo = await criarStopLoss(novoStop);
@@ -3000,7 +3004,7 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, -25, parseFloat(posicaoAberta.entryPrice), symbol);
               novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
@@ -3309,7 +3313,7 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoStop = await precoAlvoPorPercent(sideOrd, -25, parseFloat(posicaoAberta.entryPrice), symbol);
       let novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
       if (stopAtivo !== undefined && stopAtivo !== null) {
@@ -4450,7 +4454,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-
+/*
       stochRsi1h = StochasticRSI.calculate({
         values: candles1h.map(c => c.close),
         rsiPeriod: 14,
@@ -4466,7 +4470,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-
+*/
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
 
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
@@ -4507,7 +4511,7 @@ async function iniciarWebSocketContinuo() {
             sRsiLast15m = stochRsi15m.slice(-1)[0];
             sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
           }
-      */
+      *
 
 
       let sRsiLast1h = null;
@@ -4525,7 +4529,7 @@ async function iniciarWebSocketContinuo() {
         sRsiLast4h = stochRsi4h.slice(-1)[0];
         sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
       }
-
+*/
 
 
       //parseFloat(candles15m.slice(-1)[0].open) < parseFloat(candles15m.slice(-1)[0].close) &&
@@ -4635,7 +4639,7 @@ async function iniciarWebSocketContinuo() {
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) &&
         parseFloat(preco_atual) >= parseFloat(menorMedia3m)
-*/
+*
         (
           parseFloat(sRsiLast4h.k) <= parseFloat(10.0) ||
           parseFloat(sRsiLast4h_2.k) <= parseFloat(10.0)
@@ -4644,6 +4648,7 @@ async function iniciarWebSocketContinuo() {
           parseFloat(sRsiLast1h.k) <= parseFloat(10.0) ||
           parseFloat(sRsiLast1h_2.k) <= parseFloat(10.0)
         ) &&
+        */
         (
           parseFloat(sRsiLast30m.k) <= parseFloat(30.0) ||
           parseFloat(sRsiLast30m_2.k) <= parseFloat(30.0)
@@ -4651,7 +4656,7 @@ async function iniciarWebSocketContinuo() {
 
         parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(preco_anterior) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3))
+        parseFloat(candles1m.slice(-2)[0].low) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3))
 
 
       ) {
@@ -4762,9 +4767,9 @@ async function iniciarWebSocketContinuo() {
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) &&
         parseFloat(preco_atual) <= parseFloat(maiorMedia3m)
-*/
+*
 
-                (
+        (
           parseFloat(sRsiLast4h.k) >= parseFloat(90.0) ||
           parseFloat(sRsiLast4h_2.k) >= parseFloat(90.0)
         ) &&
@@ -4772,14 +4777,16 @@ async function iniciarWebSocketContinuo() {
           parseFloat(sRsiLast1h.k) >= parseFloat(90.0) ||
           parseFloat(sRsiLast1h_2.k) >= parseFloat(90.0)
         ) &&
+*/
+
         (
           parseFloat(sRsiLast30m.k) >= parseFloat(70.0) ||
           parseFloat(sRsiLast30m_2.k) >= parseFloat(70.0)
         ) &&
-        
+
         parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(preco_anterior) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
+        parseFloat(candles1m.slice(-2)[0].high) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
 
       ) {
 
@@ -5030,7 +5037,7 @@ async function iniciarWebSocketContinuo() {
 
         await salvarCache(cacheRisk, 'Risk');
 
-        let novoStop50 = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+        let novoStop50 = await precoAlvoPorPercent(sideOrd, -25, parseFloat(posicaoAberta.entryPrice), symbol);
 
         let stopRange50 = parseFloat(pnlRoiAtual.roi) - parseFloat(50.0);
 
@@ -5627,7 +5634,7 @@ async function iniciarWebSocketContinuo() {
         //novoStop = novoStopMm;
 
 
-        novoStop = await precoAlvoPorPercent(sideOrd, -20, parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, -25, parseFloat(posicaoAberta.entryPrice), symbol);
         novoTake = await precoAlvoPorPercent(sideOrd, 100, parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
