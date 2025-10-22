@@ -1393,7 +1393,7 @@ async function carregarCandlesHistoricos() {
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles15m: ${JSON.stringify(err.message)}`);
     }
-  
+  *
     try {
       const response = await apiAxios.get('/fapi/v1/klines', {
         params: {
@@ -1420,7 +1420,7 @@ async function carregarCandlesHistoricos() {
       });
   
       parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles1h carregado com sucesso.`);
-      *
+      /*
           const s100 = calcularSMA(100, candles1h);
           const s110 = calcularSMA(110, candles1h);
           const e100 = calcularEMA(100, candles1h);
@@ -1433,7 +1433,7 @@ async function carregarCandlesHistoricos() {
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles1h: ${JSON.stringify(err.message)}`);
     }
-  
+  */
       try {
         const response = await apiAxios.get('/fapi/v1/klines', {
           params: {
@@ -1469,11 +1469,11 @@ async function carregarCandlesHistoricos() {
             if (s100 && s110 && e100 && e110) {
               medias30m = [s100, s110, e100, e110];
             }
-        *
+        */
       } catch (err) {
         parentPort.postMessage(`❌ Erro ao carregar histórico de candles30m: ${JSON.stringify(err.message)}`);
       }
-    
+    /*
         try {
           const response = await apiAxios.get('/fapi/v1/klines', {
             params: {
@@ -5958,8 +5958,8 @@ async function startWorker() {
     iniciarWebSocketcandles5m();
     //iniciarWebSocketcandles15m();
     iniciarWebSocketcandles30m();
-    iniciarWebSocketcandles1h();
-    iniciarWebSocketcandles4h();
+    //iniciarWebSocketcandles1h();
+    //iniciarWebSocketcandles4h();
     //   await monitorarGatilho();
     iniciarWebSocketMarkPrice();
     await iniciarWebSocketContinuo();
