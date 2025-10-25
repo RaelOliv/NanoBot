@@ -2934,7 +2934,7 @@ function iniciarWebSocketMarkPrice() {
             */
             //////////////////////////////
 
-            await cancelarTodasOrdens();
+            //await cancelarTodasOrdens();
 
             let returnPos = await abrirPosicao(sideOrd, quantity);
 
@@ -2966,7 +2966,7 @@ function iniciarWebSocketMarkPrice() {
             //let novoStop = novoStop50;
 
             if (returnPos !== null && returnPos !== undefined) {
-              //await cancelarTodasOrdens();
+              await cancelarTodasOrdens();
 
 
               gatilhoAtivado = false;
@@ -3015,14 +3015,14 @@ function iniciarWebSocketMarkPrice() {
 
               //novoStop = novoStopMm;
 
-              //novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
+              novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
               //novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
 
         }
 
@@ -5969,7 +5969,7 @@ async function iniciarWebSocketContinuo() {
       stopAtual = undefined;
       oldStop = undefined;
       novoStop = undefined;
-      //await cancelarTodasOrdens();
+      await cancelarTodasOrdens();
     }
 
     ultimaPosicao = posicaoAberta;
