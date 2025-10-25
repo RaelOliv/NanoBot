@@ -5336,7 +5336,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles15m.slice(-2)[0].low;
+          //novoStop = candles15m.slice(-2)[0].low;
 
 
           if (parseFloat(novoStop) <= (parseFloat(liquidationPrice) + (parseFloat(tickSize) * 10))) {
@@ -5625,7 +5625,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles15m.slice(-2)[0].high;
+          //novoStop = candles15m.slice(-2)[0].high;
 
 
           if (parseFloat(novoStop) >= (parseFloat(liquidationPrice) - (parseFloat(tickSize) * 10))) {
@@ -5670,10 +5670,10 @@ async function iniciarWebSocketContinuo() {
         }
 */
         if (sideOrd == 'BUY') {
-          novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
