@@ -4340,7 +4340,7 @@ async function iniciarWebSocketContinuo() {
       stopAtual = undefined;
       oldStop = undefined;
       novoStop = undefined;
-      await cancelarTodasOrdens();
+      //await cancelarTodasOrdens();
     }
 
     takeAtivo = await verificarTakeAtivo();
@@ -5969,7 +5969,7 @@ async function iniciarWebSocketContinuo() {
       stopAtual = undefined;
       oldStop = undefined;
       novoStop = undefined;
-      await cancelarTodasOrdens();
+      //await cancelarTodasOrdens();
     }
 
     ultimaPosicao = posicaoAberta;
