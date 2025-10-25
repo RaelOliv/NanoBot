@@ -1353,7 +1353,7 @@ async function carregarCandlesHistoricos() {
   } catch (err) {
     parentPort.postMessage(`❌ Erro ao carregar histórico de candles5m: ${JSON.stringify(err.message)}`);
   }
-  /*
+  
     try {
       const response = await apiAxios.get('/fapi/v1/klines', {
         params: {
@@ -1393,7 +1393,7 @@ async function carregarCandlesHistoricos() {
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles15m: ${JSON.stringify(err.message)}`);
     }
-  *
+  
     try {
       const response = await apiAxios.get('/fapi/v1/klines', {
         params: {
@@ -6002,7 +6002,7 @@ async function startWorker() {
     iniciarWebSocketcandles1m();
     iniciarWebSocketcandles3m();
     iniciarWebSocketcandles5m();
-    //iniciarWebSocketcandles15m();
+    iniciarWebSocketcandles15m();
     iniciarWebSocketcandles30m();
     //iniciarWebSocketcandles1h();
     //iniciarWebSocketcandles4h();
