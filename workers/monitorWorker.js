@@ -2837,8 +2837,8 @@ function iniciarWebSocketMarkPrice() {
         if (
           (
             sideOrd == 'BUY' &&
-            parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
-            parseFloat(preco_atual) >= parseFloat(maiorM3m20p) // + parseFloat(tickSize) * 3))
+            parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMedia3m) && //+ (parseFloat(tickSize) * 3))
+            parseFloat(preco_atual) >= parseFloat(maiorMedia3m) // + parseFloat(tickSize) * 3))
 
             //parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
             //parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
@@ -2878,8 +2878,8 @@ function iniciarWebSocketMarkPrice() {
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && //- (parseFloat(tickSize) * 3))
-            parseFloat(preco_atual) <= parseFloat(menorM3m20p) // - (parseFloat(tickSize) * 3))
+            parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMedia3m) && //- (parseFloat(tickSize) * 3))
+            parseFloat(preco_atual) <= parseFloat(menorMedia3m) // - (parseFloat(tickSize) * 3))
             /*
             (
 
@@ -2980,7 +2980,7 @@ function iniciarWebSocketMarkPrice() {
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
                 let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
-                //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
           //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
@@ -2991,7 +2991,7 @@ function iniciarWebSocketMarkPrice() {
         }
 
                 stopAtivo = await criarStopLoss(novoStop);
-                //takeAtivo = await criarTakeProfit(novoTake);
+                takeAtivo = await criarTakeProfit(novoTake);
 
 
               }
@@ -3016,7 +3016,7 @@ function iniciarWebSocketMarkPrice() {
               //novoStop = novoStopMm;
 
               novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
-              //novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
+              novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
           //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
@@ -3055,7 +3055,7 @@ function iniciarWebSocketMarkPrice() {
                   }
                 }
               }
-/*
+
               if (takeAtivo !== undefined && takeAtivo !== null) {
                 if (takeAtivo.price == null) {
 
@@ -3079,7 +3079,7 @@ function iniciarWebSocketMarkPrice() {
                   //takeAtivo = await criarTakeProfit(novoTakeLt);  
                 }
               }
-*/
+
               parentPort.postMessage(`🔎 stopAtivo: ${JSON.stringify(stopAtivo)}`);
               //parentPort.postMessage(`🔎 takeAtivo: ${JSON.stringify(takeAtivo)}`);
             }
@@ -3330,9 +3330,9 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      //let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
-      //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
-
+      let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
+      let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
+/*()
         if (sideOrd == 'BUY') {
           novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
@@ -3340,7 +3340,7 @@ function iniciarWebSocketMarkPrice() {
           novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
-        
+        */
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
           stopAtivo = await criarStopLoss(novoStop);
@@ -3388,7 +3388,7 @@ function iniciarWebSocketMarkPrice() {
             }
       */
 
-          /*
+          
       if (takeAtivo !== undefined && takeAtivo !== null) {
         if (takeAtivo.price == null) {
           takeAtivo = await criarTakeProfit(novoTake);
@@ -3411,7 +3411,7 @@ function iniciarWebSocketMarkPrice() {
           //takeAtivo = await criarTakeProfit(novoTake);  
         }
       }
-*/
+
       parentPort.postMessage(`🔎 stopAtivo: ${JSON.stringify(stopAtivo)}`);
       //parentPort.postMessage(`🔎 takeAtivo: ${JSON.stringify(takeAtivo)}`);
     }
@@ -4681,7 +4681,7 @@ async function iniciarWebSocketContinuo() {
         parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(candles30m.slice(-2)[0].open) <= parseFloat(candles30m.slice(-2)[0].close) &&
-        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) //+ (parseFloat(tickSize) * 3))
+        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMedia3m) //+ (parseFloat(tickSize) * 3))
         //parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
 
 
@@ -4814,7 +4814,7 @@ async function iniciarWebSocketContinuo() {
         parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(candles30m.slice(-2)[0].open) >= parseFloat(candles30m.slice(-2)[0].close) &&
-        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) //- (parseFloat(tickSize) * 3))
+        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMedia3m) //- (parseFloat(tickSize) * 3))
 
       ) {
 
