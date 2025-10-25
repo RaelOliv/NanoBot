@@ -2983,10 +2983,10 @@ function iniciarWebSocketMarkPrice() {
                 //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
-          //novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          //novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
@@ -3019,10 +3019,10 @@ function iniciarWebSocketMarkPrice() {
               //novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
-          //novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          //novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
+          //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
@@ -3334,10 +3334,10 @@ function iniciarWebSocketMarkPrice() {
       //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
+          novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
+          novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
         
@@ -4834,7 +4834,7 @@ async function iniciarWebSocketContinuo() {
       parentPort.postMessage(`<___-----[${symbol}]-- --(${preco_atual})-----___>`);
 
       //console.log('zigZag4h', JSON.stringify(zigZag4h));
-      parentPort.postMessage(`Candle: ${JSON.stringify(candles30m.slice(-2)[0], null, 2)}`);
+      parentPort.postMessage(`Candle: ${JSON.stringify(candles15m.slice(-2)[0], null, 2)}`);
       //parentPort.postMessage(`zigZag1h: ${JSON.stringify(zigZag1h.pontosUnificados, null, 2)}`);
       //parentPort.postMessage(`fibo1h: ${JSON.stringify(fibo1h, null, 2)}`);
 
@@ -5336,7 +5336,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles30m.slice(-2)[0].low;
+          novoStop = candles15m.slice(-2)[0].low;
 
 
           if (parseFloat(novoStop) <= (parseFloat(liquidationPrice) + (parseFloat(tickSize) * 10))) {
@@ -5625,7 +5625,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles30m.slice(-2)[0].high;
+          novoStop = candles15m.slice(-2)[0].high;
 
 
           if (parseFloat(novoStop) >= (parseFloat(liquidationPrice) - (parseFloat(tickSize) * 10))) {
@@ -5661,19 +5661,19 @@ async function iniciarWebSocketContinuo() {
         let novoStopMm = null;
         if (sideOrd == 'BUY') {
           //novoStopMm = parseFloat(menorMedia3m) - parseFloat(tickSize * 10);
-          novoStop = candles30m.slice(-1)[0].low;
+          novoStop = candles15m.slice(-1)[0].low;
 
         } else if (sideOrd == 'SELL') {
           //novoStopMm = parseFloat(maiorMedia3m) + parseFloat(tickSize * 10);
-          novoStop = candles30m.slice(-1)[0].high;
+          novoStop = candles15m.slice(-1)[0].high;
 
         }
 */
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
+          novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
+          novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
