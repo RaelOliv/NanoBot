@@ -857,7 +857,7 @@ const cryptSymbols = {
         bas: 'BASUSDT',
         bat: 'BATUSDT',
         bonk: '1000BONKUSDT',
-        crv: 'CRVUSDT',
+        //crv: 'CRVUSDT',
         cvx: 'CVXUSDT',
         dexe: 'DEXEUSDT',
         doge: 'DOGEUSDT',
