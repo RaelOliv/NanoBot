@@ -2983,10 +2983,10 @@ function iniciarWebSocketMarkPrice() {
                 //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
-          //novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          //novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
@@ -3019,10 +3019,10 @@ function iniciarWebSocketMarkPrice() {
               //novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
-          //novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          //novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
@@ -3334,10 +3334,10 @@ function iniciarWebSocketMarkPrice() {
       //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
         
@@ -4680,7 +4680,7 @@ async function iniciarWebSocketContinuo() {
         parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
         parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(candles30m.slice(-1)[0].open) <= parseFloat(candles30m.slice(-1)[0].close) &&
+        parseFloat(candles30m.slice(-2)[0].open) <= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) //+ (parseFloat(tickSize) * 3))
         //parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
 
@@ -4813,7 +4813,7 @@ async function iniciarWebSocketContinuo() {
         parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
         parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(candles30m.slice(-1)[0].open) >= parseFloat(candles30m.slice(-1)[0].close) &&
+        parseFloat(candles30m.slice(-2)[0].open) >= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) //- (parseFloat(tickSize) * 3))
 
       ) {
@@ -4834,7 +4834,7 @@ async function iniciarWebSocketContinuo() {
       parentPort.postMessage(`<___-----[${symbol}]-- --(${preco_atual})-----___>`);
 
       //console.log('zigZag4h', JSON.stringify(zigZag4h));
-      parentPort.postMessage(`Candle: ${JSON.stringify(candles30m.slice(-1)[0], null, 2)}`);
+      parentPort.postMessage(`Candle: ${JSON.stringify(candles30m.slice(-2)[0], null, 2)}`);
       //parentPort.postMessage(`zigZag1h: ${JSON.stringify(zigZag1h.pontosUnificados, null, 2)}`);
       //parentPort.postMessage(`fibo1h: ${JSON.stringify(fibo1h, null, 2)}`);
 
@@ -5336,7 +5336,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles30m.slice(-1)[0].low;
+          novoStop = candles30m.slice(-2)[0].low;
 
 
           if (parseFloat(novoStop) <= (parseFloat(liquidationPrice) + (parseFloat(tickSize) * 10))) {
@@ -5625,7 +5625,7 @@ async function iniciarWebSocketContinuo() {
           }
           */
 
-          novoStop = candles30m.slice(-1)[0].high;
+          novoStop = candles30m.slice(-2)[0].high;
 
 
           if (parseFloat(novoStop) >= (parseFloat(liquidationPrice) - (parseFloat(tickSize) * 10))) {
@@ -5670,10 +5670,10 @@ async function iniciarWebSocketContinuo() {
         }
 */
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          novoStop = candles30m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          novoStop = candles30m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
 
         }
 
