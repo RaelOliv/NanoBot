@@ -2979,14 +2979,14 @@ function iniciarWebSocketMarkPrice() {
 
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
-                //let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
+                let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
                 //let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
-          novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-1)[0].low - (parseFloat(tickSize) * 3);
 
         } else if (sideOrd == 'SELL') {
-          novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
+          //novoStop = candles30m.slice(-1)[0].high + (parseFloat(tickSize) * 3);
 
         }
 

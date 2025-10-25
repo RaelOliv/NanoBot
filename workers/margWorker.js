@@ -1777,7 +1777,7 @@ async function monitorarMargem() {
       //oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
       //balanceHist.push(oldBalance);
 
-      await transferir("USDT", pnlaReter, 'UMFUTURE_MAIN');
+      await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
       balance = await getBalance();
 
       //let res = await fecharTodasPosicoes();
@@ -1788,7 +1788,9 @@ async function monitorarMargem() {
       //}
       await salvarCache(balance, 'Balance');
 
-    } else if (percReal < -15.0) {
+    } 
+    /*
+    else if (percReal < -15.0) {
 
       //let res = await fecharTodasPosicoes();
       //if (res == true) {
@@ -1798,7 +1800,7 @@ async function monitorarMargem() {
       //}
       await salvarCache(balance, 'Balance');
     }
-
+*/
     // salvar saldo/histórico de margem
 
     await salvarCache(balanceHist, 'BalanceHist');
