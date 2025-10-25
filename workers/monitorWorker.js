@@ -1393,7 +1393,7 @@ async function carregarCandlesHistoricos() {
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles15m: ${JSON.stringify(err.message)}`);
     }
-  
+  /*
     try {
       const response = await apiAxios.get('/fapi/v1/klines', {
         params: {
