@@ -2837,9 +2837,13 @@ function iniciarWebSocketMarkPrice() {
         if (
           (
             sideOrd == 'BUY' &&
+            parseFloat(preco_atual) >= parseFloat(maiorM3m20p)
+ ////////////////////
+ /*
             parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMedia3m) && //+ (parseFloat(tickSize) * 3))
             parseFloat(preco_atual) >= parseFloat(maiorMedia3m) // + parseFloat(tickSize) * 3))
-
+*/
+//////////////////////
             //parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
             //parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
             //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
@@ -2878,8 +2882,17 @@ function iniciarWebSocketMarkPrice() {
           ) || (
 
             sideOrd == 'SELL' &&
+            parseFloat(preco_atual) <= parseFloat(menorM3m20p)
+/////////////////////////
+/*
             parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMedia3m) && //- (parseFloat(tickSize) * 3))
             parseFloat(preco_atual) <= parseFloat(menorMedia3m) // - (parseFloat(tickSize) * 3))
+            
+*/
+//////////////////////
+            
+            
+            
             /*
             (
 
@@ -4284,7 +4297,7 @@ async function iniciarWebSocketContinuo() {
 
   // if (monitoramentoAtivado == false) return;
 
-  parentPort.postMessage(`✅ Worker iniciarWebSocketMarkPrice: ${workerData.symbol}`);
+  parentPort.postMessage(`✅ Worker iniciarWebSocketContinuo: ${workerData.symbol}`);
 
   //const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice`);
 
@@ -4673,6 +4686,10 @@ async function iniciarWebSocketContinuo() {
           parseFloat(sRsiLast1h_2.k) <= parseFloat(10.0)
         ) &&
         */
+        
+//////////////////////
+/*
+
         (
           parseFloat(sRsiLast30m.k) <= parseFloat(25.0) ||
           parseFloat(sRsiLast30m_2.k) <= parseFloat(25.0)
@@ -4683,7 +4700,13 @@ async function iniciarWebSocketContinuo() {
         parseFloat(candles30m.slice(-2)[0].open) <= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMedia3m) //+ (parseFloat(tickSize) * 3))
         //parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3))
-
+*/
+//////
+parseFloat(menorM3m20p) >= parseFloat(maiorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].low) <= (parseFloat(maiorM3m20p) &&
+parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].close) >= (parseFloat(maiorM3m20p) &&
+parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
 
       ) {
 
@@ -4804,7 +4827,8 @@ async function iniciarWebSocketContinuo() {
           parseFloat(sRsiLast1h_2.k) >= parseFloat(90.0)
         ) &&
 */
-
+////////////////////////////////////////
+/*
         (
           parseFloat(sRsiLast30m.k) >= parseFloat(75.0) ||
           parseFloat(sRsiLast30m_2.k) >= parseFloat(75.0)
@@ -4815,6 +4839,14 @@ async function iniciarWebSocketContinuo() {
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(candles30m.slice(-2)[0].open) >= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMedia3m) //- (parseFloat(tickSize) * 3))
+*/
+///////////////////////////_______
+
+parseFloat(maiorM3m20p) <= parseFloat(menorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].high) <= (parseFloat(maiorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].high) >= (parseFloat(menorM3m20p) &&
+parseFloat(candles1m.slice(-2)[0].close) <= (parseFloat(menorM3m20p) &&
+parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
 
       ) {
 
