@@ -2925,13 +2925,13 @@ function iniciarWebSocketMarkPrice() {
             quantity = await getQntbyBalance();
 
             ////////////////////////////
-            /*
+            
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            */
+            
             //////////////////////////////
 
             //await cancelarTodasOrdens();
