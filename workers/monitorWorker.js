@@ -3011,7 +3011,7 @@ function iniciarWebSocketMarkPrice() {
                 sideOrd = 'SELL';
               }
 
-              let novoStop = null;
+              //let novoStop = null;
 
               //novoStop = novoStopMm;
 
@@ -3081,7 +3081,7 @@ function iniciarWebSocketMarkPrice() {
               }
 
               parentPort.postMessage(`🔎 stopAtivo: ${JSON.stringify(stopAtivo)}`);
-              //parentPort.postMessage(`🔎 takeAtivo: ${JSON.stringify(takeAtivo)}`);
+              parentPort.postMessage(`🔎 takeAtivo: ${JSON.stringify(takeAtivo)}`);
             }
 
           }
@@ -3330,8 +3330,8 @@ function iniciarWebSocketMarkPrice() {
 
       //novoStop = novoStopMm;
 
-      let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
-      let novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
+      novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
+      novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 /*()
         if (sideOrd == 'BUY') {
           novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
@@ -5068,7 +5068,7 @@ async function iniciarWebSocketContinuo() {
 
         let stopRange50 = parseFloat(pnlRoiAtual.roi) - parseFloat(50.0);
 
-        let novoStop = await precoAlvoPorPercent(sideOrd, stopRange50, parseFloat(posicaoAberta.entryPrice), symbol);
+        //let novoStop = await precoAlvoPorPercent(sideOrd, stopRange50, parseFloat(posicaoAberta.entryPrice), symbol);
 
 
 
@@ -5680,8 +5680,8 @@ async function iniciarWebSocketContinuo() {
 
         //novoStop = novoStopMm;
 
-        //novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
-        //novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
+        novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
+        novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 
         if (stopAtivo === null || stopAtivo === undefined) {
 
@@ -5711,7 +5711,7 @@ async function iniciarWebSocketContinuo() {
             }
           }
         }
-/*
+
         if (takeAtivo !== undefined) {
           if (takeAtivo.price == null) {
             takeAtivo = await criarTakeProfit(novoTake);
@@ -5734,7 +5734,7 @@ async function iniciarWebSocketContinuo() {
             //takeAtivo = await criarTakeProfit(novoTake);  
           }
         }
-*/
+
 
         //novoStop = await precoAlvoPorPercent(sideOrd, percent, parseFloat(posicaoAberta.entryPrice), symbol);
         /*
