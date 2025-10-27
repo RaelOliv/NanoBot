@@ -4702,7 +4702,7 @@ async function iniciarWebSocketContinuo() {
 
 
         (
-          parseFloat(sRsiLast30m.k) >= parseFloat(25.0) &&
+          parseFloat(sRsiLast30m.k) >= parseFloat(20.0) &&
           parseFloat(sRsiLast30m.k) <= parseFloat(60.0)
           //parseFloat(sRsiLast30m_2.k) <= parseFloat(25.0)
         ) &&
