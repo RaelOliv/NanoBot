@@ -4714,9 +4714,10 @@ async function iniciarWebSocketContinuo() {
         parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3)) &&
 
 //////
-parseFloat(maiorM3m20p) >= parseFloat(menorMedia3m) &&
-parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p) &&
-parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
+//parseFloat(maiorM3m20p) >= parseFloat(menorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p) 
+//&&
+//parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
 
       ) {
 
@@ -4854,9 +4855,10 @@ parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].clo
         //- (parseFloat(tickSize) * 3))
 ///////////////////////////_______
 
-parseFloat(menorM3m20p) <= parseFloat(maiorMedia3m) &&
-parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p) &&
-parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
+//parseFloat(menorM3m20p) <= parseFloat(maiorMedia3m) &&
+parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p) 
+//&&
+//parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
 
       ) {
 
