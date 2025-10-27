@@ -4852,7 +4852,7 @@ parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].clo
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(candles30m.slice(-2)[0].open) >= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].high) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3)) &&
-        parseFloat(candles1m.slice(-2)[0].high) >= (parseFloat(menorM3m20p) && 
+        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && 
         //- (parseFloat(tickSize) * 3))
 ///////////////////////////_______
 
