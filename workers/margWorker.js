@@ -1698,7 +1698,7 @@ async function monitorarMargem() {
 
   // ---- GATILHOS DE STOP ----
   if (
-    /*percReal <= -15.0 ||*/ percReal >= 1.0 
+    perc <= -30.0 || percReal >= 1.0 
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||
@@ -1789,18 +1789,21 @@ async function monitorarMargem() {
       await salvarCache(balance, 'Balance');
 
     } 
-    /*
-    else if (percReal < -15.0) {
+    
+    else if (percReal < -30.0) {
 
-      //let res = await fecharTodasPosicoes();
-      //if (res == true) {
+      let res = await fecharTodasPosicoes();
+      if (res == true) {
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
+        
 
-      //}
+      balance = await getBalance();
+      }
       await salvarCache(balance, 'Balance');
+      await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
-*/
+
     // salvar saldo/histórico de margem
 
     await salvarCache(balanceHist, 'BalanceHist');
