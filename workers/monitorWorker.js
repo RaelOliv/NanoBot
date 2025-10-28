@@ -4701,13 +4701,14 @@ async function iniciarWebSocketContinuo() {
         */
         
 //////////////////////
-
+/*
 
 (
   parseFloat(sRsiLast1h_2.k) <= parseFloat(20.0) &&
   parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
   parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h.d) 
   ) &&
+*/
 
         (
           
@@ -4848,12 +4849,13 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         ) &&
 */
 ////////////////////////////////////////
-
+/*
 (
   parseFloat(sRsiLast1h_2.k) >= parseFloat(80.0) &&
   parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
   parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h.d) 
   ) &&
+  */
         (
           parseFloat(sRsiLast30m.k) <= parseFloat(80.0) &&
           parseFloat(sRsiLast30m.k) >= parseFloat(40.0)
