@@ -864,7 +864,7 @@ const cryptSymbols = {
         dot: 'DOTUSDT',
         ena: 'ENAUSDT',
         eth: 'ETHUSDT',
-        gala: 'GALAUSDT',
+        //gala: 'GALAUSDT',
         idol: 'IDOLUSDT',
         jto: 'JTOUSDT',
         jup: 'JUPUSDT',

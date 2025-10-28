@@ -1393,7 +1393,7 @@ async function carregarCandlesHistoricos() {
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles15m: ${JSON.stringify(err.message)}`);
     }
-  /*
+  
     try {
       const response = await apiAxios.get('/fapi/v1/klines', {
         params: {
@@ -1429,11 +1429,11 @@ async function carregarCandlesHistoricos() {
           if (s100 && s110 && e100 && e110) {
             medias1h = [s100, s110, e100, e110];
           }
-      *
+      */
     } catch (err) {
       parentPort.postMessage(`❌ Erro ao carregar histórico de candles1h: ${JSON.stringify(err.message)}`);
     }
-  */
+  
       try {
         const response = await apiAxios.get('/fapi/v1/klines', {
           params: {
@@ -2923,7 +2923,7 @@ function iniciarWebSocketMarkPrice() {
 
         ) {
 
-          if (contPos < 2) {
+          if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,
@@ -3005,8 +3005,8 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorM3m20p), symbol);
         }
 
-                stopAtivo = await criarStopLoss(novoStop);
-                //takeAtivo = await criarTakeProfit(novoTake);
+                //stopAtivo = await criarStopLoss(novoStop);
+                takeAtivo = await criarTakeProfit(novoTake);
 
 
               }
@@ -3042,14 +3042,14 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         }
               if (stopAtivo !== undefined && stopAtivo !== null) {
                 if (stopAtivo.price == null) {
-                  stopAtivo = await criarStopLoss(novoStop);
+                  //stopAtivo = await criarStopLoss(novoStop);
                 }
 
               }
 
               if (stopAtivo === null || stopAtivo === undefined) {
 
-                stopAtivo = await criarStopLoss(novoStop);
+                //stopAtivo = await criarStopLoss(novoStop);
 
               }
 
@@ -3062,7 +3062,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
                     console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-                    await atualizarStop(sideOrd, novoStop);
+                    //await atualizarStop(sideOrd, novoStop);
                     if (stopAtivo.price !== null) {
                       //await abrirPosicao(sideOrd, (quantity / 4));
                     }
@@ -3073,7 +3073,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
               if (takeAtivo !== undefined && takeAtivo !== null) {
                 if (takeAtivo.price == null) {
 
-                  //takeAtivo = await criarTakeProfit(novoTake);
+                  takeAtivo = await criarTakeProfit(novoTake);
 
                 }
 
@@ -3081,7 +3081,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
               if (takeAtivo === null || takeAtivo === undefined) {
 
                 
-                //takeAtivo = await criarTakeProfit(novoTake);
+                takeAtivo = await criarTakeProfit(novoTake);
 
               }
               else if (takeAtivo !== null && takeAtivo !== undefined) {
@@ -3089,7 +3089,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
                   //await cancelarTodasOrdens();
 
                   console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
-                  //await atualizarTake(novoTake);
+                  await atualizarTake(novoTake);
                   //takeAtivo = await criarTakeProfit(novoTakeLt);  
                 }
               }
@@ -3367,7 +3367,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         */
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
-          stopAtivo = await criarStopLoss(novoStop);
+          //stopAtivo = await criarStopLoss(novoStop);
 
         }
 
@@ -3380,7 +3380,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         //let novoStop = novoStoplt;
         //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-        stopAtivo = await criarStopLoss(novoStop);
+        //stopAtivo = await criarStopLoss(novoStop);
 
         //}
 
@@ -3395,7 +3395,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
             console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-            await atualizarStop(sideOrd, novoStop);
+            //await atualizarStop(sideOrd, novoStop);
             if (stopAtivo.price !== null) {
               //await abrirPosicao(sideOrd, (quantity / 4));
             }
@@ -3415,15 +3415,15 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           
       if (takeAtivo !== undefined && takeAtivo !== null) {
         if (takeAtivo.price == null) {
-          //takeAtivo = await criarTakeProfit(novoTake);
+          takeAtivo = await criarTakeProfit(novoTake);
 
         }
 
       }
       if (takeAtivo === null || takeAtivo === undefined) {
 
-        //takeAtivo = await criarTakeProfit(novoTake);
-        //takeAtivo = await criarTakeProfit(novoTake);
+
+        takeAtivo = await criarTakeProfit(novoTake);
 
       }
       else if (takeAtivo !== null && takeAtivo !== undefined) {
@@ -3431,7 +3431,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           //await cancelarTodasOrdens();
 
           console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
-          //await atualizarTake(novoTake);
+          await atualizarTake(novoTake);
           //takeAtivo = await criarTakeProfit(novoTake);  
         }
       }
@@ -4502,7 +4502,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-/*
+
       stochRsi1h = StochasticRSI.calculate({
         values: candles1h.map(c => c.close),
         rsiPeriod: 14,
@@ -4510,7 +4510,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-
+/*
       stochRsi4h = StochasticRSI.calculate({
         values: candles4h.map(c => c.close),
         rsiPeriod: 14,
@@ -4551,6 +4551,15 @@ async function iniciarWebSocketContinuo() {
         sRsiLast30m_2 = stochRsi30m.slice(-2)[0];
       }
 
+
+      let sRsiLast1h = null;
+      let sRsiLast1h_2 = null;
+
+      if (stochRsi1h !== null) {
+        sRsiLast1h = stochRsi1h.slice(-1)[0];
+        sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
+      }
+
       /*
           let sRsiLast15m = null;
           let sRsiLast15m_2 = null;
@@ -4562,14 +4571,7 @@ async function iniciarWebSocketContinuo() {
       *
 
 
-      let sRsiLast1h = null;
-      let sRsiLast1h_2 = null;
-
-      if (stochRsi1h !== null) {
-        sRsiLast1h = stochRsi1h.slice(-1)[0];
-        sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
-      }
-
+      
       let sRsiLast4h = null;
       let sRsiLast4h_2 = null;
 
@@ -4701,7 +4703,14 @@ async function iniciarWebSocketContinuo() {
 //////////////////////
 
 
+(
+  parseFloat(sRsiLast1h_2.k) <= parseFloat(20.0) &&
+  parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
+  parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h.d) &&
+  ) &&
+
         (
+          
           parseFloat(sRsiLast30m.k) >= parseFloat(20.0) &&
           parseFloat(sRsiLast30m.k) <= parseFloat(60.0)
           //parseFloat(sRsiLast30m_2.k) <= parseFloat(25.0)
@@ -4840,6 +4849,11 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 */
 ////////////////////////////////////////
 
+(
+  parseFloat(sRsiLast1h_2.k) >= parseFloat(80.0) &&
+  parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
+  parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h.d) &&
+  ) &&
         (
           parseFloat(sRsiLast30m.k) <= parseFloat(80.0) &&
           parseFloat(sRsiLast30m.k) >= parseFloat(40.0)
@@ -5744,7 +5758,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           //let novoStop = novoStoplt;
           //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-          stopAtivo = await criarStopLoss(novoStop);
+          ////stopAtivo = await criarStopLoss(novoStop);
 
           //}
 
@@ -5758,7 +5772,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
               console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-              await atualizarStop(sideOrd, novoStop);
+              //await atualizarStop(sideOrd, novoStop);
               if (stopAtivo.price !== null) {
                 //await abrirPosicao(sideOrd, (quantity / 4));
               }
@@ -5768,7 +5782,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
         if (takeAtivo !== undefined) {
           if (takeAtivo.price == null) {
-            //takeAtivo = await criarTakeProfit(novoTake);
+            takeAtivo = await criarTakeProfit(novoTake);
 
           }
 
@@ -5776,7 +5790,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         if (takeAtivo === null || takeAtivo === undefined) {
 
           //takeAtivo = await criarTakeProfit(novoTake);
-          //takeAtivo = await criarTakeProfit(novoTake);
+          takeAtivo = await criarTakeProfit(novoTake);
 
         }
         else if (takeAtivo !== null && takeAtivo !== undefined) {
@@ -5784,7 +5798,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
             //await cancelarTodasOrdens();
 
             console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
-            //await atualizarTake(novoTake);
+            await atualizarTake(novoTake);
             //takeAtivo = await criarTakeProfit(novoTake);  
           }
         }
@@ -6058,7 +6072,7 @@ async function startWorker() {
     iniciarWebSocketcandles5m();
     iniciarWebSocketcandles15m();
     iniciarWebSocketcandles30m();
-    //iniciarWebSocketcandles1h();
+    iniciarWebSocketcandles1h();
     //iniciarWebSocketcandles4h();
     //   await monitorarGatilho();
     iniciarWebSocketMarkPrice();
