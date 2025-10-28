@@ -10,7 +10,7 @@ const API_SECRET = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
 
 let timestamp = null;
-
+/*
 const cryptSymbols = {
     //aion: 'AIONUSDT',
     //algo: 'ALGOUSDT',
@@ -63,7 +63,7 @@ const cryptSymbols = {
     okb: 'OKBUSDT',
     omg: 'OMGUSDT',
     ont: 'ONTUSDT',
-    */
+    *
     cvx: 'CVXUSDT',
     dexe: 'DEXEUSDT',
     doge: 'DOGEUSDT',
@@ -109,6 +109,75 @@ const cryptSymbols = {
        //nxpc: 'NXPCUSDT'
 
 };
+*/
+const cryptSymbols = {
+    aave: 'AAVEUSDT',
+    ach: 'ACHUSDT',
+    ada: 'ADAUSDT',
+    adx: 'ADXUSDT',
+    aergo: 'AERGOUSDT',
+    ain: 'AINUSDT',
+    algorand: 'ALGOUSDT',
+    aleph: 'AZEROUSDT',
+    apt: 'APTUSDT',
+    arb: 'ARBUSDT',
+    aster: 'ASTERUSDT',
+    bas: 'BASUSDT',
+    bat: 'BATUSDT',
+    bnb: 'BNBUSDT',
+    bonk: '1000BONKUSDT',
+    coti: 'COTIUSDT',
+    cvx: 'CVXUSDT',
+    dexe: 'DEXEUSDT',
+    doge: 'DOGEUSDT',
+    dot: 'DOTUSDT',
+    ena: 'ENAUSDT',
+    eth: 'ETHUSDT',
+    fantom: 'FTMUSDT',
+    fet: 'FETUSDT',
+    hbar: 'HBARUSDT',
+    idol: 'IDOLUSDT',
+    jto: 'JTOUSDT',
+    jup: 'JUPUSDT',
+    kaito: 'KAITOUSDT',
+    layer: 'LAYERUSDT',
+    ldo: 'LDOUSDT',
+    lilpepe: 'LILPEPEUSDT',
+    link: 'LINKUSDT',
+    m: 'MUSDT',
+    matic: 'MATICUSDT',
+    nmr: 'NMRUSDT',
+    nxpc: 'NXPCUSDT',
+    ocean: 'OCEANUSDT',
+    ondo: 'ONDOUSDT',
+    op: 'OPUSDT',
+    paxg: 'PAXGUSDT',
+    pepe: '1000PEPEUSDT',
+    pump: 'PUMPUSDT',
+    pyth: 'PYTHUSDT',
+    render: 'RNDRUSDT',
+    rexas: 'RXSUSDT',
+    sand: 'SANDUSDT',
+    sei: 'SEIUSDT',
+    shib: '1000SHIBUSDT',
+    sol: 'SOLUSDT',
+    stellar: 'XLMUSDT',
+    sui: 'SUIUSDT',
+    syrup: 'SYRUPUSDT',
+    ta: 'TAUSDT',
+    tia: 'TIAUSDT',
+    ton: 'TONUSDT',
+    trx: 'TRXUSDT',
+    uni: 'UNIUSDT',
+    vet: 'VETUSDT',
+    virtual: 'VIRTUALUSDT',
+    w: 'WUSDT',
+    wld: 'WLDUSDT',
+    wlfi: 'WLFIUSDT',
+    xpl: 'XPLUSDT',
+    xrp: 'XRPUSDT'
+};
+
 
 
 const SYMBOLS = Object.values(cryptSymbols);
@@ -390,7 +459,7 @@ async function main() {
     const precisaoSimbolos = await obterPrecisaoSimbolos();
 
     for (const symbol of SYMBOLS) {
-        //await configRisk(symbol);
+        await configRisk(symbol);
     }
     
     for (const symbol of SYMBOLS) {
