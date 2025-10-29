@@ -2923,7 +2923,7 @@ function iniciarWebSocketMarkPrice() {
 
         ) {
 
-          if (contPos < 2) {
+          if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,
@@ -4723,10 +4723,10 @@ let sRsiLast15m = null;
           parseFloat(sRsiLast15m.k) <= parseFloat(60.0)
           //parseFloat(sRsiLast15m_2.k) <= parseFloat(25.0)
         ) &&
-        parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) &&
-        parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(candles15m.slice(-2)[0].open) <= parseFloat(candles15m.slice(-2)[0].close) &&
+        parseFloat(candles30m.slice(-2)[0].open) <= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
         parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3)) &&
 
@@ -4864,15 +4864,15 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
   ) &&
   */
         (
-          parseFloat(sRsiLast15m.k) <= parseFloat(80.0) &&
-          parseFloat(sRsiLast15m.k) >= parseFloat(40.0)
-          //parseFloat(sRsiLast15m_2.k) >= parseFloat(75.0)
+          parseFloat(sRsiLast30m.k) <= parseFloat(80.0) &&
+          parseFloat(sRsiLast30m.k) >= parseFloat(40.0)
+          //parseFloat(sRsiLast30m_2.k) >= parseFloat(75.0)
         ) &&
 
-        parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) &&
-        parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
+        parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
+        parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
-        parseFloat(candles15m.slice(-2)[0].open) >= parseFloat(candles15m.slice(-2)[0].close) &&
+        parseFloat(candles30m.slice(-2)[0].open) >= parseFloat(candles30m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].high) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3)) &&
         parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && 
         //- (parseFloat(tickSize) * 3))
@@ -4901,7 +4901,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       parentPort.postMessage(`<___-----[${symbol}]-- --(${preco_atual})-----___>`);
 
       //console.log('zigZag4h', JSON.stringify(zigZag4h));
-      parentPort.postMessage(`Candle: ${JSON.stringify(candles15m.slice(-2)[0], null, 2)}`);
+      parentPort.postMessage(`Candle: ${JSON.stringify(candles30m.slice(-2)[0], null, 2)}`);
       //parentPort.postMessage(`zigZag1h: ${JSON.stringify(zigZag1h.pontosUnificados, null, 2)}`);
       //parentPort.postMessage(`fibo1h: ${JSON.stringify(fibo1h, null, 2)}`);
 
