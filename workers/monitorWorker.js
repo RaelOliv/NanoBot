@@ -5119,7 +5119,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           //cacheRisk[symbol].posicionando = false;
           //setLock(symbol, false); // Unlock
           console.log(`🔓 Lock removido em ${symbol} ROI=${pnlRoiAtual.roi}%`);
-          await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+          //await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
         }
 
         await salvarCache(cacheRisk, 'Risk');
