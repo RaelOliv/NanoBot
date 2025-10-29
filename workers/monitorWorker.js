@@ -4546,8 +4546,8 @@ let sRsiLast15m = null;
       let sRsiLast15m_2 = null;
 
       if (stochRsi15m !== null) {
-        sRsiLast5m = stochRsi15m.slice(-1)[0];
-        sRsiLast5m_2 = stochRsi15m.slice(-2)[0];
+        sRsiLast15m = stochRsi15m.slice(-1)[0];
+        sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
       }
 
       let sRsiLast30m = null;
