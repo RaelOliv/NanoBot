@@ -1698,7 +1698,7 @@ async function monitorarMargem() {
 
   // ---- GATILHOS DE STOP ----
   if (
-    perc <= -60.0 || percReal >= 1.0 
+    perc <= -50.0 || percReal >= 1.0 
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||
@@ -1790,7 +1790,7 @@ async function monitorarMargem() {
 
     } 
     
-    else if (percReal < -60.0) {
+    else if (percReal < -50.0) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
