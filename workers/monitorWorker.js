@@ -4727,6 +4727,8 @@ let sRsiLast15m = null;
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
+        parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) &&
         parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorMedia3m) 
         /*
@@ -4875,6 +4877,8 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
+        parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) &&
         parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorMedia3m) 
         /*
