@@ -10,7 +10,7 @@ const { exec } = require('child_process');
 const { parentPort, workerData } = require('worker_threads');
 
 import { acquireLock } from 'lockManager.js'; // caminho ajustado conforme a estrutura
-import path from 'path';
+//import path from 'path';
 
 require('dotenv').config();
 const EMA = require('technicalindicators').EMA;
