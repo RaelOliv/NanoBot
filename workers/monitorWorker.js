@@ -4729,7 +4729,7 @@ let sRsiLast15m = null;
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) &&
-        parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-2)[0].close) &&
+        //parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorMedia3m) 
         /*
         parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
@@ -4879,7 +4879,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) &&
-        parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-2)[0].close) &&
+        //parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-2)[0].close) &&
         parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorMedia3m) 
         /*
         parseFloat(candles1m.slice(-2)[0].high) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3)) &&
