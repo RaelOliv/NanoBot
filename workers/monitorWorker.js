@@ -3010,7 +3010,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
               }
-
+exec("pm2 restart nanobot");
             }
 
           } else {
