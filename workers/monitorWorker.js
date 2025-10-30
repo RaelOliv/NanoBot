@@ -8,6 +8,10 @@ const crypto = require('crypto');
 const notifier = require('node-notifier');
 const { exec } = require('child_process');
 const { parentPort, workerData } = require('worker_threads');
+
+import { acquireLock } from 'lockManager.js'; // caminho ajustado conforme a estrutura
+import path from 'path';
+
 require('dotenv').config();
 const EMA = require('technicalindicators').EMA;
 const SMA = require('technicalindicators').SMA;
@@ -1774,7 +1778,7 @@ async function cancelarTodasOrdens() {
     return false;
   }
 }
-
+/*
 async function abrirPosicao(side, quantityX) {
   parentPort.postMessage(`✅ Worker - abrirPosicao`);
 
@@ -1814,6 +1818,50 @@ async function abrirPosicao(side, quantityX) {
   } catch (err) {
     parentPort.postMessage(`❌ Erro ao abrir posição: ${JSON.stringify(err.response?.data || err.message)}`);
     return null;
+  }
+}
+*/
+
+async function abrirPosicao(side, quantityX) {
+  parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
+
+  const release = await acquireLock(symbol); // <-- trava única por símbolo
+  parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
+
+  try {
+    const posicaoAberta = await verificarSeTemPosicao(1);
+
+    if (posicaoAberta) {
+      parentPort.postMessage(`⚠️ Já existe uma posição aberta para ${symbol}. Abortando nova abertura.`);
+      return null;
+    }
+
+    const timestamp = Date.now() + offset;
+    const params = {
+      symbol,
+      side,
+      type: 'MARKET',
+      quantity: parseFloat(quantityX.toFixed(precisions.qtyPrecision)),
+      timestamp,
+      recvWindow: 15000,
+    };
+
+    params.signature = gerarAssinatura(params);
+
+    const res = await apiAxios.post('/fapi/v1/order', null, {
+      params,
+      headers: { 'X-MBX-APIKEY': API_KEY },
+    });
+
+    parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
+    return res.data;
+
+  } catch (err) {
+    parentPort.postMessage(`❌ Erro ao abrir posição: ${JSON.stringify(err.response?.data || err.message)}`);
+    return null;
+  } finally {
+    release(); // 🔓 libera o lock
+    parentPort.postMessage(`🔓 Lock liberado para ${symbol}`);
   }
 }
 
