@@ -9,7 +9,7 @@ const notifier = require('node-notifier');
 const { exec } = require('child_process');
 const { parentPort, workerData } = require('worker_threads');
 
-const { acquireLock } = require('./lockManager.js'); // caminho ajustado conforme a estrutura
+let { acquireLock } = require('./lockManager.js'); // caminho ajustado conforme a estrutura
 //import path from 'path';
 
 require('dotenv').config();
