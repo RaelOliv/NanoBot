@@ -2923,7 +2923,7 @@ function iniciarWebSocketMarkPrice() {
         ) {
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
-          if (contPos < 2) {
+          if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,

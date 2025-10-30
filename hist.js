@@ -178,8 +178,6 @@ const cryptSymbols = {
     xrp: 'XRPUSDT'
 };
 
-
-
 const SYMBOLS = Object.values(cryptSymbols);
 //const START_TIME = new Date('2025-05-01T00:00:00Z').getTime();
 const START_TIME = new Date('2025-07-23T00:00:00Z').getTime();
