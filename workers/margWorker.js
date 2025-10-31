@@ -1832,7 +1832,7 @@ async function startWorker() {
   } catch (e) {
     parentPort.postMessage(`❌ Erro fatal no Worker: ${JSON.stringify(e.stack || e.message || e)}
      Reinício em 30s`);
-    setTimeout(startWorker, 3000);
+    setTimeout(startWorker, 1000);
   }
 }
 

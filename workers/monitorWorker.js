@@ -2782,7 +2782,7 @@ function iniciarWebSocketMarkPrice() {
     //let balance = await getBalance();
 let balance = await carregarCache('Balance');
 
-parentPort.postMessage(`🔎 Balance: ${JSON.stringify(balance)}`);
+parentPort.postMessage(`🔎 unRealizedProfit: ${JSON.stringify(balance.unRealizedProfit)}`);
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
@@ -2863,11 +2863,11 @@ parentPort.postMessage(`🔎 Balance: ${JSON.stringify(balance)}`);
     ltaltb1m = calcularLinhasTendencia(candles1m, zigZag1m.topos, zigZag1m.fundos);
 
 
-    if (gatilhoAtivado === true) {
+    if (gatilhoAtivado === true && parseFloat(balance.unRealizedProfit) >= parseFloat(0.00)) {
 
       //posicaoAberta = 0;
       
-      //posicaoAberta = await verificarSeTemPosicao(1);
+      posicaoAberta = await verificarSeTemPosicao(1);
       parentPort.postMessage(`🔎 Posição aberta_preOP: ${JSON.stringify(posicaoAberta)}`);
 
       if (posicaoAberta === 0) {
@@ -2975,7 +2975,9 @@ parentPort.postMessage(`🔎 Balance: ${JSON.stringify(balance)}`);
         ) {
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
-          if (contPos < 1) {
+      
+      if (parseFloat(balance.unRealizedProfit) >= parseFloat(0.00)) {
+          //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
               houveAdicao: 0,
