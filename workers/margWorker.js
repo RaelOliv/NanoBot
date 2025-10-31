@@ -1628,13 +1628,13 @@ async function monitorarMargem() {
 
   if (balance == null || balance == undefined) return;
 
-  oldBalance = await carregarCache('Balance');
+  oldBalance = await carregarCache('oldBalance');
 
   if ((oldBalance && Object.keys(oldBalance).length === 0) || oldBalance === null || oldBalance === undefined) {
     //balance.initResetMarg = balance.walletBalance;
-    await salvarCache(balance, 'Balance');
+    await salvarCache(balance, 'oldBalance');
   }
-
+await salvarCache(balance, 'Balance');
   //if(oldBalance.percent === null){
   //await salvarCache(balance, 'Balance');
   //}
@@ -1669,9 +1669,9 @@ async function monitorarMargem() {
   oldBalance.lastUpdate = formatTime(Date.now());
 
   if (oldBalance.hasOwnProperty("asset") === false) {
-    await salvarCache(balance, 'Balance');
+    await salvarCache(balance, 'oldBalance');
   } else {
-    await salvarCache(oldBalance, 'Balance');
+    await salvarCache(oldBalance, 'oldBalance');
   }
 
   if (balanceHist == {} || balanceHist == null || balanceHist[0] == undefined) {
@@ -1786,7 +1786,7 @@ async function monitorarMargem() {
         balanceHist.push(oldBalance);
 
       //}
-      await salvarCache(balance, 'Balance');
+      await salvarCache(balance, 'oldBalance');
 
     } 
     
@@ -1800,7 +1800,7 @@ async function monitorarMargem() {
 
       balance = await getBalance();
       }
-      await salvarCache(balance, 'Balance');
+      await salvarCache(balance, 'oldBalance');
       await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
 
@@ -1832,7 +1832,7 @@ async function startWorker() {
   } catch (e) {
     parentPort.postMessage(`❌ Erro fatal no Worker: ${JSON.stringify(e.stack || e.message || e)}
      Reinício em 30s`);
-    setTimeout(startWorker, 30000);
+    setTimeout(startWorker, 3000);
   }
 }
 

@@ -2779,9 +2779,10 @@ function iniciarWebSocketMarkPrice() {
 
     parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
     
-    let balance = await getBalance();
+    //let balance = await getBalance();
+let balance = await carregarCache('Balance');
 
-parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(balance)}`);
+parentPort.postMessage(`🔎 Balance: ${JSON.stringify(balance)}`);
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
