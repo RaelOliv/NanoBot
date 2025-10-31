@@ -580,7 +580,7 @@ function adjustPrice(price, tickSize) {
 }
 
 async function getBalance() {
-
+  
   parentPort.postMessage('');
   parentPort.postMessage('[ getQntbyBalance_Start ]');
 
@@ -2866,7 +2866,7 @@ parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(balance)}`);
 
       //posicaoAberta = 0;
       
-      posicaoAberta = await verificarSeTemPosicao(1);
+      //posicaoAberta = await verificarSeTemPosicao(1);
       parentPort.postMessage(`🔎 Posição aberta_preOP: ${JSON.stringify(posicaoAberta)}`);
 
       if (posicaoAberta === 0) {
