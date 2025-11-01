@@ -2744,6 +2744,11 @@ function percentage(iniValue, finValue) {
   return (((finValue - iniValue) / iniValue) * 100);
 }
 
+function toFixedNumber(value, decimals = 2) {
+  if (value === null || value === undefined || isNaN(value)) return 0.0;
+  return parseFloat(parseFloat(value).toFixed(decimals));
+}
+
 function iniciarWebSocketMarkPrice() {
 
   //if (monitoramentoAtivado == false) return;
