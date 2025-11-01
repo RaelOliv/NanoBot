@@ -2781,8 +2781,16 @@ function iniciarWebSocketMarkPrice() {
     
     //let balance = await getBalance();
 let balance = await carregarCache('Balance');
+let oldBalance = await carregarCache('oldBalance');
+
+let perc = percentage(
+    toFixedNumber(oldBalance.marginBalance),
+    toFixedNumber(balance.marginBalance)
+  );
 
 parentPort.postMessage(`🔎 unRealizedProfit: ${JSON.stringify(balance.unrealizedProfit)}`);
+
+parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
