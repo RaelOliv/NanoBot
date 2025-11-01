@@ -4790,8 +4790,9 @@ let sRsiLast15m = null;
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) &&
         parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-3)[0].close) &&
-        parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-2)[0].close) &&
-        parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorMedia3m) 
+        parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-2)[0].close) 
+        //&&
+        //parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorMedia3m) 
         /*
         parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
         parseFloat(candles1m.slice(-2)[0].low) >= (parseFloat(menorM3m20p) - (parseFloat(tickSize) * 3)) &&
@@ -4930,12 +4931,14 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
   ) &&
   */
         (
+          
         parseFloat(sRsiLast15m.k) >= parseFloat(50.0) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(20.0) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(40.0) &&
           parseFloat(sRsiLast3m.k) <= parseFloat(80.0) &&
           parseFloat(sRsiLast3m.k) >= parseFloat(40.0)
           //parseFloat(sRsiLast30m_2.k) >= parseFloat(75.0)
+          
         ) &&
 
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
@@ -4945,8 +4948,10 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) &&
         parseFloat(candles3m.slice(-2)[0].open) <= parseFloat(candles3m.slice(-3)[0].close) &&
-        parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-2)[0].close) &&
-        parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorMedia3m) 
+        parseFloat(candles3m.slice(-2)[0].open) >= parseFloat(candles3m.slice(-2)[0].close) 
+        //&&
+        //parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorMedia3m) 
+        
         /*
         parseFloat(candles1m.slice(-2)[0].high) <= (parseFloat(maiorM3m20p) + (parseFloat(tickSize) * 3)) &&
         parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && 
