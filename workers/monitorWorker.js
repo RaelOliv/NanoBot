@@ -4771,7 +4771,8 @@ let sRsiLast15m = null;
   ) &&
 */
 
-        //(parseFloat(sRsiLast15m.k) <= parseFloat(80.0) 
+        (
+        //parseFloat(sRsiLast15m.k) <= parseFloat(80.0) 
           //&&
           parseFloat(sRsiLast5m.k) <= parseFloat(40.0) 
           &&
@@ -4926,7 +4927,8 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
   parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h.d) 
   ) &&
   */
-        //(parseFloat(sRsiLast15m.k) >= parseFloat(20.0) &&
+        (
+        //parseFloat(sRsiLast15m.k) >= parseFloat(20.0) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(60.0) &&
           parseFloat(sRsiLast3m.k) <= parseFloat(80.0) &&
           parseFloat(sRsiLast3m.k) >= parseFloat(40.0)
