@@ -2976,7 +2976,11 @@ parentPort.postMessage(`🔎 unRealizedProfit: ${JSON.stringify(balance.unrealiz
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if (contPos < 3 && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)) {
+      if (contPos < 3 
+      /*
+      && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
+      */
+      ) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
