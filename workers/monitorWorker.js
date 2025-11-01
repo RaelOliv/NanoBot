@@ -2739,6 +2739,11 @@ function iniciarWebSocketcandles4h() {
   });
 }
 
+function percentage(iniValue, finValue) {
+  //return (100 * partialValue) / totalValue;
+  return (((finValue - iniValue) / iniValue) * 100);
+}
+
 function iniciarWebSocketMarkPrice() {
 
   //if (monitoramentoAtivado == false) return;
