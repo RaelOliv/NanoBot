@@ -4773,7 +4773,7 @@ let sRsiLast15m = null;
 
         (parseFloat(sRsiLast15m.k) <= parseFloat(80.0) 
           &&
-          parseFloat(sRsiLast5m.k) >= parseFloat(80.0) 
+          parseFloat(sRsiLast5m.k) <= parseFloat(80.0) 
           &&
           parseFloat(sRsiLast3m.k) >= parseFloat(20.0) 
           &&
