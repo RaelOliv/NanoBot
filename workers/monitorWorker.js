@@ -2916,8 +2916,8 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
-            parseFloat(preco_atual) > parseFloat(maiorMReg3m)
-            //parseFloat(preco_atual) >= parseFloat(candles1m.slice(-2)[0].high)
+            parseFloat(preco_atual) > parseFloat(maiorMReg3m) &&
+            parseFloat(preco_atual) >= parseFloat(candles1m.slice(-2)[0].high)
  ////////////////////
  /*
             parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
@@ -2962,8 +2962,8 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(preco_atual) <= parseFloat(menorMReg3m)
-            //parseFloat(preco_atual) <= parseFloat(candles1m.slice(-2)[0].low)
+            parseFloat(preco_atual) <= parseFloat(menorMReg3m) &&
+            parseFloat(preco_atual) <= parseFloat(candles1m.slice(-2)[0].low)
 /////////////////////////
 /*
             parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && //- (parseFloat(tickSize) * 3))
@@ -3094,7 +3094,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         }
 
                 stopAtivo = await criarStopLoss(novoStop);
-                //takeAtivo = await criarTakeProfit(novoTake);
+                takeAtivo = await criarTakeProfit(novoTake);
 
 
               }
@@ -3178,7 +3178,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
                   console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
                   await atualizarTake(novoTake);
-                  //takeAtivo = await criarTakeProfit(novoTakeLt);  
+                  takeAtivo = await criarTakeProfit(novoTakeLt);  
                 }
               }
 
@@ -3530,7 +3530,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           
       if (takeAtivo !== undefined && takeAtivo !== null) {
         if (takeAtivo.price == null) {
-          //takeAtivo = await criarTakeProfit(novoTake);
+          takeAtivo = await criarTakeProfit(novoTake);
 
         }
 
@@ -3538,7 +3538,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       if (takeAtivo === null || takeAtivo === undefined) {
 
 
-        //takeAtivo = await criarTakeProfit(novoTake);
+        takeAtivo = await criarTakeProfit(novoTake);
 
       }
       else if (takeAtivo !== null && takeAtivo !== undefined) {
@@ -3546,7 +3546,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           //await cancelarTodasOrdens();
 
           console.log(`Take alterado: ${takeAtivo.price} / ${novoTake}`);
-          //await atualizarTake(novoTake);
+          await atualizarTake(novoTake);
   
         }
       }
@@ -4875,9 +4875,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 */
 
 //parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
-          parseFloat(menorM3m20p) <= parseFloat(maiorMedia3m) &&
-          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorMReg3m) //&&
-          //parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorM3m20p) 
+          parseFloat(maiorM3m20p) >= parseFloat(maiorMedia3m) &&
+          parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) &&
+          parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p) 
       ) {
 
         sideM = 'C';
@@ -5042,10 +5042,10 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 */
 
 //parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
-          parseFloat(maiorM3m20p) >= parseFloat(menorMedia3m) &&
-          //parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorM3m20p) &&
-          parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorMReg3m) 
-      
+          parseFloat(menorM3m20p) <= parseFloat(menorMedia3m) &&
+          
+          parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) &&
+      parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorM3m20p) 
       ) {
 
         sideM = 'V';
