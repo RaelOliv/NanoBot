@@ -104,6 +104,8 @@ let maiorM3m20p = undefined;
 let menorM3m20p = undefined;
 let maiorMReg3m = undefined;
 let menorMReg3m = undefined;
+let maiorMRegIn3m = undefined;
+let menorMRegIn3m = undefined;
 let maiorMedia5m = undefined;
 let menorMedia5m = undefined;
 let maiorMedia15m = undefined;
@@ -2783,6 +2785,9 @@ function iniciarWebSocketMarkPrice() {
 maiorMReg3m = Math.max(maiorMedia3m, maiorM3m20p);
       menorMReg3m = Math.min(menorMedia3m, menorM3m20p);
 
+      maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
+      menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
+
     //nLocks = countLocks();
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
@@ -3081,14 +3086,14 @@ contPos = await verificarSeTemPosicao(2);
   
         if (sideOrd == 'BUY') {
           //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorMRegIn3m), symbol);
 
         } else if (sideOrd == 'SELL') {
           //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorMRegIn3m), symbol);
         }
 
-                //stopAtivo = await criarStopLoss(novoStop);
+                stopAtivo = await criarStopLoss(novoStop);
                 //takeAtivo = await criarTakeProfit(novoTake);
 
 
@@ -3117,22 +3122,22 @@ exec("pm2 restart nanobot");
               novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
 if (sideOrd == 'BUY') {
           //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorMRegIn3m), symbol);
 
         } else if (sideOrd == 'SELL') {
           //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorMRegIn3m), symbol);
         }
               if (stopAtivo !== undefined && stopAtivo !== null) {
                 if (stopAtivo.price == null) {
-                  //stopAtivo = await criarStopLoss(novoStop);
+                  stopAtivo = await criarStopLoss(novoStop);
                 }
 
               }
 
               if (stopAtivo === null || stopAtivo === undefined) {
 
-                //stopAtivo = await criarStopLoss(novoStop);
+                stopAtivo = await criarStopLoss(novoStop);
 
               }
 
@@ -3145,7 +3150,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
                     console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-                    //await atualizarStop(sideOrd, novoStop);
+                    await atualizarStop(sideOrd, novoStop);
                     if (stopAtivo.price !== null) {
                       //await abrirPosicao(sideOrd, (quantity / 4));
                     }
@@ -3458,11 +3463,11 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       
       if (sideOrd == 'BUY') {
           //novoStop = candles15m.slice(-2)[0].low - (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorMRegIn3m), symbol);
 
         } else if (sideOrd == 'SELL') {
           //novoStop = candles15m.slice(-2)[0].high + (parseFloat(tickSize) * 1);
-novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(maiorM3m20p), symbol);
+novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(menorMRegIn3m), symbol);
         }
       
       novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
@@ -3477,7 +3482,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         */
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
-          //stopAtivo = await criarStopLoss(novoStop);
+          stopAtivo = await criarStopLoss(novoStop);
 
         }
 
@@ -3490,7 +3495,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         //let novoStop = novoStoplt;
         //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-        //stopAtivo = await criarStopLoss(novoStop);
+        stopAtivo = await criarStopLoss(novoStop);
 
         //}
 
@@ -3505,7 +3510,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
             console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-            //await atualizarStop(sideOrd, novoStop);
+            await atualizarStop(sideOrd, novoStop);
             if (stopAtivo.price !== null) {
               //await abrirPosicao(sideOrd, (quantity / 4));
             }
@@ -4524,6 +4529,8 @@ async function iniciarWebSocketContinuo() {
       maiorMReg3m = Math.max(maiorMedia3m, maiorM3m20p);
       menorMReg3m = Math.min(menorMedia3m, menorM3m20p);
       
+      maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
+      menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
       //maiorMedia5m = Math.max(...medias5m);
       //menorMedia5m = Math.min(...medias5m);
       //maiorMedia15m = Math.max(...medias15m);
@@ -4867,10 +4874,10 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 //parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
 */
 
-parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
-          parseFloat(menorMedia3m) >= parseFloat(maiorM3m20p) &&
-          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorMedia3m) &&
-          parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorM3m20p) 
+//parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
+          parseFloat(menorM3m20p) <= parseFloat(maiorMedia3m) &&
+          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorMReg3m) &&
+          //parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorM3m20p) 
       ) {
 
         sideM = 'C';
@@ -5034,10 +5041,10 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 //parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
 */
 
-parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
-          parseFloat(maiorMedia3m) <= parseFloat(menorM3m20p) &&
-          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorM3m20p) &&
-          parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorMedia3m) 
+//parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
+          parseFloat(maiorM3m20p) >= parseFloat(menorMedia3m) &&
+          //parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorM3m20p) &&
+          parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorMReg3m) 
       
       ) {
 
