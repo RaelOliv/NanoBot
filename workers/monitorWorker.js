@@ -3525,7 +3525,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           
       if (takeAtivo !== undefined && takeAtivo !== null) {
         if (takeAtivo.price == null) {
-          takeAtivo = await //criarTakeProfit(novoTake);
+          //takeAtivo = await criarTakeProfit(novoTake);
 
         }
 
