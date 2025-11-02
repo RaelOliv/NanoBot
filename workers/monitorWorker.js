@@ -4876,7 +4876,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
 //parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
           parseFloat(menorM3m20p) <= parseFloat(maiorMedia3m) &&
-          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorMReg3m) &&
+          parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(maiorMReg3m) //&&
           //parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(menorM3m20p) 
       ) {
 
