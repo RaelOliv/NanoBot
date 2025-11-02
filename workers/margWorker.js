@@ -1698,7 +1698,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(percReal) >= parseFloat(1.0) ) || parseFloat(percReal) <= parseFloat(-1.0)
+    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(percReal) >= parseFloat(1.0)  || parseFloat(percReal) <= parseFloat(-1.0)
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||
