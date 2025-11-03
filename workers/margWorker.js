@@ -1773,7 +1773,7 @@ await salvarCache(balance, 'Balance');
       let pnlfluxo = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
 
       //let pnlaReter = (pnlfluxo / 3) * 2;
-      let pnlaReter = pnlfluxo + (pnlflux/ 2 );
+      let pnlaReter = pnlfluxo + (pnlfluxo / 2 );
 
       //oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
       //balanceHist.push(oldBalance);
