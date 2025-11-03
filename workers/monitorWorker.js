@@ -3105,7 +3105,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
         }
 
-                // stopAtivo = await criarStopLoss(novoStop);
+                 stopAtivo = await criarStopLoss(novoStop);
                 takeAtivo = await criarTakeProfit(novoTake);
 
 
@@ -3142,14 +3142,14 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         }
               if (stopAtivo !== undefined && stopAtivo !== null) {
                 if (stopAtivo.price == null) {
-                  //stopAtivo = await criarStopLoss(novoStop);
+                  stopAtivo = await criarStopLoss(novoStop);
                 }
 
               }
 
               if (stopAtivo === null || stopAtivo === undefined) {
 
-                //stopAtivo = await criarStopLoss(novoStop);
+                stopAtivo = await criarStopLoss(novoStop);
 
               }
 
@@ -3162,7 +3162,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
                     console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-                    //await atualizarStop(sideOrd, novoStop);
+                    await atualizarStop(sideOrd, novoStop);
                     if (stopAtivo.price !== null) {
                       //await abrirPosicao(sideOrd, (quantity / 4));
                     }
@@ -3496,7 +3496,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         */
       if (stopAtivo !== undefined && stopAtivo !== null) {
         if (stopAtivo.price == null) {
-          //stopAtivo = await criarStopLoss(novoStop);
+          stopAtivo = await criarStopLoss(novoStop);
 
         }
 
@@ -3509,7 +3509,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         //let novoStop = novoStoplt;
         //stopAtivo = await criarStopLoss(sideOrd, novoStop);
 
-        //stopAtivo = await criarStopLoss(novoStop);
+        stopAtivo = await criarStopLoss(novoStop);
 
         //}
 
@@ -3524,7 +3524,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
             console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
-            //await atualizarStop(sideOrd, novoStop);
+            await atualizarStop(sideOrd, novoStop);
             if (stopAtivo.price !== null) {
               //await abrirPosicao(sideOrd, (quantity / 4));
             }
