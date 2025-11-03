@@ -2778,6 +2778,7 @@ function iniciarWebSocketMarkPrice() {
   ws.on('message', async (data) => {
     const json = JSON.parse(data);
     const markPrice = parseFloat(json.p);
+    preco_anterior = preco_atual;
     preco_atual = markPrice;
 
     console.log(`Mark Price de ${symbol}: ${markPrice}  //  Time: ${formatTime(json.E)}`);
@@ -2924,9 +2925,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
+            
             parseFloat(preco_atual) > parseFloat(ema3m5p) 
             &&
-            parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ema3m5p)
+            parseFloat(preco_anterior) <= parseFloat(ema3m5p)
  ////////////////////
  /*
             parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
@@ -2973,7 +2975,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
             sideOrd == 'SELL' &&
             parseFloat(preco_atual) <= parseFloat(ema3m5p) 
             &&
-     parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ema3m5p) 
+     parseFloat(preco_anterior) >= parseFloat(ema3m5p) 
 /////////////////////////
 /*
             parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && //- (parseFloat(tickSize) * 3))
@@ -4525,8 +4527,8 @@ async function iniciarWebSocketContinuo() {
         isFinal: k.x
       };
 
-      preco_atual = candle1m.close;
-      preco_anterior = candles1m.slice(-2)[0].close;
+      //preco_atual = candle1m.close;
+      //preco_anterior = candles1m.slice(-2)[0].close;
       // const json = JSON.parse(data);
       // const markPrice = parseFloat(json.p);
       // preco_atual = markPrice;
@@ -4891,12 +4893,14 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 //&&
 //parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
 */
-parseFloat(sRsiLast1m.k) >= parseFloat(50.0) &&
-parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-          parseFloat(ema3m5p) >= parseFloat(ema3m10p) &&
-           parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m5p) &&
-      parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
-      parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
+//parseFloat(sRsiLast1m.k) >= parseFloat(50.0) &&
+//parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+          parseFloat(ema3m5p) >= parseFloat(ema3m10p) 
+          
+          //&&
+          // parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m5p) &&
+      //parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
+      //parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
       ) {
 
         sideM = 'C';
@@ -5059,12 +5063,13 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 //&&
 //parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
 */
-parseFloat(sRsiLast1m.k) <= parseFloat(50.0) &&
-parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-          parseFloat(ema3m5p) <= parseFloat(ema3m10p) &&
-           parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m5p) &&
-      parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
-      parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+//parseFloat(sRsiLast1m.k) <= parseFloat(50.0) &&
+//parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
+          parseFloat(ema3m5p) <= parseFloat(ema3m10p) 
+          //&&
+           //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m5p) &&
+      //parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
+      //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
       
       ) {
 
