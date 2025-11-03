@@ -4589,7 +4589,7 @@ async function iniciarWebSocketContinuo() {
             //let zigZag4h = calcularZigZag(candles4h); // Defina o threshold adequado
             //let fibo4h = calcularRetracoesFibonacci(zigZag4h.pontosUnificados);
             //let ltaltb4h = calcularLinhasTendencia(candles4h, zigZag4h.topos, zigZag4h.fundos);
-      *
+      */
 
       const stochRsi1m = StochasticRSI.calculate({
         values: candles1m.map(c => c.close),
@@ -4598,7 +4598,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-*/
+
 
       stochRsi3m = StochasticRSI.calculate({
         values: candles3m.map(c => c.close),
@@ -4656,6 +4656,14 @@ async function iniciarWebSocketContinuo() {
       //let sRsiLast1m_2 = stochRsi1m.slice(-2)[0];
       //let sRsiLast3m = stochRsi3m.slice(-1)[0];
       //let sRsiLast3m_2 = stochRsi3m.slice(-2)[0];
+
+let sRsiLast1m = null;
+      let sRsiLast1m_2 = null;
+
+      if (stochRsi1m !== null) {
+        sRsiLast1m = stochRsi1m.slice(-1)[0];
+        sRsiLast1m_2 = stochRsi1m.slice(-2)[0];
+      }
 
       let sRsiLast3m = null;
       let sRsiLast3m_2 = null;
