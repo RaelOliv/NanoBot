@@ -100,6 +100,8 @@ let maiorMedia1m = undefined;
 let menorMedia1m = undefined;
 let maiorMedia3m = undefined;
 let menorMedia3m = undefined;
+let ema3m5p = undefined;
+let ema3m10p = undefined;
 let maiorM3m20p = undefined;
 let menorM3m20p = undefined;
 let maiorMReg3m = undefined;
@@ -1301,6 +1303,9 @@ async function carregarCandlesHistoricos() {
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles3m carregado com sucesso.`);
 
+    ema3m5p = calcularEMA(5, candles3m);
+    ema3m10p = calcularEMA(10, candles3m);
+
     const s20 = calcularSMA(20, candles3m);
     const e20 = calcularEMA(20, candles3m);
 
@@ -2383,6 +2388,9 @@ function iniciarWebSocketcandles3m() {
         medias3m = [s50, s60, e50, e60];  
       }  
       */
+      
+      ema3m5p = calcularEMA(5, candles3m);
+    ema3m10p = calcularEMA(10, candles3m);
 
       const s20 = calcularSMA(20, candles3m);
       const e20 = calcularEMA(20, candles3m);
@@ -2916,9 +2924,9 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
-            parseFloat(preco_atual) > parseFloat(maiorMReg3m) 
-            //&&
-            //parseFloat(preco_atual) >= parseFloat(candles1m.slice(-1)[0].high)
+            parseFloat(preco_atual) > parseFloat(ema3m5p) 
+            &&
+            parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ema3m5p)
  ////////////////////
  /*
             parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
@@ -2963,9 +2971,9 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(preco_atual) <= parseFloat(menorMReg3m) 
-            //&&
-            //parseFloat(preco_atual) <= parseFloat(candles1m.slice(-1)[0].low)
+            parseFloat(preco_atual) <= parseFloat(ema3m5p) 
+            &&
+     parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ema3m5p) 
 /////////////////////////
 /*
             parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && //- (parseFloat(tickSize) * 3))
@@ -3194,27 +3202,27 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       else if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
                 if (gatilhoAtivado == true && posicaoAberta.positionAmt < 0 &&
                 sideOrd == 'BUY' &&
-            parseFloat(preco_atual) > parseFloat(maiorMReg3m)
+            parseFloat(preco_atual) > parseFloat(ema3m5p)
         ) {
-          /*
+          
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
             sideM = 'C';
             sideOrd = 'BUY';
             gatilhoAtivado = true;
-           */
+           
           
 
         } else if (gatilhoAtivado == true && posicaoAberta.positionAmt > 0 &&
                 sideOrd == 'SELL' &&
-            parseFloat(preco_atual) < parseFloat(menorMReg3m)
+            parseFloat(preco_atual) < parseFloat(ema3m5p)
         
         ) {
-          /*
+          
                   await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
                   sideM = 'V';
                   sideOrd = 'SELL';
                   gatilhoAtivado = true;
-          */
+          
 
         }
       }
@@ -4875,11 +4883,12 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 //&&
 //parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
 */
-
-parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) &&
-          parseFloat(maiorM3m20p) >= parseFloat(maiorMedia3m) &&
-          parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) &&
-          parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(maiorM3m20p) 
+parseFloat(sRsiLast1m.k) >= parseFloat(50.0) &&
+parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+          parseFloat(ema3m5p) >= parseFloat(ema3m10p) &&
+           parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m5p) &&
+      parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
+      parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
       ) {
 
         sideM = 'C';
@@ -5042,12 +5051,13 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 //&&
 //parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close) 
 */
-
-parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) &&
-          parseFloat(menorM3m20p) <= parseFloat(menorMedia3m) &&
-          
-           parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) &&
-      parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(maiorM3m20p) 
+parseFloat(sRsiLast1m.k) <= parseFloat(50.0) &&
+parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
+          parseFloat(ema3m5p) <= parseFloat(ema3m10p) &&
+           parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m5p) &&
+      parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
+      parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+      
       ) {
 
         sideM = 'V';
