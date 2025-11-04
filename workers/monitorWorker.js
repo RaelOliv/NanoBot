@@ -3020,7 +3020,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if (contPos < 3
+      if (contPos < 1
       /*
       && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
       */
