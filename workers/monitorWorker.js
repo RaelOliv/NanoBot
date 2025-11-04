@@ -3040,13 +3040,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            /*
+            
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            */
+            
   //////////////////////////////
 
             //await cancelarTodasOrdens();
@@ -3209,13 +3209,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
             parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             parseFloat(preco_anterior) <= parseFloat(ema3m5p)
         ) {
-          
+          /*
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
             sideM = 'C';
             sideOrd = 'BUY';
             gatilhoAtivado = true;
            let returnPos = await abrirPosicao(sideOrd, quantity);
-          
+          */
 
         } else if (gatilhoAtivado == true && posicaoAberta.positionAmt > 0 &&
                 sideOrd == 'SELL' &&
@@ -3223,13 +3223,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
             parseFloat(preco_anterior) >= parseFloat(ema3m5p)
         
         ) {
-          
+          /*
                   await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
                   sideM = 'V';
                   sideOrd = 'SELL';
                   gatilhoAtivado = true;
           let returnPos = await abrirPosicao(sideOrd, quantity);
-
+*/
         }
       }
     }
