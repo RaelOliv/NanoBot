@@ -1656,7 +1656,7 @@ async function criarTakeProfit(takePrice) {
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
     */
-    return null;
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -1719,7 +1719,7 @@ async function criarStopLoss(stopPrice) {
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
     */
-    return null;
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
