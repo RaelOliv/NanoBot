@@ -3541,9 +3541,9 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
             console.log(`Stop alterado: ${stopAtivo.price} / ${novoStop}`);
             await atualizarStop(sideOrd, novoStop);
-            if (stopAtivo.price !== null) {
+            //if (stopAtivo.price !== null) {
               //await abrirPosicao(sideOrd, (quantity / 4));
-            }
+            //}
           }
         }
       }
