@@ -1637,7 +1637,7 @@ async function criarTakeProfit(takePrice) {
   const params = {
     symbol,
     side: oppositeSide,
-    //type: 'TAKE_PROFIT_MARKET',
+    type: 'TAKE_PROFIT_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
     stopPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
@@ -1648,12 +1648,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
+    */
+    return null;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -1697,7 +1700,7 @@ async function criarStopLoss(stopPrice) {
   const params = {
     symbol,
     side: oppositeSide,
-    //type: 'STOP_MARKET',
+    type: 'STOP_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
     stopPrice: parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
@@ -1708,12 +1711,15 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
+    */
+    return null;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -3116,7 +3122,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
 
               }
-exec("pm2 restart nanobot");
+//exec("pm2 restart nanobot");
             }
 
           } else {
