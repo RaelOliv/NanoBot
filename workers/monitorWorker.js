@@ -1637,7 +1637,7 @@ async function criarTakeProfit(takePrice) {
   const params = {
     symbol,
     side: oppositeSide,
-    type: 'TAKE_PROFIT_MARKET',
+    //type: 'TAKE_PROFIT_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
     stopPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
@@ -1697,7 +1697,7 @@ async function criarStopLoss(stopPrice) {
   const params = {
     symbol,
     side: oppositeSide,
-    type: 'STOP_MARKET',
+    //type: 'STOP_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
     stopPrice: parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
@@ -2927,10 +2927,12 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
+            parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
+            parseFloat(preco_atual) >= parseFloat(ema3m10p) 
+  ////////////////        
+            //parseFloat(preco_atual) > parseFloat(ema3m5p) &&
             
-            parseFloat(preco_atual) > parseFloat(ema3m5p) 
-            &&
-            parseFloat(preco_anterior) <= parseFloat(ema3m5p)
+            //parseFloat(preco_anterior) <= parseFloat(ema3m5p)
  ////////////////////
  /*
             parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorM3m20p) && //+ (parseFloat(tickSize) * 3))
@@ -2975,9 +2977,11 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(preco_atual) <= parseFloat(ema3m5p) 
-            &&
-     parseFloat(preco_anterior) >= parseFloat(ema3m5p) 
+            parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
+            parseFloat(preco_atual) <= parseFloat(ema3m10p) 
+  //////////////
+            //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
+     //parseFloat(preco_anterior) >= parseFloat(ema3m5p) 
 /////////////////////////
 /*
             parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorM3m20p) && //- (parseFloat(tickSize) * 3))
@@ -3206,30 +3210,30 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       else if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
                 if (gatilhoAtivado == true && posicaoAberta.positionAmt < 0 &&
                 sideOrd == 'BUY' &&
-            parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
-            parseFloat(preco_anterior) <= parseFloat(ema3m5p)
+                parseFloat(preco_atual) > parseFloat(ema3m5p) &&
+                parseFloat(preco_atual) > parseFloat(ema3m10p)
         ) {
-          /*
+          
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
             sideM = 'C';
             sideOrd = 'BUY';
             gatilhoAtivado = true;
-           let returnPos = await abrirPosicao(sideOrd, quantity);
-          */
+           //let returnPos = await abrirPosicao(sideOrd, quantity);
+          
 
         } else if (gatilhoAtivado == true && posicaoAberta.positionAmt > 0 &&
                 sideOrd == 'SELL' &&
-            parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
-            parseFloat(preco_anterior) >= parseFloat(ema3m5p)
+            parseFloat(preco_atual) < parseFloat(ema3m5p) &&
+            parseFloat(preco_atual) < parseFloat(ema3m10p)
         
         ) {
-          /*
+          
                   await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
                   sideM = 'V';
                   sideOrd = 'SELL';
                   gatilhoAtivado = true;
-          let returnPos = await abrirPosicao(sideOrd, quantity);
-*/
+          //let returnPos = await abrirPosicao(sideOrd, quantity);
+
         }
       }
     }
@@ -4862,7 +4866,8 @@ let sRsiLast15m = null;
   ) &&
 */
 
-        (/*&
+        //(
+        /*
         parseFloat(sRsiLast15m.k) <= parseFloat(50.0) 
           &&
           parseFloat(sRsiLast5m.k) >= parseFloat(60.0) 
@@ -4870,17 +4875,16 @@ let sRsiLast15m = null;
           parseFloat(sRsiLast5m.k) <= parseFloat(80.0) 
           &&
           */
-          parseFloat(sRsiLast3m.k) >= parseFloat(20.0) 
-          &&
-          parseFloat(sRsiLast3m.k) <= parseFloat(60.0)
+          //parseFloat(sRsiLast3m.k) >= parseFloat(20.0) &&
+          //parseFloat(sRsiLast3m.k) <= parseFloat(60.0)
           
           //parseFloat(sRsiLast3m_2.k) <= parseFloat(20.0)
           
           
-        ) &&
+        //) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
+        //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) &&
@@ -5033,22 +5037,22 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
   ) &&
   */
   
-        (
+        // (
           /*
         parseFloat(sRsiLast15m.k) >= parseFloat(50.0) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(20.0) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(40.0) &&
         */
-          parseFloat(sRsiLast3m.k) <= parseFloat(80.0) &&
-          parseFloat(sRsiLast3m.k) >= parseFloat(40.0)
+          //parseFloat(sRsiLast3m.k) <= parseFloat(80.0) &&
+          //parseFloat(sRsiLast3m.k) >= parseFloat(40.0)
           
           //parseFloat(sRsiLast30m_2.k) >= parseFloat(80.0)
           
-        ) &&
+        //) &&
 
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+        //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) &&
