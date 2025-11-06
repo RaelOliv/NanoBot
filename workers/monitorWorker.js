@@ -1852,11 +1852,11 @@ async function abrirPosicao(side, quantityX) {
   try {
     
     const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
-  console.log(`Aguardando ${delay} ms antes de abrir posição ${direcao} em ${symbol}...`);
+  console.log(`Aguardando ${delay} ms antes de abrir posição ${side} em ${symbol}...`);
   
   await sleep(delay);
     
-    posicaoAberta = await verificarSeTemPosicao(1);
+    const posicaoAberta = await verificarSeTemPosicao(1);
 
     if (posicaoAberta) {
       parentPort.postMessage(`⚠️ Já existe uma posição aberta para ${symbol}. Abortando nova abertura.`);
@@ -3106,7 +3106,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if (contPos < 3
+      if (contPos < 2
       /*
       && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
       */
