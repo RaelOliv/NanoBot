@@ -2153,10 +2153,10 @@ async function verificarSeTemPosicao(type = 1) {
     const data = JSON.parse(rawData || '{}');
 
     // Posição específica
-    const pos = data[symbol] && parseFloat(data[symbol].pa) !== 0 ? data[symbol] : undefined;
+    const pos = data[symbol] && parseFloat(data[symbol].positionAmt) !== 0 ? data[symbol] : undefined;
 
     // Contagem total de posições abertas
-    const openPositions = Object.values(data).filter(p => parseFloat(p.pa) !== 0);
+    const openPositions = Object.values(data).filter(p => parseFloat(p.positionAmt) !== 0);
     const count = openPositions.length;
 
     if (type === 1) {
