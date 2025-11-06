@@ -2127,14 +2127,25 @@ async function verificarSeTemPosicao(type = 1) {
 }
 */
 
-async function verificarSeTemPosicao(type = 1) {
-  const pos = positionCache.positions[symbol];
-  const count = positionCache.count;
+const CACHE_PATH = path.resolve(__dirname, 'cachepos.json');
 
-  if (type === 1) {
-    return pos || 0;
-  } else if (type === 2) {
-    return count;
+// Garante que o arquivo exista
+function garantirCache() {
+  if (!fs.existsSync(CACHE_PATH)) {
+    fs.writeFileSync(CACHE_PATH, '{}');
+    console.log('[monitorWorker] cachepos.json criado.');
+  }
+}
+
+
+// Função para verificar posição
+function verificarSeTemPosicao(symbol) {
+  try {
+    const data = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+    return data[symbol] || 0;
+  } catch (err) {
+    console.error('[monitorWorker] Erro ao ler cache:', err.message);
+    return 0;
   }
 }
 
@@ -6318,6 +6329,7 @@ async function startWorker() {
 }
 
 (async () => {
+  garantirCache();
   await startWorker();
   /*
   try {

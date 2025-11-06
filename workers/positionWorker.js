@@ -1,14 +1,40 @@
 // workers/positionWorker.js
 const WebSocket = require('ws');
 const axios = require('axios');
-const { parentPort } = require('worker_threads');
-const positionCache = require('./positionCache.js');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const API_KEY = process.env.API_KEY;
-const API_SECRET = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
 
+let ws = null;
+let listenKey = null;
+
+// Caminho do cache
+const CACHE_PATH = path.resolve(__dirname, 'cachepos.json');
+
+// Garante que o arquivo exista
+function garantirCache() {
+  if (!fs.existsSync(CACHE_PATH)) {
+    fs.writeFileSync(CACHE_PATH, '{}');
+    console.log('[positionsWorker] cachepos.json criado.');
+  }
+}
+garantirCache();
+
+let positions = {};
+
+// Salva cache no disco
+function salvarCache() {
+  try {
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(positions, null, 2));
+  } catch (err) {
+    console.error('[positionsWorker] Erro ao salvar cache:', err.message);
+  }
+}
+
+// Cria listenKey
 async function criarListenKey() {
   const res = await axios.post(`${BASE_URL}/fapi/v1/listenKey`, null, {
     headers: { 'X-MBX-APIKEY': API_KEY }
@@ -16,50 +42,64 @@ async function criarListenKey() {
   return res.data.listenKey;
 }
 
+// Mantém listenKey ativa
+function manterListenKey() {
+  setInterval(async () => {
+    try {
+      await axios.put(`${BASE_URL}/fapi/v1/listenKey`, null, {
+        headers: { 'X-MBX-APIKEY': API_KEY }
+      });
+      console.log('[positionsWorker] listenKey renovada.');
+    } catch (err) {
+      console.error('[positionsWorker] Erro ao renovar listenKey:', err.message);
+    }
+  }, 25 * 60 * 1000);
+}
+
+// Inicia WebSocket
 async function iniciarWs() {
   try {
-    const listenKey = await criarListenKey();
-    const ws = new WebSocket(`wss://fstream.binance.com/ws/${listenKey}`);
+    listenKey = await criarListenKey();
+    const wsUrl = `wss://fstream.binance.com/ws/${listenKey}`;
+    ws = new WebSocket(wsUrl);
 
-    ws.on('open', () => {
-      console.log(`✅ positionWorker conectado ao User Data Stream`);
-    });
+    ws.on('open', () => console.log('[positionsWorker] WebSocket conectado.'));
 
     ws.on('message', (msg) => {
-      const data = JSON.parse(msg);
+      try {
+        const data = JSON.parse(msg);
 
-      if (data.e === 'ACCOUNT_UPDATE') {
-        const positions = data.a?.P || [];
+        if (data.e === 'ACCOUNT_UPDATE') {
+          const posicoes = data.a.P;
+          const novas = {};
 
-        // Atualiza cache local
-        let active = {};
-        for (const p of positions) {
-          if (parseFloat(p.pa) !== 0) {
-            active[p.s] = p;
+          for (const p of posicoes) {
+            if (parseFloat(p.pa) !== 0) novas[p.s] = p;
           }
-        }
-        positionCache.positions = active;
-        positionCache.count = Object.keys(active).length;
 
-        parentPort?.postMessage({
-          type: 'positionsUpdated',
-          count: positionCache.count,
-          symbols: Object.keys(active)
-        });
+          positions = novas;
+          salvarCache();
+          console.log(`[positionsWorker] Cache atualizado (${Object.keys(positions).length} posições).`);
+        }
+      } catch (err) {
+        console.error('[positionsWorker] Erro ao processar mensagem WS:', err.message);
       }
     });
 
     ws.on('close', () => {
-      console.log('⚠️ WS desconectado, tentando reconectar...');
+      console.log('[positionsWorker] WS fechado. Reabrindo...');
       setTimeout(iniciarWs, 4000);
     });
 
     ws.on('error', (err) => {
-      console.error('❌ Erro WS:', err.message);
+      console.error('[positionsWorker] WS erro:', err.message);
     });
+
+    manterListenKey();
+
   } catch (err) {
-    console.error('❌ Erro ao iniciar WS:', err.message);
-    setTimeout(iniciarWs, 4000);
+    console.error('[positionsWorker] Erro ao iniciar:', err.message);
+    setTimeout(iniciarWs, 5000);
   }
 }
 
