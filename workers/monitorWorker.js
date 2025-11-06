@@ -3287,13 +3287,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
                 parseFloat(preco_atual) > parseFloat(ema3m5p) &&
                 parseFloat(preco_atual) > parseFloat(ema3m10p)
         ) {
-          
+          /*
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
             sideM = 'C';
             sideOrd = 'BUY';
             gatilhoAtivado = true;
            //let returnPos = await abrirPosicao(sideOrd, quantity);
-          
+          */
 
         } else if (
           //gatilhoAtivado == true && 
@@ -3303,13 +3303,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
             parseFloat(preco_atual) < parseFloat(ema3m10p)
         
         ) {
-          
+          /*
                   await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
                   sideM = 'V';
                   sideOrd = 'SELL';
                   gatilhoAtivado = true;
           //let returnPos = await abrirPosicao(sideOrd, quantity);
-
+*/
         }
       }
     }
@@ -5383,7 +5383,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         if (parseFloat(pnlRoiAtual.roi) > parseFloat(process.env.TAKEPROFIT) 
         // || parseFloat(pnlRoiAtual.roi) < parseFloat(process.env.STOPLOSS)
         ) {
-          await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+          //await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
         }
 
 
