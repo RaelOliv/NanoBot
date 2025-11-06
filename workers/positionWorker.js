@@ -69,12 +69,28 @@ async function iniciarWs() {
       try {
         const data = JSON.parse(msg);
 
+        // Evento de atualização de conta (posições)
         if (data.e === 'ACCOUNT_UPDATE') {
           const posicoes = data.a.P;
           const novas = {};
 
           for (const p of posicoes) {
-            if (parseFloat(p.pa) !== 0) novas[p.s] = p;
+            // Apenas posições abertas (positionAmt !== 0)
+            if (parseFloat(p.pa) !== 0) {
+              novas[p.s] = {
+                symbol: p.s,                // Ex: BTCUSDT
+                positionAmt: p.pa,          // Quantidade
+                entryPrice: p.ep,           // Preço de entrada
+                markPrice: p.mp || "0",     // Preço de marcação (se disponível)
+                unRealizedProfit: p.up || "0",
+                liquidationPrice: p.l || "0",
+                leverage: p.cr || "0",
+                marginType: p.mt || "isolated",
+                isolatedMargin: p.iw || "0",
+                positionSide: p.ps || "BOTH",
+                updateTime: Date.now()
+              };
+            }
           }
 
           positions = novas;
@@ -82,7 +98,7 @@ async function iniciarWs() {
           console.log(`[positionsWorker] Cache atualizado (${Object.keys(positions).length} posições).`);
         }
       } catch (err) {
-        console.error('[positionsWorker] Erro ao processar mensagem WS:', err.message);
+        console.error('[positionsWorker] Erro ao processar WS:', err.message);
       }
     });
 
