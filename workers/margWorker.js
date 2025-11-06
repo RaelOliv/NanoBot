@@ -1698,7 +1698,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(perc) >= parseFloat(5.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1768,7 +1768,7 @@ await salvarCache(balance, 'Balance');
 
     //}
 
-    if (percReal > 1) {
+    if (perc > 5) {
 
       let pnlfluxo = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
 
@@ -1781,12 +1781,12 @@ await salvarCache(balance, 'Balance');
       await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
       balance = await getBalance();
 
-      //let res = await fecharTodasPosicoes();
-      //if (res == true) {
+      let res = await fecharTodasPosicoes();
+      if (res == true) {
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
 
-      //}
+      }
       await salvarCache(balance, 'oldBalance');
 
     } 
