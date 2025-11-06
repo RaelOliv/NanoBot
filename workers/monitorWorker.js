@@ -2142,7 +2142,7 @@ function garantirCache() {
 function verificarSeTemPosicao(symbol) {
   try {
     const data = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
-    return data[symbol] || 0;
+    return data;// || 0;
   } catch (err) {
     console.error('[monitorWorker] Erro ao ler cache:', err.message);
     return 0;
@@ -6330,6 +6330,7 @@ async function startWorker() {
 
 (async () => {
   garantirCache();
+  
   await startWorker();
   /*
   try {
