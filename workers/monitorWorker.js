@@ -2138,14 +2138,40 @@ function garantirCache() {
 }
 
 
-// Função para verificar posição
-function verificarSeTemPosicao(symbol) {
+/**
+ * Verifica se há posição aberta para o símbolo informado,
+ * lendo diretamente do cachepos.json (atualizado pelo positionWorker)
+ * 
+ * @param {number} type 1 = retornar posição específica, 2 = retornar contagem total
+ * @returns {object|number|false}
+ */
+async function verificarSeTemPosicao(type = 1) {
+  parentPort.postMessage(`✅ Worker - verificarSeTemPosicao`);
   try {
-    const data = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
-    return data;// || 0;
+    // Lê cache local
+    const rawData = fs.readFileSync(CACHE_PATH, 'utf8');
+    const data = JSON.parse(rawData || '{}');
+
+    // Posição específica
+    const pos = data[symbol] && parseFloat(data[symbol].pa) !== 0 ? data[symbol] : undefined;
+
+    // Contagem total de posições abertas
+    const openPositions = Object.values(data).filter(p => parseFloat(p.pa) !== 0);
+    const count = openPositions.length;
+
+    if (type === 1) {
+      if (!pos) {
+        return 0;
+      } else {
+        return pos;
+      }
+    } else if (type === 2) {
+      return count;
+    }
+
   } catch (err) {
-    console.error('[monitorWorker] Erro ao ler cache:', err.message);
-    return 0;
+    parentPort.postMessage(`❌ Erro ao verificar posição: ${err.message}`);
+    return false;
   }
 }
 
