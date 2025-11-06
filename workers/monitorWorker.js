@@ -2145,35 +2145,45 @@ function garantirCache() {
  * @param {number} type 1 = retornar posição específica, 2 = retornar contagem total
  * @returns {object|number|false}
  */
+/**
+ * Verifica se há posição aberta no símbolo especificado
+ * lendo os dados do cachepos.json (atualizado via WebSocket pelo positionWorker)
+ *
+ * @param {number} type - 1 = retorna a posição específica, 2 = retorna o número total de posições
+ * @returns {object|number|0|false}
+ */
 async function verificarSeTemPosicao(type = 1) {
-  parentPort.postMessage(`✅ Worker - verificarSeTemPosicao`);
   try {
-    // Lê cache local
     const rawData = fs.readFileSync(CACHE_PATH, 'utf8');
-    const data = JSON.parse(rawData || '{}');
+    const cache = JSON.parse(rawData || '{}');
 
-    // Posição específica
-    const pos = data[symbol] && parseFloat(data[symbol].positionAmt) !== 0 ? data[symbol] : undefined;
+    // Filtra todas as posições abertas
+    const abertas = Object.values(cache).filter(p => parseFloat(p.positionAmt) !== 0);
+    const total = abertas.length;
 
-    // Contagem total de posições abertas
-    const openPositions = Object.values(data).filter(p => parseFloat(p.positionAmt) !== 0);
-    const count = openPositions.length;
+    // Busca posição do símbolo atual
+    const pos = cache[symbol];
+    const temPos = pos && parseFloat(pos.positionAmt) !== 0;
 
-    if (type === 1) {
-      if (!pos) {
-        return 0;
-      } else {
-        return pos;
-      }
-    } else if (type === 2) {
-      return count;
+    // Formata resposta
+    if (type === 2) {
+      return total; // apenas contagem
     }
 
+    if (temPos) {
+      return {
+        ...pos,
+        lastCheck: Date.now()
+      };
+    } else {
+      return 0;
+    }
   } catch (err) {
-    parentPort.postMessage(`❌ Erro ao verificar posição: ${err.message}`);
+    parentPort?.postMessage(`❌ Erro ao verificar posição: ${err.message}`);
     return false;
   }
 }
+
 
 
 async function atualizarStop(side, novoStop) {
