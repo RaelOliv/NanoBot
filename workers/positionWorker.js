@@ -12,23 +12,64 @@ let ws = null;
 let listenKey = null;
 
 // Caminho do cache
-const CACHE_PATH = path.resolve(__dirname, 'cachepos.json');
+const CACHE_DIR = path.resolve(__dirname, 'cache');
+const CACHE_PATH = path.resolve(CACHE_DIR, 'cachepos.json');
 
-// Garante que o arquivo exista
+// Garante que a pasta e o arquivo existam
 function garantirCache() {
-  if (!fs.existsSync(CACHE_PATH)) {
-    fs.writeFileSync(CACHE_PATH, '{}');
-    console.log('[positionsWorker] cachepos.json criado.');
+  try {
+    if (!fs.existsSync(CACHE_DIR)) {
+      fs.mkdirSync(CACHE_DIR, { recursive: true });
+      console.log('[positionsWorker] Pasta /cache criada.');
+    }
+    if (!fs.existsSync(CACHE_PATH)) {
+      fs.writeFileSync(CACHE_PATH, '{}');
+      console.log('[positionsWorker] cachepos.json criado.');
+    }
+  } catch (err) {
+    console.error('[positionsWorker] Erro ao garantir cache:', err.message);
   }
 }
 garantirCache();
 
 let positions = {};
 
-// Salva cache no disco
+// Carrega o cache existente
+function carregarCache() {
+  try {
+    const data = fs.readFileSync(CACHE_PATH, 'utf8');
+    positions = JSON.parse(data || '{}');
+    console.log(`[positionsWorker] Cache carregado (${Object.keys(positions).length} posições).`);
+  } catch (err) {
+    console.error('[positionsWorker] Erro ao carregar cache:', err.message);
+    positions = {};
+  }
+}
+
+// Salva cache no disco, garantindo sincronização com o existente
 function salvarCache() {
   try {
-    fs.writeFileSync(CACHE_PATH, JSON.stringify(positions, null, 2));
+    // Recarrega o cache atual do disco
+    let cacheAtual = {};
+    try {
+      const data = fs.readFileSync(CACHE_PATH, 'utf8');
+      cacheAtual = JSON.parse(data || '{}');
+    } catch (err) {
+      cacheAtual = {};
+    }
+
+    // Remove posições que não existem mais
+    for (const symbol in cacheAtual) {
+      if (!positions[symbol]) delete cacheAtual[symbol];
+    }
+
+    // Atualiza com as posições novas
+    for (const symbol in positions) {
+      cacheAtual[symbol] = positions[symbol];
+    }
+
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(cacheAtual, null, 2));
+    positions = cacheAtual;
   } catch (err) {
     console.error('[positionsWorker] Erro ao salvar cache:', err.message);
   }
@@ -63,7 +104,10 @@ async function iniciarWs() {
     const wsUrl = `wss://fstream.binance.com/ws/${listenKey}`;
     ws = new WebSocket(wsUrl);
 
-    ws.on('open', () => console.log('[positionsWorker] WebSocket conectado.'));
+    ws.on('open', () => {
+      console.log('[positionsWorker] WebSocket conectado.');
+      carregarCache();
+    });
 
     ws.on('message', (msg) => {
       try {
@@ -72,16 +116,16 @@ async function iniciarWs() {
         // Evento de atualização de conta (posições)
         if (data.e === 'ACCOUNT_UPDATE') {
           const posicoes = data.a.P;
-          const novas = {};
+          const novas = { ...positions }; // preserva posições existentes
 
           for (const p of posicoes) {
-            // Apenas posições abertas (positionAmt !== 0)
-            if (parseFloat(p.pa) !== parseFloat(0.000)) {
+            const amt = parseFloat(p.pa);
+            if (amt !== 0) {
               novas[p.s] = {
-                symbol: p.s,                // Ex: BTCUSDT
-                positionAmt: p.pa,          // Quantidade
-                entryPrice: p.ep,           // Preço de entrada
-                markPrice: p.mp || "0",     // Preço de marcação (se disponível)
+                symbol: p.s,
+                positionAmt: p.pa,
+                entryPrice: p.ep,
+                markPrice: p.mp || "0",
                 unRealizedProfit: p.up || "0",
                 liquidationPrice: p.l || "0",
                 leverage: p.cr || "0",
@@ -90,6 +134,8 @@ async function iniciarWs() {
                 positionSide: p.ps || "BOTH",
                 updateTime: Date.now()
               };
+            } else {
+              delete novas[p.s];
             }
           }
 
@@ -104,6 +150,7 @@ async function iniciarWs() {
 
     ws.on('close', () => {
       console.log('[positionsWorker] WS fechado. Reabrindo...');
+      listenKey = null;
       setTimeout(iniciarWs, 4000);
     });
 
