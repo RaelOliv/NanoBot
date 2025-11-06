@@ -1650,15 +1650,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
-    
-    //return undefined;
+    */
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -4958,8 +4958,9 @@ let sRsiLast15m = null;
           
           
         //) &&
+        parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-        //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
@@ -5126,8 +5127,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           
         //) &&
 
+        parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-        //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
