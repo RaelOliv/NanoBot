@@ -1698,7 +1698,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(perc) >= parseFloat(5.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(perc) >= parseFloat(10.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1768,13 +1768,13 @@ await salvarCache(balance, 'Balance');
 
     //}
 
-    if (perc > 5) {
+    if (perc > 10) {
 
       let pnlfluxo = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
 
       //let pnlaReter = (pnlfluxo / 3) * 2;
-      let pnlaReter = pnlfluxo + (pnlfluxo / 2 );
-
+      //let pnlaReter = pnlfluxo + (pnlfluxo / 2 );
+let pnlaReter = pnlfluxo;
       //oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
       //balanceHist.push(oldBalance);
 
