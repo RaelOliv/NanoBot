@@ -76,7 +76,7 @@ async function iniciarWs() {
 
           for (const p of posicoes) {
             // Apenas posições abertas (positionAmt !== 0)
-            if (parseFloat(p.pa) !== 0) {
+            if (parseFloat(p.pa) !== parseFloat(0.000)) {
               novas[p.s] = {
                 symbol: p.s,                // Ex: BTCUSDT
                 positionAmt: p.pa,          // Quantidade

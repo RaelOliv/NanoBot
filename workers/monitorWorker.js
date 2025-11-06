@@ -2158,30 +2158,30 @@ async function verificarSeTemPosicao(type = 1) {
     const raw = fs.readFileSync(CACHE_PATH, 'utf8');
     const cache = JSON.parse(raw || '{}');
 
-    // Filtra somente posições realmente abertas
-    const abertas = Object.values(cache).filter(p => {
-      const amt = parseFloat(p?.positionAmt || 0);
-      return Math.abs(amt) > 0; // posição aberta somente se amt != 0
-    });
 
-    const total = abertas.length;
 
-    const pos = cache[symbol];
-    const amt = parseFloat(pos?.positionAmt || 0);
-    const temPos = pos && Math.abs(amt) > 0;
+    //const pos = cache[symbol];
+    //const amt = parseFloat(pos?.positionAmt || 0);
+    //const temPos = pos && Math.abs(amt) > 0;
 
-    if (type === 2) {
-      // apenas contagem
-      return total;
-    }
+    const pos = cache.find(p => p.symbol === symbol && parseFloat(p.positionAmt) !== parseFloat(0.0));
+    // Filtra apenas posições abertas
+    const openPositions = cache.filter(pos => parseFloat(pos.positionAmt) !== 0);
 
-    if (temPos) {
-      return {
-        ...pos,
-        lastCheck: Date.now()
-      };
-    } else {
-      return 0;
+    // Faz a contagem  
+    const count = openPositions.length;
+
+
+    if (type == 1) {
+
+      //pos.cont = count;  
+      if (pos === undefined || pos === null || pos === '') {
+        return 0;
+      } else {
+        return pos;
+      }
+    } else if (type == 2) {
+      return count;
     }
   } catch (err) {
     parentPort?.postMessage(`❌ Erro ao verificar posição: ${err.message}`);
