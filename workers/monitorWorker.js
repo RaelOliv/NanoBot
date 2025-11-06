@@ -1839,6 +1839,10 @@ async function abrirPosicao(side, quantityX) {
 }
 */
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function abrirPosicao(side, quantityX) {
   parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
@@ -1846,7 +1850,13 @@ async function abrirPosicao(side, quantityX) {
   parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
 
   try {
-    const posicaoAberta = await verificarSeTemPosicao(1);
+    
+    const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+  console.log(`Aguardando ${delay} ms antes de abrir posição ${direcao} em ${symbol}...`);
+  
+  await sleep(delay);
+    
+    posicaoAberta = await verificarSeTemPosicao(1);
 
     if (posicaoAberta) {
       parentPort.postMessage(`⚠️ Já existe uma posição aberta para ${symbol}. Abortando nova abertura.`);
