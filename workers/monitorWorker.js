@@ -9,6 +9,8 @@ const notifier = require('node-notifier');
 const { exec } = require('child_process');
 const { parentPort, workerData } = require('worker_threads');
 
+const positionCache = require('./positionCache.js');
+
 let { acquireLock } = require('./lockManager.js'); // caminho ajustado conforme a estrutura
 //import path from 'path';
 
@@ -2081,7 +2083,7 @@ async function verificarTakeAtivo() {
     return null;
   }
 }
-
+/*
 async function verificarSeTemPosicao(type = 1) {
 
   parentPort.postMessage(`✅ Worker - verificarSeTemPosicao`);
@@ -2123,6 +2125,19 @@ async function verificarSeTemPosicao(type = 1) {
     return false;
   }
 }
+*/
+
+async function verificarSeTemPosicao(type = 1) {
+  const pos = positionCache.positions[symbol];
+  const count = positionCache.count;
+
+  if (type === 1) {
+    return pos || 0;
+  } else if (type === 2) {
+    return count;
+  }
+}
+
 
 async function atualizarStop(side, novoStop) {
   parentPort.postMessage(`✅ Worker - atualizarStop`);

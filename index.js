@@ -2831,11 +2831,31 @@ async function iniciarWorkerMarg() {
     });
 
     worker.on('error', (err) => {
-        console.error(`Erro no Worker:`, err);
+        console.error(`[Marg] Erro no Worker:`, err);
     });
 
     worker.on('exit', (code) => {
-        console.log(`Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
+        console.log(`[Marg] Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
+        setTimeout(() => iniciarWorkerMarg(), 30000);
+    });
+}
+
+async function iniciarWorkerPos() {
+    const worker = new Worker(path.join(__dirname, './workers/positionWorker.js'), {
+        workerData: {}
+    });
+
+    worker.on('message', (msg) => {
+        console.log(`[pos]`, msg);
+        console.log("");
+    });
+
+    worker.on('error', (err) => {
+        console.error(`[pos] Erro no Worker:`, err);
+    });
+
+    worker.on('exit', (code) => {
+        console.log(`[pos] Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
         setTimeout(() => iniciarWorkerMarg(), 30000);
     });
 }
@@ -2884,6 +2904,7 @@ async function executeMain() {
 //executeMain();
 async function execThreads() {
     iniciarWorkerMarg();
+    iniciarWorkerPos();
     for (const key in cryptSymbols) {
 
         cryptSymbol = cryptSymbols[key];
