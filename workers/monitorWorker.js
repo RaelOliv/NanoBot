@@ -2152,22 +2152,27 @@ function garantirCache() {
  * @param {number} type - 1 = retorna a posição específica, 2 = retorna o número total de posições
  * @returns {object|number|0|false}
  */
+
 async function verificarSeTemPosicao(type = 1) {
   try {
-    const rawData = fs.readFileSync(CACHE_PATH, 'utf8');
-    const cache = JSON.parse(rawData || '{}');
+    const raw = fs.readFileSync(CACHE_PATH, 'utf8');
+    const cache = JSON.parse(raw || '{}');
 
-    // Filtra todas as posições abertas
-    const abertas = Object.values(cache).filter(p => parseFloat(p.positionAmt) !== 0);
+    // Filtra somente posições realmente abertas
+    const abertas = Object.values(cache).filter(p => {
+      const amt = parseFloat(p?.positionAmt || 0);
+      return Math.abs(amt) > 0; // posição aberta somente se amt != 0
+    });
+
     const total = abertas.length;
 
-    // Busca posição do símbolo atual
     const pos = cache[symbol];
-    const temPos = pos && parseFloat(pos.positionAmt) !== 0;
+    const amt = parseFloat(pos?.positionAmt || 0);
+    const temPos = pos && Math.abs(amt) > 0;
 
-    // Formata resposta
     if (type === 2) {
-      return total; // apenas contagem
+      // apenas contagem
+      return total;
     }
 
     if (temPos) {
@@ -2183,7 +2188,6 @@ async function verificarSeTemPosicao(type = 1) {
     return false;
   }
 }
-
 
 
 async function atualizarStop(side, novoStop) {
