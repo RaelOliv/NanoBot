@@ -2827,9 +2827,9 @@ function iniciarWebSocketMarkPrice() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice`);
   
-    //contPos = verificarSeTemPosicao(2);
+    contPos = verificarSeTemPosicao(2);
     parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
-    //posicaoAberta = verificarSeTemPosicao(1);
+    posicaoAberta = verificarSeTemPosicao(1);
     parentPort.postMessage(`🔎 Posição aberta_preOP: ${JSON.stringify(posicaoAberta)}`);
   
 
@@ -2859,9 +2859,9 @@ maiorMReg3m = Math.max(maiorMedia3m, maiorM3m20p);
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
 
-    //contPos = await verificarSeTemPosicao(2);
+    contPos = await verificarSeTemPosicao(2);
     parentPort.postMessage(`🔎 Total de posições abertas: ${contPos}`);
-    //posicaoAberta = await verificarSeTemPosicao(1);
+    posicaoAberta = await verificarSeTemPosicao(1);
     parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(posicaoAberta)}`);
 
     parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
