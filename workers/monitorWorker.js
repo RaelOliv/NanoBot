@@ -2164,9 +2164,9 @@ async function verificarSeTemPosicao(type = 1) {
     //const amt = parseFloat(pos?.positionAmt || 0);
     //const temPos = pos && Math.abs(amt) > 0;
 
-    const pos = cache.find(p => p.symbol === symbol && parseFloat(p.positionAmt) !== parseFloat(0.0));
+    const pos = Object.values(cache).find(p => p.symbol === symbol && parseFloat(p.positionAmt) !== parseFloat(0.0));
     // Filtra apenas posições abertas
-    const openPositions = cache.filter(pos => parseFloat(pos.positionAmt) !== 0);
+    const openPositions = Object.values(cache).filter(pos => parseFloat(pos.positionAmt) !== 0);
 
     // Faz a contagem  
     const count = openPositions.length;
