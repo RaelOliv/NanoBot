@@ -1863,6 +1863,20 @@ async function abrirPosicao(side, quantityX) {
       return null;
     }
 
+const contPos = await verificarSeTemPosicao(2);
+
+    if (contPos >= 2) {
+      parentPort.postMessage(`⚠️ Já existem duas posições abertas. Abortando nova abertura.`);
+      return null;
+    }
+
+const amtPos = await verificarSeTemPosicao(3);
+
+      if ((amtPos > 0 && side == 'BUY') || (amtPos < 0 && side == 'SELL')){
+        parentPort.postMessage(`⚠️ Já existem posições abertas na mesma direção. Abortando nova abertura.`);
+      return null;
+      }
+
     const timestamp = Date.now() + offset;
     const params = {
       symbol,
@@ -2167,9 +2181,6 @@ async function verificarSeTemPosicao(type = 1) {
   try {
     const raw = fs.readFileSync(CACHE_PATH, 'utf8');
     const cache = JSON.parse(raw || '{}');
-
-
-
     //const pos = cache[symbol];
     //const amt = parseFloat(pos?.positionAmt || 0);
     //const temPos = pos && Math.abs(amt) > 0;
@@ -2181,9 +2192,7 @@ async function verificarSeTemPosicao(type = 1) {
     // Faz a contagem  
     const count = openPositions.length;
 
-
     if (type == 1) {
-
       //pos.cont = count;  
       if (pos === undefined || pos === null || pos === '') {
         return 0;
@@ -2192,6 +2201,8 @@ async function verificarSeTemPosicao(type = 1) {
       }
     } else if (type == 2) {
       return count;
+    } else if (type == 3) {
+      return openPositions[0].positionAmt;
     }
   } catch (err) {
     parentPort?.postMessage(`❌ Erro ao verificar posição: ${err.message}`);
@@ -2983,7 +2994,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
 
     if (gatilhoAtivado === true 
-    && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
+    &&  ((contPos < 2
+      && parseFloat(balance.unrealizedProfit) >= parseFloat(25.00)
+      
+      ) || contPos < 1)
     ) {
 
       //posicaoAberta = 0;
@@ -3106,11 +3120,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if (contPos < 3
+      if ((contPos < 2
+      && parseFloat(balance.unrealizedProfit) >= parseFloat(25.00)
       
-      && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
-      
-      ) {
+      ) || contPos < 1) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -3181,7 +3194,7 @@ contPos = await verificarSeTemPosicao(2);
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 //let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
 
-                
+                exec("pm2 restart nanobot");
                  novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
