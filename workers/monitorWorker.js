@@ -2983,7 +2983,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
 
     if (gatilhoAtivado === true 
-    //&& parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
+    && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
     ) {
 
       //posicaoAberta = 0;
@@ -3106,10 +3106,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if (contPos < 2
-      /*
+      if (contPos < 3
+      
       && parseFloat(balance.unrealizedProfit) >= parseFloat(0.00)
-      */
+      
       ) {
           //if (contPos < 1) {
             cacheJson = {

@@ -1698,7 +1698,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(perc) >= parseFloat(10.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-30.0) || parseFloat(perc) >= parseFloat(7.5 ) || parseFloat(perc) >= parseFloat(50.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1768,27 +1768,31 @@ await salvarCache(balance, 'Balance');
 
     //}
 
-    if (perc > 10) {
-
-      let pnlfluxo = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
-
-      //let pnlaReter = (pnlfluxo / 3) * 2;
-      //let pnlaReter = pnlfluxo + (pnlfluxo / 2 );
-let pnlaReter = pnlfluxo;
-      //oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
-      //balanceHist.push(oldBalance);
-
-      await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
+    if (perc >= 50) {
+      
       balance = await getBalance();
+      await salvarCache(balance, 'oldBalance');
+      
+    }else if (perc > 7.5 && perc < 50) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
+        balance = await getBalance();
+        
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
-
+        
+      let capitalIni = oldBalance.walletBalance;
+      let pnlaReter = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
+      
+      await transferir("USDT", capitalIni, 'UMFUTURE_MAIN');
+      await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
+      
+      balance = await getBalance();
+        
       }
+      
       await salvarCache(balance, 'oldBalance');
-
     } 
     /*
     else if (percReal < -1.0) {
@@ -1805,7 +1809,7 @@ let pnlaReter = pnlfluxo;
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
 */
-    else if (perc < -30.0) {
+    else if (perc <= -30.0 && perc >= -50.0) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
@@ -1869,7 +1873,7 @@ async function startWorker() {
   // Loop contínuo a cada X segundos
   setInterval(() => {
     startWorker();
-  }, 30000);
+  }, 3000);
 
 
 })();
