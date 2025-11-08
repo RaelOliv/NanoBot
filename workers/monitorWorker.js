@@ -1913,7 +1913,7 @@ const amtPos = await verificarSeTemPosicao(3);
     return res.data;
 }
 else{
-  retur null;
+  return null;
 }
 
   } catch (err) {
