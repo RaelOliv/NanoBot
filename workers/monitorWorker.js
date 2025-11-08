@@ -1863,12 +1863,24 @@ async function abrirPosicao(side, quantityX) {
       return null;
     }
 
+await sleep(delay);
+
+let balance = await carregarCache('Balance');
+let oldBalance = await carregarCache('oldBalance');
+
+let perc = percentage(
+    toFixedNumber(oldBalance.marginBalance),
+    toFixedNumber(balance.marginBalance)
+  );
+
 const contPos = await verificarSeTemPosicao(2);
 
     if (contPos >= 2) {
       parentPort.postMessage(`⚠️ Já existem duas posições abertas. Abortando nova abertura.`);
       return null;
     }
+    
+    
 
 const amtPos = await verificarSeTemPosicao(3);
 
@@ -1888,7 +1900,10 @@ const amtPos = await verificarSeTemPosicao(3);
     };
 
     params.signature = gerarAssinatura(params);
-
+ if((contPos < 2
+      && parseFloat(perc) >= parseFloat(2.5)
+      
+      ) || contPos < 1){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -1896,6 +1911,10 @@ const amtPos = await verificarSeTemPosicao(3);
 
     parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
     return res.data;
+}
+else{
+  retur null;
+}
 
   } catch (err) {
     parentPort.postMessage(`❌ Erro ao abrir posição: ${JSON.stringify(err.response?.data || err.message)}`);
