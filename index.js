@@ -2860,6 +2860,26 @@ async function iniciarWorkerPos() {
     });
 }
 
+async function iniciarWorkerTelg() {
+    const worker = new Worker(path.join(__dirname, './workers/telegramWorker.js'), {
+        workerData: {}
+    });
+
+    worker.on('message', (msg) => {
+        console.log(`[telg]`, msg);
+        console.log("");
+    });
+
+    worker.on('error', (err) => {
+        console.error(`[telg] Erro no Worker:`, err);
+    });
+
+    worker.on('exit', (code) => {
+        console.log(`[telg] Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
+        setTimeout(() => iniciarWorkerMarg(), 30000);
+    });
+}
+
 const symbolArg = process.argv[2];
 if (!symbolArg) {
     console.error('❌ Você precisa passar o símbolo como argumento! Ex: node index.js BTCUSDT');
@@ -2905,6 +2925,7 @@ async function executeMain() {
 async function execThreads() {
     iniciarWorkerMarg();
     iniciarWorkerPos();
+    iniciarWorkerTelg();
     for (const key in cryptSymbols) {
 
         cryptSymbol = cryptSymbols[key];
