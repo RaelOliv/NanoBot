@@ -1901,7 +1901,7 @@ const amtPos = await verificarSeTemPosicao(3);
 
     params.signature = gerarAssinatura(params);
  if((contPos < 2
-      && parseFloat(perc) >= parseFloat(2.5)
+      && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
       ) || contPos < 1){
     const res = await apiAxios.post('/fapi/v1/order', null, {
@@ -3014,7 +3014,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
     if (gatilhoAtivado === true 
     &&  ((contPos < 2
-      && parseFloat(perc) >= parseFloat(2.5)
+      && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
       ) || contPos < 1)
     ) {
@@ -3140,7 +3140,7 @@ contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
       if ((contPos < 2
-      && parseFloat(perc) >= parseFloat(2.5)
+      && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
       ) || contPos < 1) {
           //if (contPos < 1) {
