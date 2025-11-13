@@ -95,7 +95,15 @@ async function enviarMensagemParaTodos(usuarios, texto) {
         parse_mode: "HTML",
       });
     } catch (err) {
-      console.error(`[Telegram] Falha ao enviar msg para ${u.first_name} (${uid}):`, err.message);
+      
+      
+      if (err.response.status === 429) {
+  const retryAfter = err.response.data.parameters.retry_after;
+  console.error(`Aguardar ${retryAfter} segundos antes de reenviar.`);
+  console.error(`[Telegram] Falha ao enviar msg para ${u.first_name} (${uid}):`, err.message);
+  await sleep((retryAfter + 1) * 1000);
+  
+}
     }
   }
 }
@@ -190,6 +198,10 @@ function gerarMensagemFinal(symbol, pos) {
   );
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // =======================
 // 🔹 Monitoramento de Cache
 // =======================
@@ -203,6 +215,16 @@ async function verificarAlteracoes() {
     const nova = novoCache[symbol];
     const antiga = ultimoCache[symbol];
 
+  const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+  //console.log(`Aguardando ${delay} ms antes de abrir posição ${side} em ${symbol}...`);
+  
+  await sleep(delay);
+
+    //if(){
+      const texto = gerarMensagemAtiva(nova);
+      //await enviarMensagemParaTodos(usuarios, texto);
+    //}
+/*
     if (!antiga && nova.active) {
       const texto = gerarMensagemInicial(nova);
       await enviarMensagemParaTodos(usuarios, texto);
@@ -217,6 +239,7 @@ async function verificarAlteracoes() {
       const texto = gerarMensagemFinal(symbol, antiga);
       await enviarMensagemParaTodos(usuarios, texto);
     }
+    */
   }
 
   ultimoCache = novoCache;

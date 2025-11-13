@@ -3,182 +3,272 @@ const WebSocket = require('ws');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const API_KEY = process.env.API_KEY;
+const SECRET_KEY = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
+
+if (!API_KEY || !SECRET_KEY) {
+  console.error('[positionsWorker] ERRO: API_KEY e SECRET_KEY devem estar no .env');
+  process.exit(1);
+}
 
 let ws = null;
 let listenKey = null;
-let positions = {};
+let periodicStarted = false;
+let listenKeyRenewTimer = null;
 
-// =======================
-// 🔹 Funções de Cache
-// =======================
+// Caminho do cache
 const CACHE_DIR = path.resolve(__dirname, 'cache');
 const CACHE_PATH = path.resolve(CACHE_DIR, 'cachepos.json');
-let salvarPendente = false;
 
+// Garante que a pasta e o arquivo existam
 function garantirCache() {
-  if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
-  if (!fs.existsSync(CACHE_PATH)) fs.writeFileSync(CACHE_PATH, '{}');
+  try {
+    if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+    if (!fs.existsSync(CACHE_PATH)) fs.writeFileSync(CACHE_PATH, '{}');
+  } catch (err) {
+    console.error('[positionsWorker] Erro ao garantir cache:', err.message);
+  }
 }
+garantirCache();
 
-function carregarCache() {
+let positions = {};
+
+// Carrega cache existente
+function carregarCacheLocal() {
   try {
     const data = fs.readFileSync(CACHE_PATH, 'utf8');
     positions = JSON.parse(data || '{}');
-    console.log(`[positionsWorker] Cache carregado (${Object.keys(positions).length} posições).`);
-  } catch {
+    console.log(`[positionsWorker] Cache local carregado (${Object.keys(positions).length} posições).`);
+  } catch (err) {
+    console.error('[positionsWorker] Erro ao carregar cache local:', err.message);
     positions = {};
   }
 }
 
+// Salva cache
 function salvarCache() {
-  if (salvarPendente) return;
-  salvarPendente = true;
-  setTimeout(() => {
-    fs.promises.writeFile(CACHE_PATH, JSON.stringify(positions, null, 2))
-      .catch(err => console.error('[positionsWorker] Erro ao salvar cache:', err.message))
-      .finally(() => salvarPendente = false);
-  }, 1500);
-}
-
-garantirCache();
-carregarCache();
-
-// =======================
-// 🔹 Inicialização Binance
-// =======================
-async function criarListenKey() {
-  const res = await axios.post(`${BASE_URL}/fapi/v1/listenKey`, null, {
-    headers: { 'X-MBX-APIKEY': API_KEY }
-  });
-  return res.data.listenKey;
-}
-
-function manterListenKey() {
-  setInterval(async () => {
-    try {
-      await axios.put(`${BASE_URL}/fapi/v1/listenKey`, null, {
-        headers: { 'X-MBX-APIKEY': API_KEY }
-      });
-    } catch (err) {
-      console.error('[positionsWorker] Erro ao renovar listenKey:', err.message);
-    }
-  }, 25 * 60 * 1000);
-}
-
-// 🔸 Carregar posições abertas no início
-async function carregarPosicoesAtuais() {
   try {
-    const res = await axios.get(`${BASE_URL}/fapi/v2/positionRisk`, {
-      headers: { 'X-MBX-APIKEY': API_KEY }
-    });
-
-    const abertas = res.data.filter(p => parseFloat(p.positionAmt) !== 0);
-    console.log(`[positionsWorker] Encontradas ${abertas.length} posições abertas.`);
-
-    // Remover do cache o que não está mais aberto
-    const ativos = abertas.map(p => p.symbol);
-    for (const symbol in positions) {
-      if (!ativos.includes(symbol)) {
-        console.log(`[positionsWorker] Limpando cache órfão de ${symbol}`);
-        delete positions[symbol];
-      }
-    }
-
-    for (const p of abertas) {
-      const symbol = p.symbol;
-      const jaExistia = !!positions[symbol];
-
-      positions[symbol] = {
-        ...positions[symbol],
-        symbol,
-        positionAmt: p.positionAmt,
-        entryPrice: p.entryPrice,
-        markPrice: p.markPrice,
-        leverage: p.leverage,
-        positionSide: p.positionSide,
-        marginType: p.marginType,
-        updateTime: Date.now(),
-        openedAt: positions[symbol]?.openedAt || Date.now(),
-        active: true,
-      };
-
-      console.log(`[positionsWorker][${symbol}] ${jaExistia ? 'Atualizada' : 'Aberta'}.`);
-    }
-    salvarCache();
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(positions, null, 2));
   } catch (err) {
-    console.error('[positionsWorker] Erro ao carregar posições atuais:', err.message);
+    console.error('[positionsWorker] Erro ao salvar cache:', err.message);
   }
 }
 
-// =======================
-// 🔹 WebSocket Binance
-// =======================
+// Helper: cria query string assinada
+function signQuery(paramsObj, secret) {
+  const params = new URLSearchParams(paramsObj).toString();
+  const signature = crypto.createHmac('sha256', secret).update(params).digest('hex');
+  return `${params}&signature=${signature}`;
+}
+
+// 🔍 Sincroniza cache com posições reais da conta (assinada)
+async function sincronizarPosicoesAtuais() {
+  if (!SECRET_KEY) {
+    console.error('[positionsWorker] SECRET_KEY não encontrado - não é possível assinar requests.');
+    return;
+  }
+
+  try {
+    const timestamp = Date.now();
+    const paramsObj = { timestamp }; // pode incluir recvWindow se quiser
+    const q = signQuery(paramsObj, SECRET_KEY);
+
+    const url = `${BASE_URL}/fapi/v2/positionRisk?${q}`;
+
+    const res = await axios.get(url, {
+      headers: { 'X-MBX-APIKEY': API_KEY },
+      timeout: 15_000,
+    });
+
+    const todas = res.data || [];
+    const abertas = todas.filter(p => parseFloat(p.positionAmt) !== 0);
+
+    let novas = {};
+    for (const p of abertas) {
+      novas[p.symbol] = {
+        symbol: p.symbol,
+        positionAmt: p.positionAmt,
+        entryPrice: p.entryPrice,
+        markPrice: p.markPrice,
+        unRealizedProfit: p.unRealizedProfit,
+        liquidationPrice: p.liquidationPrice,
+        leverage: p.leverage,
+        marginType: p.marginType,
+        isolatedMargin: p.isolatedMargin,
+        positionSide: p.positionSide,
+        updateTime: Date.now(),
+      };
+    }
+
+    const antigos = Object.keys(positions);
+    const novosKeys = Object.keys(novas);
+
+    const removidos = antigos.filter(s => !novosKeys.includes(s));
+    const adicionados = novosKeys.filter(s => !antigos.includes(s));
+
+    if (removidos.length || adicionados.length) {
+      positions = novas;
+      salvarCache();
+      console.log(`[positionsWorker] 🔄 Sincronização REST concluída. Abertas: ${novosKeys.length}`);
+      if (removidos.length) console.log(`  - Removidas: ${removidos.join(', ')}`);
+      if (adicionados.length) console.log(`  - Novas: ${adicionados.join(', ')}`);
+    } else {
+      console.log('[positionsWorker] Cache já está sincronizado com a conta.');
+    }
+  } catch (err) {
+    if (err.response && err.response.data) {
+      console.error('[positionsWorker] Erro API:', err.response.status, JSON.stringify(err.response.data));
+    } else {
+      console.error('[positionsWorker] Erro ao sincronizar posições:', err.message);
+    }
+  }
+}
+
+// Mantém listenKey ativa (chamada PUT a cada 25 minutos)
+function iniciarRenovacaoListenKey() {
+  if (listenKeyRenewTimer) return;
+  listenKeyRenewTimer = setInterval(async () => {
+    if (!listenKey) return;
+    try {
+      await axios.put(`${BASE_URL}/fapi/v1/listenKey`, null, {
+        headers: { 'X-MBX-APIKEY': API_KEY },
+        timeout: 10_000,
+      });
+      console.log('[positionsWorker] listenKey renovada.');
+    } catch (err) {
+      console.error('[positionsWorker] Erro ao renovar listenKey:', err.message);
+    }
+  }, 25 * 60 * 1000); // 25 minutos
+}
+
+// Cria listenKey
+async function criarListenKey() {
+  try {
+    const res = await axios.post(`${BASE_URL}/fapi/v1/listenKey`, null, {
+      headers: { 'X-MBX-APIKEY': API_KEY },
+      timeout: 10_000,
+    });
+    return res.data.listenKey;
+  } catch (err) {
+    if (err.response && err.response.data) {
+      console.error('[positionsWorker] Erro criando listenKey:', err.response.status, JSON.stringify(err.response.data));
+    } else {
+      console.error('[positionsWorker] Erro criando listenKey:', err.message);
+    }
+    throw err;
+  }
+}
+
+// ⏱️ Verificação automática de posições a cada intervalMinutes (inicia só uma vez)
+function iniciarVerificacaoPeriodica(intervalMinutes = 1) {
+  if (periodicStarted) return;
+  periodicStarted = true;
+
+  // schedule periódica
+  setInterval(async () => {
+    console.log('[positionsWorker] Executando verificação REST periódica...');
+    await sincronizarPosicoesAtuais();
+  }, intervalMinutes * 60 * 1000);
+
+  console.log(`[positionsWorker] Verificação REST automática ativada (a cada ${intervalMinutes} minutos).`);
+}
+
+// Inicia WebSocket
 async function iniciarWs() {
   try {
+    // fecha conexão anterior se existir
+    if (ws) {
+      try { ws.terminate(); } catch (e) {}
+      ws = null;
+    }
+
     listenKey = await criarListenKey();
     const wsUrl = `wss://fstream.binance.com/ws/${listenKey}`;
-    ws = new WebSocket(wsUrl);
+    ws = new WebSocket(wsUrl, { handshakeTimeout: 10_000 });
 
     ws.on('open', async () => {
       console.log('[positionsWorker] WebSocket conectado.');
-      setTimeout(() => carregarPosicoesAtuais(), 2000);
+      carregarCacheLocal();
+
+      // sincronização inicial (REST assinada)
+      await sincronizarPosicoesAtuais();
+
+      // inicia renovação da listenKey e verificação periódica (apenas uma vez)
+      iniciarRenovacaoListenKey();
+      iniciarVerificacaoPeriodica(10);
     });
 
-    ws.on('message', async (msg) => {
+    ws.on('message', (msg) => {
       try {
         const data = JSON.parse(msg);
-        if (data.e !== 'ACCOUNT_UPDATE') return;
 
-        const posicoes = data.a.P;
-        for (const p of posicoes) {
-          const symbol = p.s;
-          const amt = parseFloat(p.pa);
+        if (data.e === 'ACCOUNT_UPDATE') {
+          const posicoes = data.a.P || [];
+          const novas = { ...positions };
 
-          if (amt !== 0) {
-            const jaExistia = !!positions[symbol];
-            positions[symbol] = {
-              ...positions[symbol],
-              symbol,
-              positionAmt: p.pa,
-              entryPrice: p.ep,
-              markPrice: p.mp || "0",
-              leverage: p.cr || "0",
-              positionSide: p.ps || "BOTH",
-              marginType: p.mt || "isolated",
-              updateTime: Date.now(),
-              openedAt: positions[symbol]?.openedAt || Date.now(),
-              active: true
-            };
-            console.log(`[positionsWorker][${symbol}] ${jaExistia ? 'Atualizada' : 'Aberta'}.`);
-          } else if (positions[symbol]) {
-            console.log(`[positionsWorker][${symbol}] Encerrada.`);
-            positions[symbol].closedAt = Date.now();
-            positions[symbol].active = false;
+          for (const p of posicoes) {
+            const amt = parseFloat(p.pa);
+            if (amt !== 0) {
+              novas[p.s] = {
+                symbol: p.s,
+                positionAmt: p.pa,
+                entryPrice: p.ep,
+                markPrice: p.mp || '0',
+                unRealizedProfit: p.up || '0',
+                liquidationPrice: p.l || '0',
+                leverage: p.cr || '0',
+                marginType: p.mt || 'isolated',
+                isolatedMargin: p.iw || '0',
+                positionSide: p.ps || 'BOTH',
+                updateTime: Date.now(),
+              };
+            } else {
+              delete novas[p.s];
+            }
           }
+
+          positions = novas;
           salvarCache();
+          console.log(`[positionsWorker] Cache atualizado via WS (${Object.keys(positions).length} posições).`);
+        } else {
+          // outros eventos podem ser tratados aqui, se necessário
+          // console.log('[positionsWorker] Evento WS:', data.e);
         }
       } catch (err) {
-        console.error('[positionsWorker] Erro WS:', err.message);
+        console.error('[positionsWorker] Erro ao processar WS:', err.message);
       }
     });
 
-    ws.on('close', () => {
-      console.log('[positionsWorker] WS fechado. Reabrindo...');
-      try { ws.terminate(); } catch {}
-      ws = null;
+    ws.on('close', (code, reason) => {
+      console.warn(`[positionsWorker] WS fechado (code=${code}). Reabrindo em 4s...`);
+      listenKey = null;
       setTimeout(iniciarWs, 4000);
     });
 
-    ws.on('error', (err) => console.error('[positionsWorker] WS erro:', err.message));
-    manterListenKey();
+    ws.on('error', (err) => {
+      console.error('[positionsWorker] WS erro:', err.message || err);
+      try { ws.terminate(); } catch (e) {}
+    });
+
   } catch (err) {
-    console.error('[positionsWorker] Erro ao iniciar:', err.message);
+    console.error('[positionsWorker] Erro ao iniciar WS:', err.message || err);
     setTimeout(iniciarWs, 5000);
   }
 }
 
+// Expose função para leitura programática (se outro worker quiser)
+function getPositions() {
+  return positions;
+}
+
+// inicia tudo
 iniciarWs();
+
+// Export (opcional se você quiser requerir este módulo)
+module.exports = {
+  getPositions,
+};
