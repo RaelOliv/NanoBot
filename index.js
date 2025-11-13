@@ -31,6 +31,30 @@ function verificarConexao(callback) {
 }
 */
 
+// main.js
+const { isPaused, remainingMinutes, activatePause } = require("./workers/pauseManager");
+
+// Ativa pausa manualmente
+// activatePause(30);
+
+async function mainLoop() {
+  while (true) {
+    if (isPaused()) {
+      console.log(`⏳ Sistema em pausa (${remainingMinutes()} min restantes)...`);
+      await new Promise(resolve => setTimeout(resolve, 60000)); // Espera 1 min antes de checar novamente
+      continue;
+    }
+
+    // 🔹 Execução normal das threads
+    console.log("Executando tarefas normais...");
+    // ... seu código de trading, etc.
+
+    await new Promise(resolve => setTimeout(resolve, 5000)); // intervalo normal
+  }
+}
+
+mainLoop();
+
 
 
 function verificarConexao() {

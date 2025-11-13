@@ -29,6 +29,12 @@ const symbol = workerData.symbol.toUpperCase();
 const wsSymbol = symbol.toLowerCase();
 const api = require('../api');// worker.js
 
+// workers/positionWorker.js
+const { isPaused, activatePause } = require("./pauseManager");
+
+    
+
+
 //const PnlManager = require('./marginManager');
 
 //const apiKey = process.env.BINANCE_API_KEY;
@@ -1844,6 +1850,13 @@ function sleep(ms) {
 }
 
 async function abrirPosicao(side, quantityX) {
+  
+  if (isPaused()) {
+      console.log("Worker pausado temporariamente...");
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      return null;
+    }
+  
   parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
   const release = await acquireLock(symbol); // <-- trava única por símbolo
@@ -1908,7 +1921,7 @@ const amtPos = await verificarSeTemPosicao(3);
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
     });
-
+activatePause(3); // pausa por 30 min
     parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
     return res.data;
 }
@@ -3213,7 +3226,7 @@ contPos = await verificarSeTemPosicao(2);
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 //let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
 
-                exec("pm2 restart nanobot");
+                //exec("pm2 restart nanobot");
                  novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {

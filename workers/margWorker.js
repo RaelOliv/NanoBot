@@ -22,6 +22,9 @@ const BASE_URL = 'https://fapi.binance.com';
 const api = require('../api');// worker.js
 //const PnlManager = require('./marginManager');
 
+const { activatePause } = require("./pauseManager");
+
+
 //const apiKey = process.env.BINANCE_API_KEY;
 //const apiSecret = process.env.BINANCE_API_SECRET;
 
@@ -1777,6 +1780,7 @@ await salvarCache(balance, 'Balance');
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
+        activatePause(30); // pausa por 30 min
         balance = await getBalance();
         
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
