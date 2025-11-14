@@ -3171,13 +3171,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            
+            /*
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            
+            */
   //////////////////////////////
 
             //await cancelarTodasOrdens();
@@ -3226,7 +3226,7 @@ contPos = await verificarSeTemPosicao(2);
               if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 //let novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), parseFloat(posicaoAberta.entryPrice), symbol);
 
-                //exec("pm2 restart nanobot");
+                exec("pm2 restart nanobot");
                  novoTake = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.TAKEPROFIT), parseFloat(posicaoAberta.entryPrice), symbol);
   
         if (sideOrd == 'BUY') {
