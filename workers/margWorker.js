@@ -1780,7 +1780,7 @@ await salvarCache(balance, 'Balance');
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
-        activatePause(30); // pausa por 30 min
+        //activatePause(30); // pausa por 30 min
         balance = await getBalance();
         
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
