@@ -3383,7 +3383,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       }
       //let posicaoAberta
       if(
-        parseFloat(perc) >= parseFloat(5.0) && posicaoAberta.plus == 0
+        parseFloat(perc) >= parseFloat(2.0) && posicaoAberta.plus == 0
       ){
         let returnAddPos = await abrirPosicao(sideOrd, quantity, 1);
           
