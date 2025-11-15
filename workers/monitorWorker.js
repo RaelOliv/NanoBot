@@ -3177,13 +3177,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            /*
+            
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            */
+            
   //////////////////////////////
 
             //await cancelarTodasOrdens();
@@ -3385,6 +3385,10 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         sideOrd = 'SELL';
       }
       //let posicaoAberta
+      
+      //////////////////////
+      /*
+    
       if(
         parseFloat(perc) >= parseFloat(2.0) && posicaoAberta.plus == 0
       ){
@@ -3412,8 +3416,9 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         }
         
       }
+      */
       
-      
+      ///////////////////////////////////
       
       //let novoStop = null;
 
