@@ -1851,6 +1851,7 @@ function sleep(ms) {
 
 async function abrirPosicao(side, quantityX, type = 0) {
   
+  if(type == 0){
   if (isPaused()) {
       console.log("Worker pausado temporariamente...");
       await new Promise(resolve => setTimeout(resolve, 60000));
@@ -1861,7 +1862,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
 
   const release = await acquireLock(symbol); // <-- trava única por símbolo
   parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
-
+}
   try {
     
     const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
