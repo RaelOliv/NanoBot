@@ -1701,7 +1701,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-10.0) || parseFloat(perc) >= parseFloat(10.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-5.0) || parseFloat(perc) >= parseFloat(2.5 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1776,7 +1776,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
       await salvarCache(balance, 'oldBalance');
       
-    }else if (perc > 10.0 && perc < 90) {
+    }else if (perc > 2.5 && perc < 90) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
@@ -1813,7 +1813,7 @@ await salvarCache(balance, 'Balance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
 */
-    else if (perc <= -10.0 && perc >= -90.0) {
+    else if (perc <= -5.0 && perc >= -90.0) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
