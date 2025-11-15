@@ -194,7 +194,7 @@ function monitorarROI(symbol) {
 */
 
 function salvarCache(cache, currencyPair) {
-  cacheFilePath = path.join(__dirname, `cache/cacheW_${currencyPair}.json`);
+  cacheFilePath = path.join(__dirname, `cache/${currencyPair}.json`);
   try {
     fs.writeFileSync(cacheFilePath, JSON.stringify(cache), { flag: 'w' });
   } catch (err) {
@@ -204,7 +204,7 @@ function salvarCache(cache, currencyPair) {
 
 // Função para carregar o cache de um arquivo
 function carregarCache(currencyPair) {
-  cacheFilePath = path.join(__dirname, `cache/cacheW_${currencyPair}.json`);
+  cacheFilePath = path.join(__dirname, `cache/${currencyPair}.json`);
 
   try {
     const data = fs.readFileSync(cacheFilePath, 'utf-8');
