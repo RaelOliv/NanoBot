@@ -3385,9 +3385,9 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       if(
         parseFloat(perc) >= parseFloat(5.0) && posicaoAberta.plus == 0
       ){
-        let returnPos = await abrirPosicao(sideOrd, quantity);
+        let returnAddPos = await abrirPosicao(sideOrd, quantity);
           
-        if (returnPos !== null && returnPos !== undefined) {
+        if (returnAddPos !== null && returnAddPos !== undefined) {
           let cachepos = await carregarCache('cachepos');
           cachepos[symbol].plus = 1; 
           await salvarCache(cachepos, 'cachepos');
@@ -3399,9 +3399,9 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       if(
         parseFloat(perc) <= parseFloat(-5.0) && posicaoAberta.minus == 0
       ){
-        let returnPos = await fecharPosicao(sideOrd, (Math.abs(posicaoAberta.positionAmt)/2));
+        let returnReduPos = await fecharPosicao(sideOrd, (Math.abs(posicaoAberta.positionAmt)/2));
           
-        if (returnPos !== null && returnPos !== undefined) {
+        if (returnReduPos !== null && returnReduPos !== undefined) {
           let cachepos = await carregarCache('cachepos');
           cachepos[symbol].minus = 1; 
           await salvarCache(cachepos, 'cachepos');
