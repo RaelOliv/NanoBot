@@ -89,22 +89,21 @@ async function sincronizarPosicoesAtuais() {
 
     let novas = {};
     for (const p of abertas) {
-      novas[p.symbol] = {
-        symbol: p.symbol,
-        positionAmt: p.positionAmt,
-        entryPrice: p.entryPrice,
-        markPrice: p.markPrice,
-        unRealizedProfit: p.unRealizedProfit,
-        liquidationPrice: p.liquidationPrice,
-        leverage: p.leverage,
-        marginType: p.marginType,
-        isolatedMargin: p.isolatedMargin,
-        positionSide: p.positionSide,
-        //plus: p.plus,
-        //minus: p.minus,
-        updateTime: Date.now(),
-      };
-    }
+novas[p.symbol] = {
+  symbol: p.symbol,
+  positionAmt: p.positionAmt,
+  entryPrice: p.entryPrice,
+  markPrice: p.markPrice,
+  unRealizedProfit: p.unRealizedProfit,
+  liquidationPrice: p.liquidationPrice,
+  leverage: p.leverage,
+  marginType: p.marginType,
+  isolatedMargin: p.isolatedMargin,
+  positionSide: p.positionSide,
+  plus: positions[p.symbol]?.plus || 0,
+  minus: positions[p.symbol]?.minus || 0,
+  updateTime: Date.now(),
+};    }
 
     const antigos = Object.keys(positions);
     const novosKeys = Object.keys(novas);
@@ -216,20 +215,20 @@ async function iniciarWs() {
             const amt = parseFloat(p.pa);
             if (amt !== 0) {
               novas[p.s] = {
-                symbol: p.s,
-                positionAmt: p.pa,
-                entryPrice: p.ep,
-                markPrice: p.mp || '0',
-                unRealizedProfit: p.up || '0',
-                liquidationPrice: p.l || '0',
-                leverage: p.cr || '0',
-                marginType: p.mt || 'isolated',
-                isolatedMargin: p.iw || '0',
-                positionSide: p.ps || 'BOTH',
-                //plus: novas[p.s].plus || 0,
-                //minus: novas[p.s].minus || 0,
-                updateTime: Date.now(),
-              };
+  symbol: p.s,
+  positionAmt: p.pa,
+  entryPrice: p.ep,
+  markPrice: p.mp || '0',
+  unRealizedProfit: p.up || '0',
+  liquidationPrice: p.l || '0',
+  leverage: p.cr || '0',
+  marginType: p.mt || 'isolated',
+  isolatedMargin: p.iw || '0',
+  positionSide: p.ps || 'BOTH',
+  plus: positions[p.s]?.plus || 0,
+  minus: positions[p.s]?.minus || 0,
+  updateTime: Date.now(),
+};
             } else {
               delete novas[p.s];
             }
