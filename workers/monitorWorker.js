@@ -1849,7 +1849,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function abrirPosicao(side, quantityX) {
+async function abrirPosicao(side, quantityX, type = 0) {
   
   if (isPaused()) {
       console.log("Worker pausado temporariamente...");
@@ -1871,7 +1871,7 @@ async function abrirPosicao(side, quantityX) {
     
     const posicaoAberta = await verificarSeTemPosicao(1);
 
-    if (posicaoAberta) {
+    if (type == 0 && posicaoAberta) {
       parentPort.postMessage(`⚠️ Já existe uma posição aberta para ${symbol}. Abortando nova abertura.`);
       return null;
     }
@@ -1888,7 +1888,7 @@ let perc = percentage(
 
 const contPos = await verificarSeTemPosicao(2);
 
-    if (contPos >= 2) {
+    if (type == 0 && contPos >= 2 ) {
       parentPort.postMessage(`⚠️ Já existem duas posições abertas. Abortando nova abertura.`);
       return null;
     }
@@ -1897,7 +1897,7 @@ const contPos = await verificarSeTemPosicao(2);
 
 const amtPos = await verificarSeTemPosicao(3);
 
-      if ((amtPos > 0 && side == 'BUY') || (amtPos < 0 && side == 'SELL')){
+      if (type == 0 && ((amtPos > 0 && side == 'BUY') || (amtPos < 0 && side == 'SELL'))){
         parentPort.postMessage(`⚠️ Já existem posições abertas na mesma direção. Abortando nova abertura.`);
       return null;
       }
@@ -1913,7 +1913,7 @@ const amtPos = await verificarSeTemPosicao(3);
     };
 
     params.signature = gerarAssinatura(params);
- if(/*(contPos < 2
+ if(type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
       ) || */ contPos < 1){
@@ -3385,7 +3385,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       if(
         parseFloat(perc) >= parseFloat(5.0) && posicaoAberta.plus == 0
       ){
-        let returnAddPos = await abrirPosicao(sideOrd, quantity);
+        let returnAddPos = await abrirPosicao(sideOrd, quantity, 1);
           
         if (returnAddPos !== null && returnAddPos !== undefined) {
           let cachepos = await carregarCache('cachepos');
