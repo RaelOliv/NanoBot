@@ -22,7 +22,7 @@ let listenKeyRenewTimer = null;
 
 // Caminho do cache
 const CACHE_DIR = path.resolve(__dirname, 'cache');
-const CACHE_PATH = path.resolve(CACHE_DIR, 'cacheW_cachepos.json');
+const CACHE_PATH = path.resolve(CACHE_DIR, 'cachepos.json');
 
 // Garante que a pasta e o arquivo existam
 function garantirCache() {
