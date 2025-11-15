@@ -1934,8 +1934,10 @@ else{
     parentPort.postMessage(`❌ Erro ao abrir posição: ${JSON.stringify(err.response?.data || err.message)}`);
     return null;
   } finally {
+    if(type == 0){
     release(); // 🔓 libera o lock
     parentPort.postMessage(`🔓 Lock liberado para ${symbol}`);
+    }
   }
 }
 
