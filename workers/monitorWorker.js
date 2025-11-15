@@ -1913,10 +1913,10 @@ const amtPos = await verificarSeTemPosicao(3);
     };
 
     params.signature = gerarAssinatura(params);
- if((contPos < 2
+ if(/*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || contPos < 1){
+      ) || */ contPos < 1){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -3026,10 +3026,12 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
 
     if (gatilhoAtivado === true 
-    &&  ((contPos < 2
+    &&  (
+      /*
+      (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || contPos < 1)
+      ) || */ contPos < 1)
     ) {
 
       //posicaoAberta = 0;
@@ -3152,10 +3154,11 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 contPos = await verificarSeTemPosicao(2);
       parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
       
-      if ((contPos < 2
+      if (
+        /*
+        (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      
-      ) || contPos < 1) {
+      ) || */ contPos < 1) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -3171,13 +3174,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            
+            /*
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            
+            */
   //////////////////////////////
 
             //await cancelarTodasOrdens();
@@ -3378,7 +3381,37 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         sideM = 'V';
         sideOrd = 'SELL';
       }
-
+      //let posicaoAberta
+      if(
+        parseFloat(perc) >= parseFloat(5.0) && posicaoAberta.plus == 0
+      ){
+        let returnPos = await abrirPosicao(sideOrd, quantity);
+          
+        if (returnPos !== null && returnPos !== undefined) {
+          let cachepos = await carregarCache('cachepos');
+          cachepos[symbol].plus = 1; 
+          await salvarCache(cachepos, 'cachepos');
+          posicaoAberta = await verificarSeTemPosicao(1);
+        }
+        
+      }
+      
+      if(
+        parseFloat(perc) <= parseFloat(-5.0) && posicaoAberta.minus == 0
+      ){
+        let returnPos = await fecharPosicao(sideOrd, (Math.abs(posicaoAberta.positionAmt)/2));
+          
+        if (returnPos !== null && returnPos !== undefined) {
+          let cachepos = await carregarCache('cachepos');
+          cachepos[symbol].minus = 1; 
+          await salvarCache(cachepos, 'cachepos');
+          posicaoAberta = await verificarSeTemPosicao(1);
+        }
+        
+      }
+      
+      
+      
       //let novoStop = null;
 
       /*
