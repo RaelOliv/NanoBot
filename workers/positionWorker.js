@@ -100,8 +100,8 @@ async function sincronizarPosicoesAtuais() {
         marginType: p.marginType,
         isolatedMargin: p.isolatedMargin,
         positionSide: p.positionSide,
-        plus: p.plus,
-        minus: p.minus,
+        //plus: p.plus,
+        //minus: p.minus,
         updateTime: Date.now(),
       };
     }
@@ -226,8 +226,8 @@ async function iniciarWs() {
                 marginType: p.mt || 'isolated',
                 isolatedMargin: p.iw || '0',
                 positionSide: p.ps || 'BOTH',
-                plus: novas[p.s].plus || 0,
-                minus: novas[p.s].minus || 0,
+                //plus: novas[p.s].plus || 0,
+                //minus: novas[p.s].minus || 0,
                 updateTime: Date.now(),
               };
             } else {
