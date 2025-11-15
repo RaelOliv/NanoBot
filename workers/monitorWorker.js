@@ -2183,7 +2183,7 @@ async function verificarSeTemPosicao(type = 1) {
 }
 */
 
-const CACHE_PATH = path.resolve(__dirname, 'cache/cachepos.json');
+const CACHE_PATH = path.resolve(__dirname, 'cache/cacheW_cachepos.json');
 
 // Garante que o arquivo exista
 function garantirCache() {
