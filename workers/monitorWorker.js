@@ -5054,9 +5054,9 @@ let sRsiLast15m = null;
           
           
         //) &&
-        parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        //parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
+        //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+        //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) &&
@@ -5076,12 +5076,21 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 */
 //parseFloat(sRsiLast1m.k) >= parseFloat(50.0) &&
 //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-          parseFloat(ema3m5p) >= parseFloat(ema3m10p) 
+          //parseFloat(ema3m5p) >= parseFloat(ema3m10p) 
           
           //&&
           // parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
+      
+parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
+//parseFloat(sRsiLast3m.k) <= parseFloat(20) &&
+parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+      parseFloat(sRsiLast5m.k) <= parseFloat(20) &&
+parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
+      parseFloat(sRsiLast15m.k) <= parseFloat(20) &&
+parseFloat(sRsiLast30m.k) <= parseFloat(20) &&
+parseFloat(sRsiLast1h.k) <= parseFloat(20) 
       ) {
 
         sideM = 'C';
@@ -5223,9 +5232,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           
         //) &&
 
-        parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        //parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) &&
+        //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
+        //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) &&
@@ -5247,11 +5256,20 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 */
 //parseFloat(sRsiLast1m.k) <= parseFloat(50.0) &&
 //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-          parseFloat(ema3m5p) <= parseFloat(ema3m10p) 
+          //parseFloat(ema3m5p) <= parseFloat(ema3m10p) 
           //&&
            //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+      
+      parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) &&
+//parseFloat(sRsiLast3m.k) >= parseFloat(80) &&
+parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+      parseFloat(sRsiLast5m.k) >= parseFloat(80) &&
+parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+      parseFloat(sRsiLast15m.k) >= parseFloat(80) &&
+parseFloat(sRsiLast30m.k) >= parseFloat(80) &&
+parseFloat(sRsiLast1h.k) >= parseFloat(80)
       
       ) {
 
