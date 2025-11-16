@@ -1922,7 +1922,7 @@ const amtPos = await verificarSeTemPosicao(3);
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
     });
-activatePause(3); // pausa por 3 min
+activatePause(1); // pausa por 3 min
     parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
     return res.data;
 }
