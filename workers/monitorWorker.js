@@ -3261,6 +3261,8 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
             if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
+await sleep(600000);
+
               if (posicaoAberta.positionAmt > 0) {
                 sideM = 'C';
                 sideOrd = 'BUY';
