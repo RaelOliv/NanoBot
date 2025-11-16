@@ -3345,6 +3345,9 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         }
       }
       else if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
+        
+        await sleep(600000);
+        
                 if (
                 //gatilhoAtivado == true && 
                 posicaoAberta.positionAmt < 0 &&

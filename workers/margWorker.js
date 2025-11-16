@@ -1795,7 +1795,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
         await salvarCache(balance, 'oldBalance');
         
-        activatePause(30); // pausa por 30 min
+        //activatePause(30); // pausa por 30 min
       }
       
       
@@ -1828,7 +1828,7 @@ await salvarCache(balance, 'Balance');
       await salvarCache(balance, 'oldBalance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
       await salvarCache(balanceHist, 'BalanceHist');
-      activatePause(5); // pausa por 30 min
+      //activatePause(5); // pausa por 30 min
     }
     // salvar saldo/histórico de margem
 
