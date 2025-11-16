@@ -3060,8 +3060,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
-            parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
-            parseFloat(preco_atual) >= parseFloat(ema3m10p) 
+            parseFloat(preco_atual) >= parseFloat(preco_anterior)
+            
+            //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
+            //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
   ////////////////        
             //parseFloat(preco_atual) > parseFloat(ema3m5p) &&
             
@@ -3110,8 +3112,10 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
-            parseFloat(preco_atual) <= parseFloat(ema3m10p) 
+            parseFloat(preco_atual) <= parseFloat(preco_anterior) //&&
+            
+            //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
+            //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
   //////////////
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
      //parseFloat(preco_anterior) >= parseFloat(ema3m5p) 
