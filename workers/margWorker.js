@@ -1701,7 +1701,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-20.0) || parseFloat(perc) >= parseFloat(12.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-10.0) || parseFloat(perc) >= parseFloat(12.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1795,7 +1795,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
         await salvarCache(balance, 'oldBalance');
         
-        //activatePause(30); // pausa por 30 min
+        activatePause(15); // pausa por 30 min
       }
       
       
@@ -1815,7 +1815,7 @@ await salvarCache(balance, 'Balance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
 */
-    else if (perc <= -20.0 && perc >= -90.0) {
+    else if (perc <= -10.0 && perc >= -90.0) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
@@ -1828,7 +1828,7 @@ await salvarCache(balance, 'Balance');
       await salvarCache(balance, 'oldBalance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
       await salvarCache(balanceHist, 'BalanceHist');
-      //activatePause(5); // pausa por 30 min
+      activatePause(3); // pausa por 30 min
     }
     // salvar saldo/histórico de margem
 
