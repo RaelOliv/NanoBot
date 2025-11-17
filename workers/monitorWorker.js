@@ -1860,7 +1860,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
   
   parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
-  //const release = await acquireLock(symbol); // <-- trava única por símbolo
+  const release = await acquireLock(symbol); // <-- trava única por símbolo
   parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
 }
   try {
@@ -1935,7 +1935,7 @@ else{
     return null;
   } finally {
     if(type == 0){
-    //release(); // 🔓 libera o lock
+    release(); // 🔓 libera o lock
     parentPort.postMessage(`🔓 Lock liberado para ${symbol}`);
     }
   }
@@ -3181,13 +3181,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            /*
+            
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            */
+            
   //////////////////////////////
 
             //await cancelarTodasOrdens();
