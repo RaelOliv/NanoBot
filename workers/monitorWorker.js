@@ -3181,13 +3181,13 @@ contPos = await verificarSeTemPosicao(2);
             quantity = await getQntbyBalance();
 
   ////////////invTr////////////////
-            
+            /*
             if (sideOrd == 'BUY') {
               sideOrd = 'SELL';
             } else if (sideOrd == 'SELL') {
               sideOrd = 'BUY';
             }
-            
+            */
   //////////////////////////////
 
             //await cancelarTodasOrdens();
@@ -5092,14 +5092,19 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
       //parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
       
-parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
-//parseFloat(sRsiLast3m.k) <= parseFloat(20) &&
-parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
-      
-parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
-     // parseFloat(sRsiLast15m.k) <= parseFloat(20) &&
-parseFloat(sRsiLast30m.k) <= parseFloat(20) &&
-parseFloat(sRsiLast1h.k) <= parseFloat(20) 
+parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) 
+&& parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) 
+&& parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) 
+&& parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) 
+&& parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) 
+&& parseFloat(sRsiLast30m.k) >= parseFloat(50)
+&& parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) 
+&& parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) 
+&& parseFloat(sRsiLast1h.k) >= parseFloat(20) 
+&& parseFloat(sRsiLast1h.k) <= parseFloat(70) 
+&& parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
+&& parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) 
+&& parseFloat(ema3m5p) >= parseFloat(ema3m10p) 
       ) {
 
         sideM = 'C';
@@ -5271,15 +5276,19 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       //parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
       
-      parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) &&
-//parseFloat(sRsiLast3m.k) >= parseFloat(80) &&
-parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
-      parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
-
-      //parseFloat(sRsiLast15m.k) >= parseFloat(80) &&
-parseFloat(sRsiLast30m.k) >= parseFloat(80) &&
-parseFloat(sRsiLast1h.k) >= parseFloat(80)
-      
+      parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) 
+&& parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) 
+&& parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) 
+&& parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) 
+&& parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) 
+&& parseFloat(sRsiLast30m.k) <= parseFloat(50)
+&& parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) 
+&& parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) 
+&& parseFloat(sRsiLast1h.k) <= parseFloat(80) 
+&& parseFloat(sRsiLast1h.k) >= parseFloat(30) 
+&& parseFloat(sRsiLast1h.k) <=  parseFloat(sRsiLast1h.d) 
+&& parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
+&& parseFloat(ema3m5p) <= parseFloat(ema3m10p) 
       ) {
 
         sideM = 'V';
