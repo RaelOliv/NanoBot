@@ -5355,25 +5355,27 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       //parentPort.postMessage(`fibo1h_ret0: ${JSON.stringify(fibo1h.retr1, null, 2)}`);
 
 
-      //parentPort.postMessage(`sRsiLast1m: ${JSON.stringify(sRsiLast1m, null, 2)}`);
-      //parentPort.postMessage(`sRsiLast3m: ${JSON.stringify(sRsiLast3m, null, 2)}`);
-      //parentPort.postMessage(`sRsiLast5m: ${JSON.stringify(sRsiLast5m, null, 2)}`);
-      //parentPort.postMessage(`sRsiLast15m: ${JSON.stringify(sRsiLast15m, null, 2)}`);
-      //parentPort.postMessage(`sRsiLast30m: ${JSON.stringify(sRsiLast30m, null, 2)}`);
-      //parentPort.postMessage(`sRsiLast1h: ${JSON.stringify(sRsiLast1h, null, 2)}`);
+      parentPort.postMessage(`sRsiLast1m: ${JSON.stringify(sRsiLast1m, null, 2)}`);
+      parentPort.postMessage(`sRsiLast3m: ${JSON.stringify(sRsiLast3m, null, 2)}`);
+      parentPort.postMessage(`sRsiLast5m: ${JSON.stringify(sRsiLast5m, null, 2)}`);
+      parentPort.postMessage(`sRsiLast15m: ${JSON.stringify(sRsiLast15m, null, 2)}`);
+      parentPort.postMessage(`sRsiLast30m: ${JSON.stringify(sRsiLast30m, null, 2)}`);
+      parentPort.postMessage(`sRsiLast1h: ${JSON.stringify(sRsiLast1h, null, 2)}`);
       //parentPort.postMessage(`sRsiLast4h: ${JSON.stringify(sRsiLast4h, null, 2)}`);
 
-      parentPort.postMessage(`ltaltb1m: ${JSON.stringify(ltaltb1m, null, 2)}`);
+      //parentPort.postMessage(`ltaltb1m: ${JSON.stringify(ltaltb1m, null, 2)}`);
       //parentPort.postMessage(`ltaltb3m: ${JSON.stringify(ltaltb3m, null, 2)}`);
-      parentPort.postMessage(`ltaltb5m: ${JSON.stringify(ltaltb5m, null, 2)}`);
+      //parentPort.postMessage(`ltaltb5m: ${JSON.stringify(ltaltb5m, null, 2)}`);
       //parentPort.postMessage(`ltaltb15m: ${JSON.stringify(ltaltb15m, null, 2)}`);
       //parentPort.postMessage(`ltaltb1h: ${JSON.stringify(ltaltb1h, null, 2)}`);
       //parentPort.postMessage(`ltaltb4h: ${JSON.stringify(ltaltb4h, null, 2)}`);
+      /*
       parentPort.postMessage("");
 
       parentPort.postMessage(`fibo5m.dir: ${JSON.stringify(fibo5m.dir, null, 2)}`);
       parentPort.postMessage(`fibo5m.retr0: ${JSON.stringify(fibo5m.retr0, null, 2)}`);
       parentPort.postMessage(`fibo5m.retr1: ${JSON.stringify(fibo5m.retr1, null, 2)}`);
+      */
       parentPort.postMessage("");
 
       /*
