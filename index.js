@@ -955,7 +955,7 @@ const cryptSymbols = {
     apt: 'APTUSDT',
     arb: 'ARBUSDT',
     aster: 'ASTERUSDT',
-    bas: 'BASUSDT',
+    //bas: 'BASUSDT', // volatilidade incompativel
     bat: 'BATUSDT',
     bnb: 'BNBUSDT',
     bonk: '1000BONKUSDT',
@@ -970,7 +970,7 @@ const cryptSymbols = {
     fet: 'FETUSDT',
     hbar: 'HBARUSDT',
     idol: 'IDOLUSDT',
-    jto: 'JTOUSDT',
+    //jto: 'JTOUSDT', // poucas entradas e takes
     jup: 'JUPUSDT',
     kaito: 'KAITOUSDT',
     layer: 'LAYERUSDT',
