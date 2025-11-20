@@ -1851,6 +1851,12 @@ function sleep(ms) {
 
 async function abrirPosicao(side, quantityX, type = 0) {
   
+  if (!canTrade(symbol)) {
+    console.log(`[BLOCK] ${symbol} foi usado nos últimos 5 trades. Operação cancelada.`);
+    return null;
+  }
+  
+  
   if(type == 0){
   if (isPaused()) {
       console.log("Worker pausado temporariamente...");
@@ -3223,7 +3229,7 @@ contPos = await verificarSeTemPosicao(2);
 
             if (returnPos !== null && returnPos !== undefined) {
               await cancelarTodasOrdens();
-
+              addTrade(symbol);
 
               gatilhoAtivado = false;
               ultimaPosicao = undefined;
@@ -4619,6 +4625,42 @@ async function getOpenPositions() {
   }
 }
 
+const historyPath = path.join(__dirname, "cache/tradeHistory.json");
+
+function loadHistory() {
+  try {
+    return JSON.parse(fs.readFileSync(historyPath, "utf8"));
+  } catch (err) {
+    return { last5: [] };
+  }
+}
+
+function saveHistory(history) {
+  fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
+}
+
+function canTrade(symbol) {
+  const history = loadHistory();
+
+  // Verifica se o símbolo apareceu nos últimos 5 trades
+  if (history.last5.includes(symbol)) {
+    return false;
+  }
+
+  return true;
+}
+
+function addTrade(symbol) {
+  const history = loadHistory();
+
+  history.last5.unshift(symbol); // adiciona no início
+
+  // mantém apenas os 5 mais recentes
+  history.last5 = history.last5.slice(0, 5);
+
+  saveHistory(history);
+}
+
 
 async function iniciarWebSocketContinuo() {
 
@@ -5096,30 +5138,31 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) 
 && parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m.d) 
-//&& parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) 
-
+&& parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) 
+/*
 && parseFloat(sRsiLast15m.k) >= parseFloat(50)
 && parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) 
 && parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) 
+*/
 
-/*
 && parseFloat(sRsiLast30m.k) >= parseFloat(50)
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) 
-*/
+/*
 && parseFloat(sRsiLast30m.k) >= parseFloat(20) 
 && parseFloat(sRsiLast30m.k) <= parseFloat(60) 
 && parseFloat(sRsiLast30m.k) >=  parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) 
+*/
 
-/*
 && parseFloat(sRsiLast1h.k) >= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(60) 
 && parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) 
-*/
+
 
 && parseFloat(ema3m5p) >= parseFloat(ema3m10p) 
+
       ) {
 
         sideM = 'C';
@@ -5295,28 +5338,29 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) 
 && parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m.d) 
-//&& parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) 
-
+&& parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) 
+/*
 && parseFloat(sRsiLast15m.k) <= parseFloat(50)
 && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) 
 && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) 
+*/
 
-/*
 && parseFloat(sRsiLast30m.k) <= parseFloat(50)
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) 
-*/
+
+/*
 && parseFloat(sRsiLast30m.k) <= parseFloat(80) 
 && parseFloat(sRsiLast30m.k) >= parseFloat(40) 
 && parseFloat(sRsiLast30m.k) <=  parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) 
+*/
 
-/*
 && parseFloat(sRsiLast1h.k) <= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(70) 
 && parseFloat(sRsiLast1h.k) <=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
-*/
+
 
 && parseFloat(ema3m5p) <= parseFloat(ema3m10p) 
 
