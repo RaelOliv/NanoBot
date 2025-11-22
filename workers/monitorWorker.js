@@ -5175,6 +5175,7 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) 
 */
 && parseFloat(sRsiLast1h_2.k) <= parseFloat(20) 
+&& parseFloat(sRsiLast1h_2.d) <= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(60) 
 && parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
@@ -5377,8 +5378,9 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) 
 */
 && parseFloat(sRsiLast1h_2.k) >= parseFloat(80) 
-&& parseFloat(sRsiLast1h.k) >= parseFloat(40) 
+&& parseFloat(sRsiLast1h_2.d) >= parseFloat(80) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(80) 
+&& parseFloat(sRsiLast1h.k) >= parseFloat(40) 
 && parseFloat(sRsiLast1h.k) <=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
 
