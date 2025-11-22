@@ -2451,6 +2451,12 @@ function iniciarWebSocketcandles1m() {
       candles1m.push(candle1m);
 
       //if (candles1m.length > 400) candles1m.shift();
+      
+      ema1m5p_2 = ema1m5p;
+      ema1m10p_2 = ema1m10p;
+      
+      ema1m5p = calcularEMA(5, candles1m);
+      ema1m10p = calcularEMA(10, candles1m);
 
       const s50 = calcularSMA(50, candles1m);
       const s60 = calcularSMA(60, candles1m);
@@ -3382,7 +3388,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
                 //gatilhoAtivado == true && 
                 posicaoAberta.positionAmt < 0 &&
                 //sideOrd == 'BUY' &&
-                parseFloat(ema3m5p) > parseFloat(ema3m10p)
+                parseFloat(ema1m5p) > parseFloat(ema1m10p)
         ) {
           
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
@@ -3396,7 +3402,7 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           //gatilhoAtivado == true && 
           posicaoAberta.positionAmt > 0 &&
                // sideOrd == 'SELL' &&
-          parseFloat(ema3m5p) < parseFloat(ema3m10p)
+          parseFloat(ema1m5p) < parseFloat(ema1m10p)
         
         ) {
           
@@ -5168,9 +5174,9 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 && parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) 
 */
-parseFloat(ema3m5p_2) < parseFloat(ema3m10p_2) 
-&& parseFloat(ema3m5p) > parseFloat(ema3m10p) 
-&& parseFloat(ema3m5p) > parseFloat(ema3m400p) 
+parseFloat(ema1m5p_2) < parseFloat(ema1m10p_2) 
+&& parseFloat(ema1m5p) > parseFloat(ema1m10p) 
+&& parseFloat(ema1m5p) > parseFloat(ema3m400p) 
 
       ) {
 
@@ -5371,9 +5377,9 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
 */
 
-parseFloat(ema3m5p_2) > parseFloat(ema3m10p_2) 
-&& parseFloat(ema3m5p) < parseFloat(ema3m10p) 
-&& parseFloat(ema3m5p) < parseFloat(ema3m400p) 
+parseFloat(ema1m5p_2) > parseFloat(ema1m10p_2) 
+&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
+&& parseFloat(ema1m5p) < parseFloat(ema3m400p) 
 
       ) {
 
