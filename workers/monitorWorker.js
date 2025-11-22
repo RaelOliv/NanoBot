@@ -1728,15 +1728,15 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    /*
+    
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
-    */
-    return undefined;
+    
+    //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -3396,13 +3396,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
                 //sideOrd == 'BUY' &&
                 parseFloat(ema1m5p) > parseFloat(ema1m10p)
         ) {
-          
+          /*
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
             sideM = 'C';
             sideOrd = 'BUY';
             gatilhoAtivado = true;
            //let returnPos = await abrirPosicao(sideOrd, quantity);
-          
+          */
 
         } else if (
           //gatilhoAtivado == true && 
@@ -3411,13 +3411,13 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           parseFloat(ema1m5p) < parseFloat(ema1m10p)
         
         ) {
-          
+          /*
                   await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
                   sideM = 'V';
                   sideOrd = 'SELL';
                   gatilhoAtivado = true;
           //let returnPos = await abrirPosicao(sideOrd, quantity);
-
+*/
         }
       
       
@@ -5153,7 +5153,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           // parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-1)[0].close) <= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
-      /*
+      
 parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) 
 && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) 
@@ -5163,7 +5163,7 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 && parseFloat(sRsiLast15m.k) >= parseFloat(50)
 && parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m.d) 
 && parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) 
-*
+*/
 
 && parseFloat(sRsiLast30m.k) >= parseFloat(50)
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d) 
@@ -5173,17 +5173,17 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 && parseFloat(sRsiLast30m.k) <= parseFloat(60) 
 && parseFloat(sRsiLast30m.k) >=  parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k) 
-*
-
+*/
+&& parseFloat(sRsiLast1h.k) <= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(20) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(60) 
 && parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) 
-*/
+/*
 parseFloat(ema1m5p_2) < parseFloat(ema1m10p_2) 
 && parseFloat(ema1m5p) > parseFloat(ema1m10p) 
 && parseFloat(ema1m5p) > parseFloat(ema3m400p) 
-
+/*/
       ) {
 
         sideM = 'C';
@@ -5354,7 +5354,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
            //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-1)[0].close) >= parseFloat(ema3m5p) &&
       //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
-      /*
+      
       parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m.d) 
 && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) 
@@ -5364,7 +5364,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast15m.k) <= parseFloat(50)
 && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m.d) 
 && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) 
-*
+*/
 
 && parseFloat(sRsiLast30m.k) <= parseFloat(50)
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) 
@@ -5375,18 +5375,18 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast30m.k) >= parseFloat(40) 
 && parseFloat(sRsiLast30m.k) <=  parseFloat(sRsiLast30m.d) 
 && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) 
-*
-
+*/
+&& parseFloat(sRsiLast1h_2.k) >= parseFloat(70) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(40) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(70) 
 && parseFloat(sRsiLast1h.k) <=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
-*/
 
+/*
 parseFloat(ema1m5p_2) > parseFloat(ema1m10p_2) 
 && parseFloat(ema1m5p) < parseFloat(ema1m10p) 
 && parseFloat(ema1m5p) < parseFloat(ema3m400p) 
-
+*/
       ) {
 
         sideM = 'V';
