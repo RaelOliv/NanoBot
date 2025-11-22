@@ -1665,15 +1665,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    /*
+    
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
-    */
-    return undefined;
+    
+    //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
