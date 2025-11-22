@@ -108,6 +108,12 @@ let maiorMedia1m = undefined;
 let menorMedia1m = undefined;
 let maiorMedia3m = undefined;
 let menorMedia3m = undefined;
+
+let ema1m5p = undefined;
+let ema1m10p = undefined;
+let ema1m5p_2 = undefined;
+let ema1m10p_2 = undefined;
+
 let ema3m5p = undefined;
 let ema3m10p = undefined;
 let ema3m400p = undefined;
