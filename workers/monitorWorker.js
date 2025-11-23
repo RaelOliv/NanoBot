@@ -5191,7 +5191,7 @@ parseFloat(sRsiLast1h_2.k) <= parseFloat(50)
 && parseFloat(sRsiLast1h.k) >=  parseFloat(sRsiLast1h.d) 
 && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k) 
 
-parseFloat(ema1m5p_2) < parseFloat(ema1m10p_2) 
+&& parseFloat(ema1m5p_2) < parseFloat(ema1m10p_2) 
 && parseFloat(ema1m5p) > parseFloat(ema1m10p) 
 //&& parseFloat(ema1m5p) > parseFloat(ema3m400p) 
 //
@@ -5400,11 +5400,11 @@ parseFloat(sRsiLast1h_2.k) >= parseFloat(50)
 && parseFloat(sRsiLast1h.k) <= parseFloat(50) 
 //&& parseFloat(sRsiLast1h.k) <= parseFloat(60) 
 && parseFloat(sRsiLast1h.k) <=  parseFloat(sRsiLast1h.d) 
-&& parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
+&& parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k)
 
-parseFloat(ema1m5p_2) > parseFloat(ema1m10p_2) 
+&& parseFloat(ema1m5p_2) > parseFloat(ema1m10p_2) 
 && parseFloat(ema1m5p) < parseFloat(ema1m10p) 
-&& parseFloat(ema1m5p) < parseFloat(ema3m400p) 
+// && parseFloat(ema1m5p) < parseFloat(ema3m400p) 
 
 
       ) {
