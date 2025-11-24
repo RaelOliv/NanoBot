@@ -1701,7 +1701,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-25.0) || parseFloat(perc) >= parseFloat(50.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-25.0) || parseFloat(perc) >= parseFloat(10.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1776,7 +1776,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
       await salvarCache(balance, 'oldBalance');
       
-    }else if (perc >= 50.0 && perc < 90) {
+    }else if (perc >= 10.0 && perc < 90) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
