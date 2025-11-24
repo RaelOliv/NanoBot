@@ -1904,7 +1904,7 @@ let perc = percentage(
 
 const contPos = await verificarSeTemPosicao(2);
 
-    if (type == 0 && contPos >= 2 ) {
+    if (type == 0 && contPos >= 1 ) {
       parentPort.postMessage(`⚠️ Já existem duas posições abertas. Abortando nova abertura.`);
       return null;
     }
@@ -1932,7 +1932,7 @@ const amtPos = await verificarSeTemPosicao(3);
  if(type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 2){
+      ) || */ contPos < 1){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -3059,7 +3059,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
       (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 2)
+      ) || */ contPos < 1)
     ) {
 
       //posicaoAberta = 0;
@@ -3190,7 +3190,7 @@ contPos = await verificarSeTemPosicao(2);
         /*
         (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      ) || */ contPos < 2) {
+      ) || */ contPos < 1) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -5184,12 +5184,12 @@ parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d)
 */
 
 
-parseFloat(sRsiLast15m_2.k) <= parseFloat(50) 
-&& parseFloat(sRsiLast15m_2.d) <= parseFloat(50) 
-&& parseFloat(sRsiLast15m.k) >= parseFloat(50) 
-//&& parseFloat(sRsiLast15m.k) <= parseFloat(60) 
-&& parseFloat(sRsiLast15m.k) >=  parseFloat(sRsiLast15m.d) 
-&& parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) 
+parseFloat(sRsiLast5m_2.k) <= parseFloat(20) 
+&& parseFloat(sRsiLast5m_2.d) <= parseFloat(20) 
+&& parseFloat(sRsiLast5m.k) >= parseFloat(20) 
+//&& parseFloat(sRsiLast5m.k) <= parseFloat(60) 
+&& parseFloat(sRsiLast5m.k) >=  parseFloat(sRsiLast5m.d) 
+&& parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) 
 
 //&& parseFloat(ema1m5p_2) < parseFloat(ema1m10p_2) 
 //&& parseFloat(ema1m5p) > parseFloat(ema1m10p) 
@@ -5395,12 +5395,12 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k) 
 */
 
-parseFloat(sRsiLast15m_2.k) >= parseFloat(50) 
-&& parseFloat(sRsiLast15m_2.d) >= parseFloat(50) 
-&& parseFloat(sRsiLast15m.k) <= parseFloat(50) 
-//&& parseFloat(sRsiLast15m.k) <= parseFloat(60) 
-&& parseFloat(sRsiLast15m.k) <=  parseFloat(sRsiLast15m.d) 
-&& parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k)
+parseFloat(sRsiLast5m_2.k) >= parseFloat(80) 
+&& parseFloat(sRsiLast5m_2.d) >= parseFloat(80) 
+&& parseFloat(sRsiLast5m.k) <= parseFloat(80) 
+//&& parseFloat(sRsiLast5m.k) <= parseFloat(60) 
+&& parseFloat(sRsiLast5m.k) <=  parseFloat(sRsiLast5m.d) 
+&& parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k)
 
 //&& parseFloat(ema1m5p_2) > parseFloat(ema1m10p_2) 
 //&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
