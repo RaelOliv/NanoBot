@@ -1795,7 +1795,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
         await salvarCache(balance, 'oldBalance');
         
-        activatePause(15); // pausa por 30 min
+        activatePause(5); // pausa por 30 min
       }
       
       
