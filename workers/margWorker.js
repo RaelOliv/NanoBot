@@ -1777,7 +1777,8 @@ await salvarCache(balance, 'Balance');
       await salvarCache(balance, 'oldBalance');
       
     }else if (perc >= 10.0 && perc < 90) {
-
+      
+      activatePause(5); // pausa por 30 min
       let res = await fecharTodasPosicoes();
       if (res == true) {
         
@@ -1795,7 +1796,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
         await salvarCache(balance, 'oldBalance');
         
-        activatePause(5); // pausa por 30 min
+        
       }
       
       
