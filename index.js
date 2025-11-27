@@ -1000,7 +1000,7 @@ const cryptSymbols = {
     ta: 'TAUSDT',
     tia: 'TIAUSDT',
     ton: 'TONUSDT',
-    trx: 'TRXUSDT',
+    /// trx: 'TRXUSDT', // poucas vol
     uni: 'UNIUSDT',
     vet: 'VETUSDT',
     virtual: 'VIRTUALUSDT',
