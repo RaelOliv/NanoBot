@@ -5203,10 +5203,9 @@ parseFloat(sRsiLast1h.k) <= parseFloat(20)
 //&& parseFloat(ema1m5p) > parseFloat(ema3m400p) 
 //
 */
-//parseFloat(sRsiLast15m.k) <= parseFloat(20)
-//&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-//&& 
-parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
+parseFloat(sRsiLast15m.k) <= parseFloat(20)
+&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
+&& parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
 && parseFloat(sRsiLast5m_2.d) <= parseFloat(10) 
 && parseFloat(sRsiLast5m.k) >= parseFloat(10)
 && parseFloat(sRsiLast5m.k) >=  parseFloat(sRsiLast5m.d) 
@@ -5431,10 +5430,9 @@ parseFloat(sRsiLast1h.k) >= parseFloat(80)
 //&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
 // && parseFloat(ema1m5p) < parseFloat(ema3m400p) 
 */
-//parseFloat(sRsiLast15m.k) >= parseFloat(80)
-//&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
-//&& 
-parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
+parseFloat(sRsiLast15m.k) >= parseFloat(80)
+&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+&& parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
 && parseFloat(sRsiLast5m_2.d) >= parseFloat(90) 
 && parseFloat(sRsiLast5m.k) <= parseFloat(90)
 && parseFloat(sRsiLast5m.k) <=  parseFloat(sRsiLast5m.d) 
