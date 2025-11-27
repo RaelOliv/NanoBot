@@ -116,6 +116,7 @@ let ema1m10p_2 = undefined;
 
 let ema3m5p = undefined;
 let ema3m10p = undefined;
+let sma3m400p = undefined;
 let ema3m400p = undefined;
 let ema3m5p_2 = undefined;
 let ema3m10p_2 = undefined;
@@ -1322,6 +1323,9 @@ async function carregarCandlesHistoricos() {
 
     ema3m5p = calcularEMA(5, candles3m);
     ema3m10p = calcularEMA(10, candles3m);
+
+sma3m400p = calcularSMA(400, candles3m);
+      ema3m400p = calcularEMA(400, candles3m);
 
     const s20 = calcularSMA(20, candles3m);
     const e20 = calcularEMA(20, candles3m);
@@ -2543,6 +2547,7 @@ function iniciarWebSocketcandles3m() {
       
       ema3m5p = calcularEMA(5, candles3m);
       ema3m10p = calcularEMA(10, candles3m);
+      sma3m400p = calcularSMA(400, candles3m);
       ema3m400p = calcularEMA(400, candles3m);
 
       const s20 = calcularSMA(20, candles3m);
@@ -5198,14 +5203,18 @@ parseFloat(sRsiLast1h.k) <= parseFloat(20)
 //&& parseFloat(ema1m5p) > parseFloat(ema3m400p) 
 //
 */
-parseFloat(sRsiLast15m.k) <= parseFloat(20)
-&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-&& parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
+//parseFloat(sRsiLast15m.k) <= parseFloat(20)
+//&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
+//&& 
+parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
 && parseFloat(sRsiLast5m_2.d) <= parseFloat(10) 
 && parseFloat(sRsiLast5m.k) >= parseFloat(10)
 && parseFloat(sRsiLast5m.k) >=  parseFloat(sRsiLast5m.d) 
 && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+
+&& parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
+&& parseFloat(ema1m5p) > parseFloat(sma3m400p) 
 
       ) {
 
@@ -5422,14 +5431,18 @@ parseFloat(sRsiLast1h.k) >= parseFloat(80)
 //&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
 // && parseFloat(ema1m5p) < parseFloat(ema3m400p) 
 */
-parseFloat(sRsiLast15m.k) >= parseFloat(80)
-&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
-&& parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
+//parseFloat(sRsiLast15m.k) >= parseFloat(80)
+//&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+//&& 
+parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
 && parseFloat(sRsiLast5m_2.d) >= parseFloat(90) 
 && parseFloat(sRsiLast5m.k) <= parseFloat(90)
 && parseFloat(sRsiLast5m.k) <=  parseFloat(sRsiLast5m.d) 
 && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
 && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+
+&& parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
+&& parseFloat(ema1m5p) < parseFloat(sma3m400p) 
       ) {
 
         sideM = 'V';
