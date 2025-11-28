@@ -5228,10 +5228,13 @@ parseFloat(sRsiLast15m.k) <= parseFloat(20)
 //parseFloat(ema1m5p) > parseFloat(ema1m10p) && 
 parseFloat(ema1m5p) > parseFloat(ema1m5p_2) 
 && (
+  /*
   (
   parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
   && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-  ) || (
+  ) ||
+  */
+  (
   parseFloat(ema1m5p_2) <= parseFloat(maiorMReg1m)
   && parseFloat(ema1m5p) >= parseFloat(maiorMReg1m)
   )
@@ -5472,10 +5475,13 @@ parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
   (
   parseFloat(ema1m5p_2) >= parseFloat(menorMReg1m)
   && parseFloat(ema1m5p) <= parseFloat(menorMReg1m)
-  ) || (
+  ) 
+  /*
+  || (
   parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
   && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
   )
+  */
   )
 
       ) {
