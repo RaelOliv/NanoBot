@@ -1007,7 +1007,7 @@ const cryptSymbols = {
     w: 'WUSDT',
     wld: 'WLDUSDT',
     wlfi: 'WLFIUSDT',
-    xpl: 'XPLUSDT',
+    //xpl: 'XPLUSDT',
     xrp: 'XRPUSDT'
 };
 
