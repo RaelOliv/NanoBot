@@ -5225,7 +5225,7 @@ parseFloat(sRsiLast15m.k) <= parseFloat(20)
 && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
 */
 
-//parseFloat(ema1m5p) > parseFloat(ema1m10p) && 
+parseFloat(ema1m400p) > parseFloat(sma1m400p) && 
 parseFloat(ema1m5p) > parseFloat(ema1m5p_2) 
 && (
   /*
@@ -5469,7 +5469,7 @@ parseFloat(sRsiLast15m.k) >= parseFloat(80)
 && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
 */
 
-//parseFloat(ema1m5p) < parseFloat(ema1m10p) && 
+parseFloat(ema1m400p) < parseFloat(sma1m400p) && 
 parseFloat(ema1m5p) < parseFloat(ema1m5p_2) 
 && (
   (
