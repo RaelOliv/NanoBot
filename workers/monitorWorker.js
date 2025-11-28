@@ -3393,10 +3393,10 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
       
       
       if (
-                gatilhoAtivado == true && 
+                //gatilhoAtivado == true && 
                 posicaoAberta.positionAmt < 0 &&
-                sideOrd == 'BUY' &&
-                parseFloat(ema1m5p) > parseFloat(ema1m10p)
+                //sideOrd == 'BUY' &&
+                parseFloat(ema1m5p) > parseFloat(maiorMReg3m)
         ) {
           
             await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
@@ -3407,10 +3407,10 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
           
 
         } else if (
-          gatilhoAtivado == true && 
+          //gatilhoAtivado == true && 
           posicaoAberta.positionAmt > 0 &&
-               sideOrd == 'SELL' &&
-          parseFloat(ema1m5p) < parseFloat(ema1m10p)
+               //sideOrd == 'SELL' &&
+          parseFloat(ema1m5p) < parseFloat(menorMReg3m)
         
         ) {
           
