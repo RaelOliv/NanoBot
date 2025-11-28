@@ -111,6 +111,8 @@ let menorMedia3m = undefined;
 
 let ema1m5p = undefined;
 let ema1m10p = undefined;
+let sma1m400p = undefined;
+let ema1m400p = undefined;
 let ema1m5p_2 = undefined;
 let ema1m10p_2 = undefined;
 
@@ -1669,15 +1671,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
-    
-    //return undefined;
+    */
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -1732,15 +1734,15 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
-    
-    //return undefined;
+    */
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -1908,20 +1910,20 @@ let perc = percentage(
 
 const contPos = await verificarSeTemPosicao(2);
 
-    if (type == 0 && contPos >= 2 ) {
+    if (type == 0 && contPos >= 10 ) {
       parentPort.postMessage(`⚠️ Já existem tres posições abertas. Abortando nova abertura.`);
       return null;
     }
     
     
-
+/*
 const amtPos = await verificarSeTemPosicao(3);
 
       if (type == 0 && ((amtPos > 0 && side == 'BUY') || (amtPos < 0 && side == 'SELL'))){
         parentPort.postMessage(`⚠️ Já existem posições abertas na mesma direção. Abortando nova abertura.`);
       return null;
       }
-
+*/
     const timestamp = Date.now() + offset;
     const params = {
       symbol,
@@ -1936,7 +1938,7 @@ const amtPos = await verificarSeTemPosicao(3);
  if(type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 2){
+      ) || */ contPos < 10){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -2467,6 +2469,8 @@ function iniciarWebSocketcandles1m() {
       
       ema1m5p = calcularEMA(5, candles1m);
       ema1m10p = calcularEMA(10, candles1m);
+      ema1m400p = calcularEMA(400, candles1m);
+      sma1m400p = calcularSMA(400, candles1m);
 
       const s50 = calcularSMA(50, candles1m);
       const s60 = calcularSMA(60, candles1m);
@@ -3064,7 +3068,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
       (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 2)
+      ) || */ contPos < 10)
     ) {
 
       //posicaoAberta = 0;
@@ -3195,7 +3199,7 @@ contPos = await verificarSeTemPosicao(2);
         /*
         (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      ) || */ contPos < 2) {
+      ) || */ contPos < 10) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -3386,6 +3390,38 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
 
     if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
+      
+      
+      if (
+                gatilhoAtivado == true && 
+                posicaoAberta.positionAmt < 0 &&
+                sideOrd == 'BUY' &&
+                parseFloat(ema1m5p) > parseFloat(ema1m10p)
+        ) {
+          
+            await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+            sideM = 'C';
+            sideOrd = 'BUY';
+            gatilhoAtivado = true;
+           let returnPos = await abrirPosicao(sideOrd, quantity);
+          
+
+        } else if (
+          gatilhoAtivado == true && 
+          posicaoAberta.positionAmt > 0 &&
+               sideOrd == 'SELL' &&
+          parseFloat(ema1m5p) < parseFloat(ema1m10p)
+        
+        ) {
+          
+                  await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+                  sideM = 'V';
+                  sideOrd = 'SELL';
+                  gatilhoAtivado = true;
+          let returnPos = await abrirPosicao(sideOrd, quantity);
+
+        }
+      
       if (posicaoAberta.positionAmt > 0) {
         sideM = 'C';
         sideOrd = 'BUY';
@@ -3394,37 +3430,6 @@ novoStop = await precoAlvoPorPercent(sideOrd, parseFloat(process.env.STOPLOSS), 
         sideOrd = 'SELL';
       }
       //let posicaoAberta
-      
-      if (
-                //gatilhoAtivado == true && 
-                posicaoAberta.positionAmt < 0 &&
-                //sideOrd == 'BUY' &&
-                parseFloat(ema1m5p) > parseFloat(ema1m10p)
-        ) {
-          /*
-            await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-            sideM = 'C';
-            sideOrd = 'BUY';
-            gatilhoAtivado = true;
-           //let returnPos = await abrirPosicao(sideOrd, quantity);
-          */
-
-        } else if (
-          //gatilhoAtivado == true && 
-          posicaoAberta.positionAmt > 0 &&
-               // sideOrd == 'SELL' &&
-          parseFloat(ema1m5p) < parseFloat(ema1m10p)
-        
-        ) {
-          /*
-                  await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-                  sideM = 'V';
-                  sideOrd = 'SELL';
-                  gatilhoAtivado = true;
-          //let returnPos = await abrirPosicao(sideOrd, quantity);
-*/
-        }
-      
       
       //////////////////////
       /*
@@ -4794,8 +4799,8 @@ async function iniciarWebSocketContinuo() {
       maiorMedia3m = Math.max(...medias3m);
       menorMedia3m = Math.min(...medias3m);
       
-      maiorMReg3m = Math.max(maiorMedia3m, maiorM3m20p);
-      menorMReg3m = Math.min(menorMedia3m, menorM3m20p);
+      maiorMReg1m = Math.max(ema1m400p, sma1m400p);
+      menorMReg1m = Math.min(ema1m400p, sma1m400p);
       
       maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
       menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
@@ -5203,6 +5208,8 @@ parseFloat(sRsiLast1h.k) <= parseFloat(20)
 //&& parseFloat(ema1m5p) > parseFloat(ema3m400p) 
 //
 */
+
+/*
 parseFloat(sRsiLast15m.k) <= parseFloat(20)
 && parseFloat(sRsiLast15m.d) <= parseFloat(20) 
 && parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
@@ -5214,6 +5221,18 @@ parseFloat(sRsiLast15m.k) <= parseFloat(20)
 
 && parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
 && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
+*/
+
+parseFloat(ema1m5p) > parseFloat(ema1m10p) && parseFloat(ema1m5p) > parseFloat(ema1m5p_2) 
+&& (
+  (
+  parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+  parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+  ) || (
+  parseFloat(ema1m5p_2) <= parseFloat(maiorMReg1m)
+  parseFloat(ema1m5p) >= parseFloat(maiorMReg1m)
+  )
+  )
 
       ) {
 
@@ -5430,6 +5449,7 @@ parseFloat(sRsiLast1h.k) >= parseFloat(80)
 //&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
 // && parseFloat(ema1m5p) < parseFloat(ema3m400p) 
 */
+/*
 parseFloat(sRsiLast15m.k) >= parseFloat(80)
 && parseFloat(sRsiLast15m.d) >= parseFloat(80) 
 && parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
@@ -5441,6 +5461,19 @@ parseFloat(sRsiLast15m.k) >= parseFloat(80)
 
 && parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
 && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
+*/
+
+parseFloat(ema1m5p) < parseFloat(ema1m10p) && parseFloat(ema1m5p) < parseFloat(ema1m5p_2) 
+&& (
+  (
+  parseFloat(ema1m5p_2) >= parseFloat(menorMReg1m)
+  parseFloat(ema1m5p) <= parseFloat(menorMReg1m)
+  ) || (
+  parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+  parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+  )
+  )
+
       ) {
 
         sideM = 'V';
