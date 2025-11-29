@@ -464,7 +464,8 @@ function calcularEMA(periodo, candles) {
     candlesClose.push(parseFloat(candles[i].close.toFixed(precisions.pricePrecision)));
   }
 
-  const emaList = EMA.calculate({ period: periodo, values: candlesClose });
+  //const emaList = EMA.calculate({ period: periodo, values: candlesClose });
+  const emaList = calcEMA(periodo, candlesClose);
 
   var objema = parseFloat(emaList[emaList.length - 1].toFixed(precisions.pricePrecision));
 
@@ -473,6 +474,27 @@ function calcularEMA(periodo, candles) {
 
   return parseFloat(parseFloat(adjustedPrice).toFixed(precisions.pricePrecision));
 }
+
+function calcEMA(period, values) {
+    const k = 2 / (period + 1);
+    let emaArray = [];
+    let emaPrevious;
+
+    // Calcula a SMA inicial e define como o primeiro EMA
+    const sma = values.slice(0, period).reduce((acc, val) => acc + val, 0) / period;
+    emaArray[period - 1] = sma;
+    emaPrevious = sma;
+
+    // Calcula o EMA para os períodos subsequentes
+    for (let i = period; i < values.length; i++) {
+        const emaCurrent = (values[i] * k) + (emaPrevious * (1 - k));
+        emaArray.push(emaCurrent);
+        emaPrevious = emaCurrent;
+    }
+
+    return emaArray;
+}
+
 
 function formatTime(timestamp) {
 
