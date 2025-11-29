@@ -464,8 +464,8 @@ function calcularEMA(periodo, candles) {
     candlesClose.push(parseFloat(candles[i].close.toFixed(precisions.pricePrecision)));
   }
 
-  //const emaList = EMA.calculate({ period: periodo, values: candlesClose });
-  const emaList = calcEMA(periodo, candlesClose);
+  const emaList = EMA.calculate({ period: periodo, values: candlesClose });
+  //const emaList = calcEMA(periodo, candlesClose);
 
   var objema = parseFloat(emaList[emaList.length - 1].toFixed(precisions.pricePrecision));
 
@@ -474,7 +474,7 @@ function calcularEMA(periodo, candles) {
 
   return parseFloat(parseFloat(adjustedPrice).toFixed(precisions.pricePrecision));
 }
-
+/*
 function calcEMA_old(period, values) {
     const k = 2 / (period + 1);
     let emaArray = [];
@@ -543,7 +543,7 @@ function calcEMA(period, values) {
 
     return ema;
 }
-
+*/
 function formatTime(timestamp) {
 
   var date = new Date(timestamp);
