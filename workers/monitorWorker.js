@@ -1285,6 +1285,10 @@ async function carregarCandlesHistoricos() {
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles1m carregado com sucesso.`);
 
+
+
+     ema1m400p = calcularEMA(400, candles1m);
+     sma1m400p = calcularSMA(400, candles1m);
     const s100 = calcularSMA(100, candles1m);
     const s110 = calcularSMA(110, candles1m);
     const e100 = calcularEMA(100, candles1m);
@@ -2964,6 +2968,8 @@ maiorMReg3m = Math.max(maiorMedia3m, maiorM3m20p);
     //nLocks = countLocks();
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
+    parentPort.postMessage(`ema1m400p: ${ema1m400p}`);
+    parentPort.postMessage(`sma1m400p: ${sma1m400p}`);
 
     contPos = await verificarSeTemPosicao(2);
     parentPort.postMessage(`🔎 Total de posições abertas: ${contPos}`);
