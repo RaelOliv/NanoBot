@@ -475,7 +475,7 @@ function calcularEMA(periodo, candles) {
   return parseFloat(parseFloat(adjustedPrice).toFixed(precisions.pricePrecision));
 }
 
-function calcEMA(period, values) {
+function calcEMA_old(period, values) {
     const k = 2 / (period + 1);
     let emaArray = [];
     let emaPrevious;
@@ -494,7 +494,30 @@ function calcEMA(period, values) {
 
     return emaArray;
 }
+function calcEMA(period, values) {
+    if (!Array.isArray(values)) throw new Error('values precisa ser um array');
+    if (period <= 0) throw new Error('period tem que ser > 0');
+    const n = values.length;
+    if (n < period) return [];
 
+    const k = 2 / (period + 1);
+    const result = [];
+
+    // SMA inicial
+    let sum = 0;
+    for (let i = 0; i < period; i++) sum += values[i];
+    let prev = sum / period;
+    result.push(prev); // corresponde ao índice period-1
+
+    // EMA subsequente
+    for (let i = period; i < n; i++) {
+        const current = (values[i] * k) + (prev * (1 - k));
+        result.push(current);
+        prev = current;
+    }
+
+    return result;
+}
 
 function formatTime(timestamp) {
 
