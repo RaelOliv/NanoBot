@@ -1701,7 +1701,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if (
-    parseFloat(perc) <= parseFloat(-25.0) || parseFloat(perc) >= parseFloat(10.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(-25.0) || parseFloat(perc) >= parseFloat(5.0 ) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
       /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
