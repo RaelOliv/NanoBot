@@ -1357,7 +1357,7 @@ async function carregarCandlesHistoricos() {
 
 
 
-     ema1m400p = calcularEMA(135, candles3m); // equevalente a 400p 1m
+     
      sma1m400p = calcularSMA(400, candles1m);
     const s100 = calcularSMA(100, candles1m);
     const s110 = calcularSMA(110, candles1m);
@@ -1398,6 +1398,8 @@ async function carregarCandlesHistoricos() {
     });
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles3m carregado com sucesso.`);
+
+ema1m400p = calcularEMA(135, candles3m); // equevalente a 400p 1m
 
     ema3m5p = calcularEMA(5, candles3m);
     ema3m10p = calcularEMA(10, candles3m);
