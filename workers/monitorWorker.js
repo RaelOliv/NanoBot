@@ -1357,7 +1357,7 @@ async function carregarCandlesHistoricos() {
 
 
 
-     ema1m400p = calcularEMA(400, candles1m);
+     ema1m400p = calcularEMA(135, candles3m); // equevalente a 400p 1m
      sma1m400p = calcularSMA(400, candles1m);
     const s100 = calcularSMA(100, candles1m);
     const s110 = calcularSMA(110, candles1m);
@@ -2545,7 +2545,7 @@ function iniciarWebSocketcandles1m() {
       
       ema1m5p = calcularEMA(5, candles1m);
       ema1m10p = calcularEMA(10, candles1m);
-      ema1m400p = calcularEMA(400, candles1m);
+      ema1m400p = calcularEMA(135, candles3m); // equivalrntr a 400p 1m
       sma1m400p = calcularSMA(400, candles1m);
 
       const s50 = calcularSMA(50, candles1m);
