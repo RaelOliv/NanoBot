@@ -1749,15 +1749,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    
+    /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
     return res.data;
-    
-    //return undefined;
+    */
+    return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -1812,15 +1812,15 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    /*
+    
     const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
-    */
-    return undefined;
+    
+    //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -5320,6 +5320,7 @@ parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
   (
   parseFloat(ema1m5p_2) <= parseFloat(maiorMReg1m)
   && parseFloat(ema1m5p) >= parseFloat(maiorMReg1m)
+  && parseFloat(ema1m5p) >= parseFloat(ema1m10p)
   )
   )
 
@@ -5552,8 +5553,9 @@ parseFloat(sRsiLast15m.k) >= parseFloat(80)
 && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
 */
 
-parseFloat(ema1m400p) < parseFloat(sma1m400p) && 
-parseFloat(ema1m5p) < parseFloat(ema1m5p_2) 
+parseFloat(ema1m400p) < parseFloat(sma1m400p) 
+&& parseFloat(ema1m5p) < parseFloat(ema1m5p_2) 
+&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
 && (
   (
   parseFloat(ema1m5p_2) >= parseFloat(menorMReg1m)
