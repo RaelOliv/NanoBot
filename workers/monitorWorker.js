@@ -494,7 +494,7 @@ function calcEMA_old(period, values) {
 
     return emaArray;
 }
-function calcEMA(period, values) {
+function calcEMA_old2(period, values) {
     if (!Array.isArray(values)) throw new Error('values precisa ser um array');
     if (period <= 0) throw new Error('period tem que ser > 0');
     const n = values.length;
@@ -517,6 +517,31 @@ function calcEMA(period, values) {
     }
 
     return result;
+}
+function calcEMA(period, values) {
+    if (!Array.isArray(values)) throw new Error('values precisa ser um array');
+    if (period <= 0) throw new Error('period tem que ser > 0');
+    const n = values.length;
+    if (n < period) return Array(n).fill(null); // ou retornar [] dependendo do que você quer
+
+    const k = 2 / (period + 1);
+    const ema = new Array(n).fill(null);
+
+    // SMA inicial
+    let sum = 0;
+    for (let i = 0; i < period; i++) sum += values[i];
+    const sma = sum / period;
+    ema[period - 1] = sma;
+
+    // EMA subsequente
+    let prev = sma;
+    for (let i = period; i < n; i++) {
+        const current = (values[i] * k) + (prev * (1 - k));
+        ema[i] = current;
+        prev = current;
+    }
+
+    return ema;
 }
 
 function formatTime(timestamp) {
