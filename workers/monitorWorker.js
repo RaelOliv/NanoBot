@@ -3096,7 +3096,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
         if (
           (
             sideOrd == 'BUY' &&
-            parseFloat(preco_atual) >= parseFloat(preco_anterior)
+            parseFloat(preco_atual) > parseFloat(preco_anterior)
             
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
@@ -3148,7 +3148,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
           ) || (
 
             sideOrd == 'SELL' &&
-            parseFloat(preco_atual) <= parseFloat(preco_anterior) //&&
+            parseFloat(preco_atual) < parseFloat(preco_anterior) //&&
             
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
@@ -4806,8 +4806,8 @@ async function iniciarWebSocketContinuo() {
       maiorMedia3m = Math.max(...medias3m);
       menorMedia3m = Math.min(...medias3m);
       
-      maiorMReg1m = Math.max(ema1m400p, sma1m400p);
-      menorMReg1m = Math.min(ema1m400p, sma1m400p);
+      maiorMReg1m = Math.max(parseFloat(ema1m400p), parseFloat(sma1m400p));
+      menorMReg1m = Math.min(parseFloat(ema1m400p), parseFloat(sma1m400p));
       
       maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
       menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
