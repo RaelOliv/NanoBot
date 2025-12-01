@@ -1816,7 +1816,7 @@ await salvarCache(balance, 'Balance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
 */
-    else if (perc <= -30.0 && perc >= -90.0) {
+    else if (perc <= -20.0 && perc >= -90.0) {
 
       let res = await fecharTodasPosicoes();
       if (res == true) {
