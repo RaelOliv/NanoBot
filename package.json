@@ -10,6 +10,7 @@
     "bott": "forever -m 1 -c \"npx node -r dotenv/config index\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "hist": "npx nodemon -r dotenv/config hist.js",
+    "balance": "npx nodemon -r dotenv/config balance.js",
     "restart": "npm run stop && npm run start",
     "stop": "taskkill /F /IM node.exe"
   },
