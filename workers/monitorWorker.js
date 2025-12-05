@@ -1988,7 +1988,7 @@ let perc = percentage(
 
 const contPos = await verificarSeTemPosicao(2);
 
-    if (type == 0 && contPos >= 4 ) {
+    if (type == 0 && contPos >= 2 ) {
       parentPort.postMessage(`⚠️ Já existem tres posições abertas. Abortando nova abertura.`);
       return null;
     }
@@ -2016,7 +2016,7 @@ const amtPos = await verificarSeTemPosicao(3);
  if(type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 4){
+      ) || */ contPos < 2){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -3148,7 +3148,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
       (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 4)
+      ) || */ contPos < 2)
     ) {
 
       //posicaoAberta = 0;
@@ -3279,7 +3279,7 @@ contPos = await verificarSeTemPosicao(2);
         /*
         (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      ) || */ contPos < 4) {
+      ) || */ contPos < 2) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
