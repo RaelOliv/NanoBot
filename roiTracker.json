@@ -293,6 +293,13 @@
       "roiFinal": 0,
       "isOpen": true,
       "openedAt": 1764982319773
+    },
+    "AAVEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765090201214
     }
   },
   "history": [

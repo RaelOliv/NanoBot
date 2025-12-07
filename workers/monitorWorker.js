@@ -1820,7 +1820,7 @@ async function criarStopLoss(stopPrice) {
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
     
-    return undefined;
+    //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
