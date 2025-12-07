@@ -5326,10 +5326,10 @@ parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
 
       ) {
 
-        sideM = 'V';
-        sideOrd = 'SELL';
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        //sideM = 'V';
+        //sideOrd = 'SELL';
+        sideM = 'C';
+        sideOrd = 'BUY';
         gatilhoAtivado = true;
 
       } else if (
@@ -5573,10 +5573,10 @@ parseFloat(ema1m400p) > parseFloat(sma1m400p)
 
       ) {
 
-        sideM = 'C';
-        sideOrd = 'BUY';
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
+        sideM = 'V';
+        sideOrd = 'SELL';
         gatilhoAtivado = true;
 
       } else {
