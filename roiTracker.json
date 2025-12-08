@@ -89,7 +89,7 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1764894000474
+      "openedAt": 1765157338761
     },
     "WLFIUSDT": {
       "roiMax": 0,
@@ -103,7 +103,7 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1764976922177
+      "openedAt": 1765156379193
     },
     "LINKUSDT": {
       "roiMax": 0,
@@ -3376,7 +3376,25 @@
       "roiFinal": 0,
       "openedAt": 1764975842220,
       "closedAt": 1765144289846
+    },
+    {
+      "tradeId": 334,
+      "symbol": "LAYERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1764976922177,
+      "closedAt": 1765156372999
+    },
+    {
+      "tradeId": 335,
+      "symbol": "XLMUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1764894000474,
+      "closedAt": 1765157335363
     }
   ],
-  "lastId": 333
+  "lastId": 335
 }
