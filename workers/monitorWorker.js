@@ -1738,9 +1738,10 @@ async function criarTakeProfit(takePrice) {
   const params = {
     symbol,
     side: oppositeSide,
+    algotype: 'CONDITIONAL',
     type: 'TAKE_PROFIT_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
-    stopPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
+    triggerPrice: parseFloat(parseFloat(takePrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
     timestamp: timestamp,
     closePosition: true,
@@ -1750,7 +1751,7 @@ async function criarTakeProfit(takePrice) {
 
   try {
     
-    const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
+    const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
@@ -1801,9 +1802,10 @@ async function criarStopLoss(stopPrice) {
   const params = {
     symbol,
     side: oppositeSide,
+    algotype: 'CONDITIONAL',
     type: 'STOP_MARKET',
     //stopPrice: adjustedStop.toFixed(precisions.pricePrecision),
-    stopPrice: parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision)),
+    triggerPrice: parseFloat(parseFloat(stopPrice).toFixed(precisions.pricePrecision)),
     //quantity: parseFloat(parseFloat(quantity).toFixed(precisions.quantityPrecision)),
     timestamp: timestamp,
     closePosition: true,
@@ -1813,7 +1815,7 @@ async function criarStopLoss(stopPrice) {
 
   try {
     
-    const res = await axios.post('https://fapi.binance.com/fapi/v1/order', null, {
+    const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
@@ -1988,7 +1990,7 @@ let perc = percentage(
 
 const contPos = await verificarSeTemPosicao(2);
 
-    if (type == 0 && contPos >= 5 ) {
+    if (type == 0 && contPos >= 3 ) {
       parentPort.postMessage(`⚠️ Já existem tres posições abertas. Abortando nova abertura.`);
       return null;
     }
@@ -2016,7 +2018,7 @@ const amtPos = await verificarSeTemPosicao(3);
  if(type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 5){
+      ) || */ contPos < 3){
     const res = await apiAxios.post('/fapi/v1/order', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY },
@@ -3148,7 +3150,7 @@ parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
       (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 5)
+      ) || */ contPos < 3)
     ) {
 
       //posicaoAberta = 0;
@@ -3279,7 +3281,7 @@ contPos = await verificarSeTemPosicao(2);
         /*
         (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      ) || */ contPos < 5) {
+      ) || */ contPos < 3) {
           //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -5308,8 +5310,9 @@ parseFloat(sRsiLast15m.k) <= parseFloat(20)
 && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
 */
 
-parseFloat(ema1m400p) < parseFloat(sma1m400p) && 
-parseFloat(ema1m5p) > parseFloat(ema1m5p_2) 
+parseFloat(ema1m400p) > parseFloat(sma1m400p)
+&& parseFloat(ema1m5p) > parseFloat(ema1m5p_2) 
+&& parseFloat(ema1m10p) > parseFloat(ema1m10p_2) 
 && (
   /*
   (
@@ -5318,8 +5321,8 @@ parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
   ) ||
   */
   (
-  parseFloat(ema1m5p_2) <= parseFloat(maiorMReg1m)
-  && parseFloat(ema1m5p) >= parseFloat(maiorMReg1m)
+  parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+  && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
   && parseFloat(ema1m5p) >= parseFloat(ema1m10p)
   )
   )
@@ -5555,13 +5558,15 @@ parseFloat(sRsiLast15m.k) >= parseFloat(80)
 && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
 */
 
-parseFloat(ema1m400p) > parseFloat(sma1m400p) 
+parseFloat(ema1m400p) < parseFloat(sma1m400p) 
 && parseFloat(ema1m5p) < parseFloat(ema1m5p_2) 
-&& parseFloat(ema1m5p) < parseFloat(ema1m10p) 
+&& parseFloat(ema1m10p) < parseFloat(ema1m10p_2) 
 && (
   (
-  parseFloat(ema1m5p_2) >= parseFloat(menorMReg1m)
-  && parseFloat(ema1m5p) <= parseFloat(menorMReg1m)
+  parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+  && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+  && parseFloat(ema1m5p) <= parseFloat(ema1m10p)
+
   ) 
   /*
   || (
