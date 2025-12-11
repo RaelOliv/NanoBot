@@ -111,8 +111,11 @@ let menorMedia3m = undefined;
 
 let ema1m5p = undefined;
 let ema1m10p = undefined;
+let sma1m100p = undefined;
+let ema1m100p = undefined;
 let sma1m400p = undefined;
 let ema1m400p = undefined;
+
 let ema1m5p_2 = undefined;
 let ema1m10p_2 = undefined;
 
@@ -1359,6 +1362,10 @@ async function carregarCandlesHistoricos() {
 
 
     sma1m400p = calcularSMA(400, candles1m);
+
+    ema1m100p = calcularEMA(100, candles1m);
+    sma1m100p = calcularSMA(100, candles1m);
+
     const s100 = calcularSMA(100, candles1m);
     const s110 = calcularSMA(110, candles1m);
     const e100 = calcularEMA(100, candles1m);
@@ -1958,6 +1965,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
       await new Promise(resolve => setTimeout(resolve, 60000));
       return null;
     }
+      activatePause(3); // pausa por 3 min
 
     parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
@@ -1990,7 +1998,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
 
     const contPos = await verificarSeTemPosicao(2);
 
-    if (type == 0 && contPos >= 3) {
+    if (type == 0 && contPos >= parseFloat(process.env.TRDSIMULT)) {
       parentPort.postMessage(`⚠️ Já existem tres posições abertas. Abortando nova abertura.`);
       return null;
     }
@@ -2018,12 +2026,11 @@ async function abrirPosicao(side, quantityX, type = 0) {
     if (type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 3) {
+      ) || */ contPos < parseFloat(process.env.TRDSIMULT)) {
       const res = await apiAxios.post('/fapi/v1/order', null, {
         params,
         headers: { 'X-MBX-APIKEY': API_KEY },
       });
-      activatePause(1); // pausa por 3 min
       parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
       return res.data;
     }
@@ -2552,6 +2559,9 @@ function iniciarWebSocketcandles1m() {
       ema1m400p = calcularEMA(135, candles3m); // equivalrntr a 400p 1m
       sma1m400p = calcularSMA(400, candles1m);
 
+      ema1m100p = calcularEMA(100, candles1m);
+      sma1m100p = calcularSMA(100, candles1m);
+
       const s50 = calcularSMA(50, candles1m);
       const s60 = calcularSMA(60, candles1m);
       const e50 = calcularEMA(50, candles1m);
@@ -3045,8 +3055,8 @@ function iniciarWebSocketMarkPrice() {
     //nLocks = countLocks();
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
-    parentPort.postMessage(`ema1m400p: ${ema1m400p}`);
-    parentPort.postMessage(`sma1m400p: ${sma1m400p}`);
+    parentPort.postMessage(`ema1m100p: ${ema1m100p}`);
+    parentPort.postMessage(`sma1m100p: ${sma1m100p}`);
 
     contPos = await verificarSeTemPosicao(2);
     parentPort.postMessage(`🔎 Total de posições abertas: ${contPos}`);
@@ -3158,7 +3168,7 @@ function iniciarWebSocketMarkPrice() {
       (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < 3)
+      ) || */ contPos < parseFloat(process.env.TRDSIMULT))
     ) {
 
       //posicaoAberta = 0;
@@ -3289,7 +3299,7 @@ function iniciarWebSocketMarkPrice() {
         /*
         (contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
-      ) || */ contPos < 3) {
+      ) || */ contPos < parseFloat(process.env.TRDSIMULT)) {
             //if (contPos < 1) {
             cacheJson = {
               houveReducao: 0,
@@ -3484,16 +3494,17 @@ function iniciarWebSocketMarkPrice() {
 
       if (
         //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt < 0 &&
+        posicaoAberta.positionAmt < 0 
         //sideOrd == 'BUY' &&
         //parseFloat(ema1m400p) > parseFloat(sma1m400p)
-        //&& parseFloat(ema1m5p) > parseFloat(maiorMReg1m)
-        parseFloat(preco_atual) > parseFloat(maiorMReg1m)
+        && parseFloat(ema1m5p) > parseFloat(maiorMReg1m)
+        //parseFloat(preco_atual) > parseFloat(maiorMReg1m)
+        && parseFloat(ema1m5p) > parseFloat(ema1m10p_2)
       ) {
         
           await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-          sideM = 'C';
-          sideOrd = 'BUY';
+          sideM = '';
+          sideOrd = '';
           return;
           //gatilhoAtivado = true;
          //let returnPos = await abrirPosicao(sideOrd, quantity);
@@ -3501,19 +3512,18 @@ function iniciarWebSocketMarkPrice() {
 
       } else if (
         //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt > 0 &&
+        posicaoAberta.positionAmt > 0 
         //sideOrd == 'SELL' &&
-
         //parseFloat(ema1m400p) < parseFloat(sma1m400p)
-        //&& parseFloat(ema1m5p) < parseFloat(menorMReg1m)
-        parseFloat(preco_atual) < parseFloat(menorMReg1m)
-
+        && parseFloat(ema1m5p) < parseFloat(menorMReg1m)
+        //parseFloat(preco_atual) < parseFloat(menorMReg1m)
+        && parseFloat(ema1m5p) < parseFloat(ema1m10p_2)
 
       ) {
         
                 await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-                sideM = 'V';
-                sideOrd = 'SELL';
+                sideM = '';
+                sideOrd = '';
                 return;
                 //gatilhoAtivado = true;
         //let returnPos = await abrirPosicao(sideOrd, quantity);
@@ -4907,8 +4917,8 @@ async function iniciarWebSocketContinuo() {
       maiorMedia3m = Math.max(...medias3m);
       menorMedia3m = Math.min(...medias3m);
 
-      maiorMReg1m = Math.max(parseFloat(ema1m400p), parseFloat(sma1m400p));
-      menorMReg1m = Math.min(parseFloat(ema1m400p), parseFloat(sma1m400p));
+      maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(sma1m100p));
+      menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(sma1m100p));
 
       maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
       menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
@@ -5331,8 +5341,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
 
-        parseFloat(ema1m400p) > parseFloat(sma1m400p)
-        && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
+        //parseFloat(ema1m400p) > parseFloat(sma1m400p)
+        //&& 
+        parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) > parseFloat(ema1m10p_2)
         && (
           /*
@@ -5342,13 +5353,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           ) ||
           */
           (
+            
             parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
             && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-            && parseFloat(ema1m5p) >= parseFloat(ema1m10p)
+            
+           /*
+            parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
+            && parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
+            && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+            */
+
           )
         )
         && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
-        && parseFloat(candles15m.slice(-2)[0].open) <= parseFloat(candles15m.slice(-2)[0].close)
+        //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
 
       ) {
 
@@ -5581,15 +5599,22 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
 
-        parseFloat(ema1m400p) < parseFloat(sma1m400p)
-        && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
+        //parseFloat(ema1m400p) < parseFloat(sma1m400p)
+        //&& 
+        parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) < parseFloat(ema1m10p_2)
         && (
           (
+            
             parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
             && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-            && parseFloat(ema1m5p) <= parseFloat(ema1m10p)
+            
+            /*
+            parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
+            && parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
 
+            && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+            */
           )
           /*
           || (
@@ -5599,7 +5624,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           */
         )
         && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
-        && parseFloat(candles15m.slice(-2)[0].open) >= parseFloat(candles15m.slice(-2)[0].close)
+        //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
 
       ) {
 
