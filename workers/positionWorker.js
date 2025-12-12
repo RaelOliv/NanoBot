@@ -49,6 +49,44 @@ function carregarCacheLocal() {
   }
 }
 
+// Read cache from disk safely and parse JSON
+function readCacheFromFile() {
+  try {
+    const raw = fs.readFileSync(CACHE_PATH, 'utf8');
+    return JSON.parse(raw || '{}');
+  } catch (err) {
+    return {};
+  }
+}
+
+// Get persisted plus/minus values for a symbol from memory cache first then disk
+function getCachedPlusMinus(symbol) {
+  try {
+    if (positions && positions[symbol]) {
+      return {
+        plus: positions[symbol].plus || 0,
+        minus: positions[symbol].minus || 0,
+        percent: parseFloat(positions[symbol].percent) || 0,
+        maxPercent: parseFloat(positions[symbol].maxPercent) || 0,
+        minPercent: parseFloat(positions[symbol].minPercent) || 0
+      };
+    }
+    const disk = readCacheFromFile();
+    if (disk && disk[symbol]) {
+      return {
+        plus: disk[symbol].plus || 0,
+        minus: disk[symbol].minus || 0,
+        percent: parseFloat(disk[symbol].percent) || 0,
+        maxPercent: parseFloat(disk[symbol].maxPercent) || 0,
+        minPercent: parseFloat(disk[symbol].minPercent) || 0
+      };
+    }
+  } catch (err) {
+    // ignore
+  }
+  return { plus: 0, minus: 0, percent: 0, maxPercent: 0, minPercent: 0 };
+}
+
 // Salva cache
 function salvarCache() {
   try {
@@ -57,6 +95,19 @@ function salvarCache() {
     console.error('[positionsWorker] Erro ao salvar cache:', err.message);
   }
 }
+
+// Função para carregar o cache de um arquivo
+function carregarCache(currencyPair) {
+  cacheFilePath = path.join(__dirname, `cache/${currencyPair}.json`);
+
+  try {
+    const data = fs.readFileSync(cacheFilePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    return {};
+  }
+}
+
 
 // Helper: cria query string assinada
 function signQuery(paramsObj, secret) {
@@ -84,26 +135,56 @@ async function sincronizarPosicoesAtuais() {
       timeout: 15_000,
     });
 
+    let cachepos = await carregarCache('cachepos');
+
     const todas = res.data || [];
     const abertas = todas.filter(p => parseFloat(p.positionAmt) !== 0);
 
     let novas = {};
     for (const p of abertas) {
-novas[p.symbol] = {
-  symbol: p.symbol,
-  positionAmt: p.positionAmt,
-  entryPrice: p.entryPrice,
-  markPrice: p.markPrice,
-  unRealizedProfit: p.unRealizedProfit,
-  liquidationPrice: p.liquidationPrice,
-  leverage: p.leverage,
-  marginType: p.marginType,
-  isolatedMargin: p.isolatedMargin,
-  positionSide: p.positionSide,
-  plus: positions[p.symbol]?.plus || 0,
-  minus: positions[p.symbol]?.minus || 0,
-  updateTime: Date.now(),
-};    }
+      // calculate unrealized percent relative to isolatedMargin if possible;
+      // if isolatedMargin is zero (cross margin) fallback to initial margin estimate
+      const up = parseFloat(p.unRealizedProfit) || 0.0;
+      const im = parseFloat(p.isolatedMargin) || 0.0;
+      const amt = Math.abs(parseFloat(p.positionAmt) || 0.0);
+      const ep = parseFloat(p.entryPrice) || 0.0;
+      const lev = Math.abs(parseFloat(p.leverage) || 1.0);
+      let initialMargin = 0.0;
+      if (im > 0) {
+        initialMargin = im;
+      } else if (amt > 0 && ep > 0 && lev > 0) {
+        initialMargin = (amt * ep) / lev;
+      }
+      let percent = 0.0;
+      if (initialMargin > 0) percent = (up / initialMargin) * 100;
+      const saved = getCachedPlusMinus(p.symbol);
+      let maxPercent = saved.maxPercent ?? saved.percent ?? percent;
+      let minPercent = saved.minPercent ?? saved.percent ?? percent;
+      if (percent > maxPercent) maxPercent = percent;
+      if (percent < minPercent) minPercent = percent;
+      novas[p.symbol] = {
+        symbol: p.symbol,
+        positionAmt: p.positionAmt,
+        entryPrice: p.entryPrice,
+        markPrice: p.markPrice,
+        unRealizedProfit: p.unRealizedProfit,
+        liquidationPrice: p.liquidationPrice,
+        leverage: p.leverage,
+        marginType: p.marginType,
+        isolatedMargin: p.isolatedMargin,
+        percent: parseFloat(percent.toFixed(3)),
+        maxPercent: parseFloat(maxPercent.toFixed(3)),
+        minPercent: parseFloat(minPercent.toFixed(3)),
+        positionSide: p.positionSide,
+        plus: saved.plus || 0,
+        minus: saved.minus || 0,
+        updateTime: Date.now(),
+      };
+
+      if (cachepos[p.symbol]) {
+        novas[p.symbol].plus = cachepos[p.symbol].plus;
+      }
+    }
 
     const antigos = Object.keys(positions);
     const novosKeys = Object.keys(novas);
@@ -111,15 +192,12 @@ novas[p.symbol] = {
     const removidos = antigos.filter(s => !novosKeys.includes(s));
     const adicionados = novosKeys.filter(s => !antigos.includes(s));
 
-    if (removidos.length || adicionados.length) {
-      positions = novas;
-      salvarCache();
-      console.log(`[positionsWorker] 🔄 Sincronização REST concluída. Abertas: ${novosKeys.length}`);
-      if (removidos.length) console.log(`  - Removidas: ${removidos.join(', ')}`);
-      if (adicionados.length) console.log(`  - Novas: ${adicionados.join(', ')}`);
-    } else {
-      console.log('[positionsWorker] Cache já está sincronizado com a conta.');
-    }
+    // Persiste sempre os dados atualizados (inclui unRealizedProfit / percent)
+    positions = novas;
+    salvarCache();
+    console.log(`[positionsWorker] 🔄 Sincronização REST concluída. Abertas: ${novosKeys.length}`);
+    if (removidos.length) console.log(`  - Removidas: ${removidos.join(', ')}`);
+    if (adicionados.length) console.log(`  - Novas: ${adicionados.join(', ')}`);
   } catch (err) {
     if (err.response && err.response.data) {
       console.error('[positionsWorker] Erro API:', err.response.status, JSON.stringify(err.response.data));
@@ -183,7 +261,7 @@ async function iniciarWs() {
   try {
     // fecha conexão anterior se existir
     if (ws) {
-      try { ws.terminate(); } catch (e) {}
+      try { ws.terminate(); } catch (e) { }
       ws = null;
     }
 
@@ -200,7 +278,7 @@ async function iniciarWs() {
 
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
-      iniciarVerificacaoPeriodica(10);
+      iniciarVerificacaoPeriodica(1);
     });
 
     ws.on('message', (msg) => {
@@ -211,24 +289,54 @@ async function iniciarWs() {
           const posicoes = data.a.P || [];
           const novas = { ...positions };
 
+          let cachepos = carregarCache('cachepos');
+
           for (const p of posicoes) {
             const amt = parseFloat(p.pa);
             if (amt !== 0) {
+              // compute percent relative to isolatedWallet (iw) if available
+              const up = parseFloat(p.up) || 0.0;
+              const iw = parseFloat(p.iw) || 0.0;
+              const amt = Math.abs(parseFloat(p.pa) || 0.0);
+              const ep = parseFloat(p.ep) || 0.0;
+              const lev = Math.abs(parseFloat(p.cr) || 1.0);
+              let initialMargin = 0.0;
+              if (iw > 0) {
+                initialMargin = iw;
+              } else if (amt > 0 && ep > 0 && lev > 0) {
+                initialMargin = (amt * ep) / lev;
+              }
+              let percent = 0.0;
+              if (initialMargin > 0) percent = (up / initialMargin) * 100;
+              const saved = getCachedPlusMinus(p.s);
+              let maxPercent = saved.maxPercent ?? saved.percent ?? percent;
+              let minPercent = saved.minPercent ?? saved.percent ?? percent;
+              if (percent > maxPercent) maxPercent = percent;
+              if (percent < minPercent) minPercent = percent;
+
               novas[p.s] = {
-  symbol: p.s,
-  positionAmt: p.pa,
-  entryPrice: p.ep,
-  markPrice: p.mp || '0',
-  unRealizedProfit: p.up || '0',
-  liquidationPrice: p.l || '0',
-  leverage: p.cr || '0',
-  marginType: p.mt || 'isolated',
-  isolatedMargin: p.iw || '0',
-  positionSide: p.ps || 'BOTH',
-  plus: positions[p.s]?.plus || 0,
-  minus: positions[p.s]?.minus || 0,
-  updateTime: Date.now(),
-};
+                symbol: p.s,
+                positionAmt: p.pa,
+                entryPrice: p.ep,
+                markPrice: p.mp || '0',
+                unRealizedProfit: p.up || '0',
+                liquidationPrice: p.l || '0',
+                leverage: p.cr || '0',
+                marginType: p.mt || 'isolated',
+                isolatedMargin: p.iw || '0',
+                percent: parseFloat(percent.toFixed(3)),
+                maxPercent: parseFloat(maxPercent.toFixed(3)),
+                minPercent: parseFloat(minPercent.toFixed(3)),
+                positionSide: p.ps || 'BOTH',
+                plus: saved.plus || 0,
+                minus: saved.minus || 0,
+                updateTime: Date.now(),
+              };
+
+              if (cachepos[p.s]) {
+                novas[p.s].plus = cachepos[p.s].plus;
+              }
+
             } else {
               delete novas[p.s];
             }
@@ -254,7 +362,7 @@ async function iniciarWs() {
 
     ws.on('error', (err) => {
       console.error('[positionsWorker] WS erro:', err.message || err);
-      try { ws.terminate(); } catch (e) {}
+      try { ws.terminate(); } catch (e) { }
     });
 
   } catch (err) {

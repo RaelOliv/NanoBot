@@ -1757,14 +1757,14 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-/*
-    const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
-      params,
-      headers: { 'X-MBX-APIKEY': API_KEY }
-    });
-    parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
-    return res.data;
-*/
+    /*
+        const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
+          params,
+          headers: { 'X-MBX-APIKEY': API_KEY }
+        });
+        parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
+        return res.data;
+    */
     return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
@@ -1953,24 +1953,25 @@ function sleep(ms) {
 
 async function abrirPosicao(side, quantityX, type = 0) {
 
-  if (!canTrade(symbol)) {
-    console.log(`[BLOCK] ${symbol} foi usado nos últimos 5 trades. Operação cancelada.`);
-    return null;
-  }
-
-
   if (type == 0) {
+
+    if (!canTrade(symbol)) {
+      console.log(`[BLOCK] ${symbol} foi usado nos últimos 5 trades. Operação cancelada.`);
+      return null;
+    }
+
     if (isPaused()) {
       console.log("Worker pausado temporariamente...");
       await new Promise(resolve => setTimeout(resolve, 60000));
       return null;
     }
-      activatePause(3); // pausa por 3 min
+    activatePause(3); // pausa por 3 min
 
     parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
     const release = await acquireLock(symbol); // <-- trava única por símbolo
     parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
+
   }
   try {
 
@@ -2023,10 +2024,10 @@ async function abrirPosicao(side, quantityX, type = 0) {
     };
 
     params.signature = gerarAssinatura(params);
-    if (type == 0 && /*(contPos < 2
+    if ((type == 0 && /*(contPos < 2
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
-      ) || */ contPos < parseFloat(process.env.TRDSIMULT)) {
+      ) || */ contPos < parseFloat(process.env.TRDSIMULT)) || type == 1 || type == 2) {
       const res = await apiAxios.post('/fapi/v1/order', null, {
         params,
         headers: { 'X-MBX-APIKEY': API_KEY },
@@ -3081,7 +3082,34 @@ function iniciarWebSocketMarkPrice() {
 
     parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
+    if (posicaoAberta !== 0) {
 
+      if (posicaoAberta.positionAmt > 0) {
+        sideM = 'C';
+        sideOrd = 'BUY';
+      } else if (posicaoAberta.positionAmt < 0) {
+        sideM = 'V';
+        sideOrd = 'SELL';
+      }
+
+      let cachepos = await carregarCache('cachepos');
+
+      let pnlRoiAtual = await calcPnlFutBinance(posicaoAberta.entryPrice, preco_atual, Math.abs(posicaoAberta.positionAmt), sideOrd);
+      if (pnlRoiAtual !== null || pnlRoiAtual !== undefined) {
+        cachepos[symbol].percent = parseFloat(pnlRoiAtual.roi);
+        cachepos[symbol].unRealizedProfit = parseFloat(posicaoAberta.unrealizedProfit);
+
+        if (cachepos[symbol].maxPercent < parseFloat(pnlRoiAtual.roi)) {
+          cachepos[symbol].maxPercent = parseFloat(pnlRoiAtual.roi);
+        }
+
+        if (cachepos[symbol].minPercent > parseFloat(pnlRoiAtual.roi)) {
+          cachepos[symbol].minPercent = parseFloat(pnlRoiAtual.roi);
+        }
+
+        await salvarCache(cachepos, 'cachepos');
+      }
+    }
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
@@ -3494,25 +3522,27 @@ function iniciarWebSocketMarkPrice() {
 
       if (
         //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt < 0 
+        posicaoAberta.positionAmt < 0
         //sideOrd == 'BUY' &&
         //parseFloat(ema1m400p) > parseFloat(sma1m400p)
         && parseFloat(ema1m5p) > parseFloat(maiorMReg1m)
         //parseFloat(preco_atual) > parseFloat(maiorMReg1m)
         && parseFloat(ema1m5p) > parseFloat(ema1m10p_2)
+
+
       ) {
-        
-          await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-          sideM = '';
-          sideOrd = '';
-          return;
-          //gatilhoAtivado = true;
-         //let returnPos = await abrirPosicao(sideOrd, quantity);
-        
+
+        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+        sideM = '';
+        sideOrd = '';
+        return;
+        //gatilhoAtivado = true;
+        //let returnPos = await abrirPosicao(sideOrd, quantity);
+
 
       } else if (
         //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt > 0 
+        posicaoAberta.positionAmt > 0
         //sideOrd == 'SELL' &&
         //parseFloat(ema1m400p) < parseFloat(sma1m400p)
         && parseFloat(ema1m5p) < parseFloat(menorMReg1m)
@@ -3520,15 +3550,16 @@ function iniciarWebSocketMarkPrice() {
         && parseFloat(ema1m5p) < parseFloat(ema1m10p_2)
 
       ) {
-        
-                await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-                sideM = '';
-                sideOrd = '';
-                return;
-                //gatilhoAtivado = true;
+
+        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+        sideM = '';
+        sideOrd = '';
+        return;
+        //gatilhoAtivado = true;
         //let returnPos = await abrirPosicao(sideOrd, quantity);
 
       }
+
 
       if (posicaoAberta.positionAmt > 0) {
         sideM = 'C';
@@ -3537,6 +3568,43 @@ function iniciarWebSocketMarkPrice() {
         sideM = 'V';
         sideOrd = 'SELL';
       }
+
+      let cachepos = await carregarCache('cachepos');
+
+      // Fechar posição se atingir o limite negativo
+
+      let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
+
+      parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
+
+      if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
+        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+        sideM = '';
+        sideOrd = '';
+        return;
+      }
+
+      if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
+        && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
+        cachepos[symbol].plus = 1;
+        cachepos[symbol].Percent = 0;
+        cachepos[symbol].maxPercent = 0;
+        await salvarCache(cachepos, 'cachepos');
+
+        //await abrirPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt), 1);
+      }
+
+      if (parseFloat(cachepos[symbol].percent) > parseFloat(25)
+        && cachepos[symbol].plus == 1) {
+        cachepos[symbol].plus = 2;
+        cachepos[symbol].Percent = 0;
+        cachepos[symbol].maxPercent = 0;
+        await salvarCache(cachepos, 'cachepos');
+
+        //await abrirPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt), 1);
+
+      }
+
       //let posicaoAberta
 
       //////////////////////
@@ -3900,7 +3968,7 @@ function iniciarWebSocketMarkPrice() {
       //parentPort.postMessage(`🔎 takeAtivo: ${JSON.stringify(takeAtivo)}`);
     }
 
-        if (parseFloat(contPos) >= parseFloat(process.env.TRDSIMULT)) {
+    if (parseFloat(contPos) >= parseFloat(process.env.TRDSIMULT)) {
       activatePause(1);
       sleep(60000);
       parentPort.postMessage(`⚠️ Limite de posições simultâneas atingido: ${contPos}`);
@@ -5341,7 +5409,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
 
-        //parseFloat(ema1m400p) > parseFloat(sma1m400p)
+        //parseFloat(ema1m400p) >= parseFloat(sma1m400p)
         //&& 
         parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) > parseFloat(ema1m10p_2)
@@ -5353,15 +5421,18 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           ) ||
           */
           (
-            
+
+            //parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+            //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+
             parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
-            && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-            
-           /*
-            parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
-            && parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
-            && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-            */
+            && parseFloat(preco_atual) >= parseFloat(menorMReg1m)
+
+            /*
+             parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
+             && parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
+             && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+             */
 
           )
         )
@@ -5599,16 +5670,19 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
 
-        //parseFloat(ema1m400p) < parseFloat(sma1m400p)
+        //parseFloat(ema1m400p) <= parseFloat(sma1m400p)
         //&& 
         parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) < parseFloat(ema1m10p_2)
         && (
           (
-            
+
+            //parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+            //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+
             parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
-            && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-            
+            && parseFloat(preco_atual) <= parseFloat(maiorMReg1m)
+
             /*
             parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
             && parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
