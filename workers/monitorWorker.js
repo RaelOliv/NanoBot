@@ -1757,15 +1757,15 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    /*
+    
         const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
           params,
           headers: { 'X-MBX-APIKEY': API_KEY }
         });
         parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
         return res.data;
-    */
-    return undefined;
+    
+    //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -3082,34 +3082,6 @@ function iniciarWebSocketMarkPrice() {
 
     parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
 
-    if (posicaoAberta !== 0) {
-
-      if (posicaoAberta.positionAmt > 0) {
-        sideM = 'C';
-        sideOrd = 'BUY';
-      } else if (posicaoAberta.positionAmt < 0) {
-        sideM = 'V';
-        sideOrd = 'SELL';
-      }
-
-      let cachepos = await carregarCache('cachepos');
-
-      let pnlRoiAtual = await calcPnlFutBinance(posicaoAberta.entryPrice, preco_atual, Math.abs(posicaoAberta.positionAmt), sideOrd);
-      if (pnlRoiAtual !== null || pnlRoiAtual !== undefined) {
-        cachepos[symbol].percent = parseFloat(pnlRoiAtual.roi);
-        cachepos[symbol].unRealizedProfit = parseFloat(posicaoAberta.unrealizedProfit);
-
-        if (cachepos[symbol].maxPercent < parseFloat(pnlRoiAtual.roi)) {
-          cachepos[symbol].maxPercent = parseFloat(pnlRoiAtual.roi);
-        }
-
-        if (cachepos[symbol].minPercent > parseFloat(pnlRoiAtual.roi)) {
-          cachepos[symbol].minPercent = parseFloat(pnlRoiAtual.roi);
-        }
-
-        await salvarCache(cachepos, 'cachepos');
-      }
-    }
     /*
         stochRsi3m = StochasticRSI.calculate({
           values: candles3m.map(c => c.close),
@@ -3519,7 +3491,37 @@ function iniciarWebSocketMarkPrice() {
     if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
 
+          if (posicaoAberta !== 0) {
 
+      if (posicaoAberta.positionAmt > 0) {
+        sideM = 'C';
+        sideOrd = 'BUY';
+      } else if (posicaoAberta.positionAmt < 0) {
+        sideM = 'V';
+        sideOrd = 'SELL';
+      }
+
+      let cachepos = await carregarCache('cachepos');
+
+      let pnlRoiAtual = await calcPnlFutBinance(posicaoAberta.entryPrice, preco_atual, Math.abs(posicaoAberta.positionAmt), sideOrd);
+      if (pnlRoiAtual !== null || pnlRoiAtual !== undefined) {
+        cachepos[symbol].percent = parseFloat(pnlRoiAtual.roi);
+        cachepos[symbol].unRealizedProfit = parseFloat(posicaoAberta.unrealizedProfit);
+
+        if (cachepos[symbol].maxPercent < parseFloat(pnlRoiAtual.roi)) {
+          cachepos[symbol].maxPercent = parseFloat(pnlRoiAtual.roi);
+        }
+
+        if (cachepos[symbol].minPercent > parseFloat(pnlRoiAtual.roi)) {
+          cachepos[symbol].minPercent = parseFloat(pnlRoiAtual.roi);
+        }
+
+        await salvarCache(cachepos, 'cachepos');
+      }
+    }
+
+
+/*
       if (
         //gatilhoAtivado == true && 
         posicaoAberta.positionAmt < 0
@@ -3559,7 +3561,7 @@ function iniciarWebSocketMarkPrice() {
         //let returnPos = await abrirPosicao(sideOrd, quantity);
 
       }
-
+*/
 
       if (posicaoAberta.positionAmt > 0) {
         sideM = 'C';
@@ -3576,14 +3578,14 @@ function iniciarWebSocketMarkPrice() {
       let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
-
+/*
       if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
         await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
         sideM = '';
         sideOrd = '';
         return;
       }
-
+*/
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
@@ -5406,7 +5408,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
         
         && parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
-        && parseFloat(ema1m5p) > parseFloat(sma3m400p) 
+        //&& parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
 
         //parseFloat(ema1m400p) >= parseFloat(sma1m400p)
@@ -5428,11 +5430,11 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
             parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
             && parseFloat(preco_atual) >= parseFloat(menorMReg1m)
 
-            /*
-             parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
-             && parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
-             && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-             */
+            
+             //parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
+             //&& parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
+             //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+             
 
           )
         )
@@ -5667,7 +5669,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
         
         && parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
-        && parseFloat(ema1m5p) < parseFloat(sma3m400p) 
+        //&& parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
 
         //parseFloat(ema1m400p) <= parseFloat(sma1m400p)
@@ -5683,12 +5685,11 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
             parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
             && parseFloat(preco_atual) <= parseFloat(maiorMReg1m)
 
-            /*
-            parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
-            && parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
+            //parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
+            //&& parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
 
-            && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-            */
+            //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+            
           )
           /*
           || (
