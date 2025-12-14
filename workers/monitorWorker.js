@@ -5438,6 +5438,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
           )
         )
+        && parseFloat(candles15m.slice(-2)[0].high) <= parseFloat(candles15m.slice(-1)[0].high)
         && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
 
@@ -5699,6 +5700,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           */
         )
         && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
+        && parseFloat(candles15m.slice(-2)[0].low) >= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
 
       ) {
