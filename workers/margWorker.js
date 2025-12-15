@@ -1700,9 +1700,10 @@ await salvarCache(balance, 'Balance');
   parentPort.postMessage(`Atualizado: ${formatTime(Date.now())}`);
 
   // ---- GATILHOS DE STOP ----
-  if (
+  if ((
     parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(perc) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
-      /* || parseFloat(percReal) <= parseFloat(-1.0) */
+    )
+    /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
     (oldBalance.maxPercent >= 60.0 && perc <= 50.0) ||
@@ -1712,6 +1713,9 @@ await salvarCache(balance, 'Balance');
     (oldBalance.maxPercent >= 45.0 && perc <= 30.0) ||
     (oldBalance.maxPercent >= 15.0 && perc <= 2.0)
     */
+
+    && parseFloat(oldBalance.marginBalance) !== null
+    && parseFloat(balance.marginBalance) !== null
   ) {
 
     // --- CONTADOR DE 24H ---
