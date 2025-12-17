@@ -116,6 +116,9 @@ let ema1m100p = undefined;
 let sma1m400p = undefined;
 let ema1m400p = undefined;
 
+let sma1m400p_2 = undefined;
+let ema1m400p_2 = undefined;
+
 let ema1m5p_2 = undefined;
 let ema1m10p_2 = undefined;
 
@@ -2554,6 +2557,9 @@ function iniciarWebSocketcandles1m() {
 
       ema1m5p_2 = ema1m5p;
       ema1m10p_2 = ema1m10p;
+      ema1m400p_2 = ema1m400p;
+      sma1m400p_2 = sma1m400p;
+
 
       ema1m5p = calcularEMA(5, candles1m);
       ema1m10p = calcularEMA(10, candles1m);
@@ -5411,9 +5417,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         //&& parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
 
-        //parseFloat(ema1m400p) >= parseFloat(sma1m400p)
-        //&& 
-        parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
+        parseFloat(ema1m400p) <= parseFloat(sma1m400p)
+        && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
+        && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) > parseFloat(ema1m10p_2)
         && (
           /*
@@ -5673,9 +5679,9 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //&& parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
 
-        //parseFloat(ema1m400p) <= parseFloat(sma1m400p)
-        //&& 
-        parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
+        parseFloat(ema1m400p) >= parseFloat(sma1m400p)
+        && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
+        && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
         && parseFloat(ema1m10p) < parseFloat(ema1m10p_2)
         && (
           (

@@ -5,14 +5,14 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765703340709
+      "openedAt": 1765781700475
     },
     "TAUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765566541407
+      "openedAt": 1765908782775
     },
     "XRPUSDT": {
       "roiMax": 0,
@@ -33,14 +33,14 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765746420387
+      "openedAt": 1765909321346
     },
     "FETUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765570680692
+      "openedAt": 1765848000840
     },
     "BNBUSDT": {
       "roiMax": 0,
@@ -54,14 +54,14 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765589467790
+      "openedAt": 1765818782489
     },
     "LINKUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765652762291
+      "openedAt": 1765844159857
     },
     "ONDOUSDT": {
       "roiMax": 0,
@@ -82,14 +82,14 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765593901868
+      "openedAt": 1765816079982
     },
     "LAYERUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765601943519
+      "openedAt": 1765912442922
     },
     "ADAUSDT": {
       "roiMax": 0,
@@ -98,54 +98,33 @@
       "isOpen": true,
       "openedAt": 1765602780620
     },
-    "AAVEUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765716963053
-    },
-    "ENAUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765655581148
-    },
     "1000BONKUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765635660631
-    },
-    "TIAUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765637161883
+      "openedAt": 1765848959926
     },
     "UNIUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765775581404
+      "openedAt": 1765802520437
     },
     "PYTHUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765638421142
+      "openedAt": 1765856042720
     },
     "IDOLUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765638603585
+      "openedAt": 1765846022621
     },
     "PUMPUSDT": {
       "roiMax": 0,
@@ -154,19 +133,12 @@
       "isOpen": true,
       "openedAt": 1765737960003
     },
-    "KAITOUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765767000063
-    },
     "1000SHIBUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765736581777
+      "openedAt": 1765855080134
     },
     "VIRTUALUSDT": {
       "roiMax": 0,
@@ -175,19 +147,12 @@
       "isOpen": true,
       "openedAt": 1765706342344
     },
-    "LDOUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765715403043
-    },
     "TONUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765715581193
+      "openedAt": 1765879979930
     },
     "NXPCUSDT": {
       "roiMax": 0,
@@ -208,7 +173,7 @@
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765737120558
+      "openedAt": 1765785540726
     },
     "SOLUSDT": {
       "roiMax": 0,
@@ -217,61 +182,173 @@
       "isOpen": true,
       "openedAt": 1765737780787
     },
-    "ASTERUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765745102982
-    },
     "VETUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765748762943
-    },
-    "OPUSDT": {
-      "roiMax": 0,
-      "roiMin": 0,
-      "roiFinal": 0,
-      "isOpen": true,
-      "openedAt": 1765747140075
+      "openedAt": 1765899600251
     },
     "WUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765747323354
+      "openedAt": 1765882080789
     },
     "NMRUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765774800555
+      "openedAt": 1765845900801
     },
     "WLFIUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765748520440
+      "openedAt": 1765912799923
     },
     "SEIUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765771800565
+      "openedAt": 1765938600370
     },
     "CVXUSDT": {
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "isOpen": true,
-      "openedAt": 1765772163314
+      "openedAt": 1765816919725
+    },
+    "ASTERUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765860659747
+    },
+    "MUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765803720999
+    },
+    "JUPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765817040882
+    },
+    "SYRUPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765818959597
+    },
+    "DEXEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765845782802
+    },
+    "ARBUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765846742725
+    },
+    "KAITOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765847522770
+    },
+    "ALGOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765848242734
+    },
+    "ENAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765911419944
+    },
+    "1000PEPEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765868880042
+    },
+    "COTIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765869840930
+    },
+    "ACHUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765870139981
+    },
+    "AAVEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765909622322
+    },
+    "BATUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765910161901
+    },
+    "HBARUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765930380701
+    },
+    "SANDUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765930682088
+    },
+    "TIAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765932840976
+    },
+    "XLMUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1765934643333
     }
   },
   "history": [
@@ -1690,31 +1767,598 @@
     },
     {
       "tradeId": 158,
-      "symbol": "NMRUSDT",
+      "symbol": "DOGEUSDT",
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
-      "openedAt": 1765747503295,
-      "closedAt": 1765774777547
+      "openedAt": 1765703340709,
+      "closedAt": 1765781572654
     },
     {
       "tradeId": 159,
+      "symbol": "DOGEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765781580624,
+      "closedAt": 1765781643977
+    },
+    {
+      "tradeId": 160,
+      "symbol": "ASTERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765745102982,
+      "closedAt": 1765781745524
+    },
+    {
+      "tradeId": 161,
+      "symbol": "ASTERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765781760542,
+      "closedAt": 1765782006961
+    },
+    {
+      "tradeId": 162,
+      "symbol": "ASTERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765782180982,
+      "closedAt": 1765782201348
+    },
+    {
+      "tradeId": 163,
+      "symbol": "LAYERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765601943519,
+      "closedAt": 1765785148403
+    },
+    {
+      "tradeId": 164,
+      "symbol": "AINUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765737120558,
+      "closedAt": 1765785495892
+    },
+    {
+      "tradeId": 165,
+      "symbol": "ASTERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765782240289,
+      "closedAt": 1765785927947
+    },
+    {
+      "tradeId": 166,
+      "symbol": "AAVEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765716963053,
+      "closedAt": 1765790767346
+    },
+    {
+      "tradeId": 167,
+      "symbol": "OPUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765747140075,
+      "closedAt": 1765790910814
+    },
+    {
+      "tradeId": 168,
+      "symbol": "OPUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765790943283,
+      "closedAt": 1765790946644
+    },
+    {
+      "tradeId": 169,
+      "symbol": "XLMUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765791097067,
+      "closedAt": 1765791424580
+    },
+    {
+      "tradeId": 170,
+      "symbol": "LDOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765715403043,
+      "closedAt": 1765791709689
+    },
+    {
+      "tradeId": 171,
+      "symbol": "LDOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765791723349,
+      "closedAt": 1765791724484
+    },
+    {
+      "tradeId": 172,
+      "symbol": "MUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765791781033,
+      "closedAt": 1765792627344
+    },
+    {
+      "tradeId": 173,
+      "symbol": "KAITOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765767000063,
+      "closedAt": 1765800040197
+    },
+    {
+      "tradeId": 174,
+      "symbol": "KAITOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765800063404,
+      "closedAt": 1765800064911
+    },
+    {
+      "tradeId": 175,
+      "symbol": "ALGOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765800121572,
+      "closedAt": 1765800136606
+    },
+    {
+      "tradeId": 176,
+      "symbol": "ALGOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765800183352,
+      "closedAt": 1765800184910
+    },
+    {
+      "tradeId": 177,
+      "symbol": "ENAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765655581148,
+      "closedAt": 1765800695256
+    },
+    {
+      "tradeId": 178,
+      "symbol": "ENAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765800723408,
+      "closedAt": 1765800726194
+    },
+    {
+      "tradeId": 179,
+      "symbol": "TIAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765637161883,
+      "closedAt": 1765802339785
+    },
+    {
+      "tradeId": 180,
+      "symbol": "TIAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765802341269,
+      "closedAt": 1765802341271
+    },
+    {
+      "tradeId": 181,
       "symbol": "UNIUSDT",
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
       "openedAt": 1765637881955,
-      "closedAt": 1765775004468
+      "closedAt": 1765802466343
     },
     {
-      "tradeId": 160,
-      "symbol": "UNIUSDT",
+      "tradeId": 182,
+      "symbol": "DOTUSDT",
       "roiMax": 0,
       "roiMin": 0,
       "roiFinal": 0,
-      "openedAt": 1765775043274,
-      "closedAt": 1765775530575
+      "openedAt": 1765593901868,
+      "closedAt": 1765816042395
+    },
+    {
+      "tradeId": 183,
+      "symbol": "FETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765570680692,
+      "closedAt": 1765816191754
+    },
+    {
+      "tradeId": 184,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765782122744,
+      "closedAt": 1765816506251
+    },
+    {
+      "tradeId": 185,
+      "symbol": "CVXUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765772163314,
+      "closedAt": 1765816908082
+    },
+    {
+      "tradeId": 186,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765816559816,
+      "closedAt": 1765818177137
+    },
+    {
+      "tradeId": 187,
+      "symbol": "AERGOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765589467790,
+      "closedAt": 1765818732137
+    },
+    {
+      "tradeId": 188,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765818179625,
+      "closedAt": 1765819961738
+    },
+    {
+      "tradeId": 189,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765819982442,
+      "closedAt": 1765822276277
+    },
+    {
+      "tradeId": 190,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765822320534,
+      "closedAt": 1765832344559
+    },
+    {
+      "tradeId": 191,
+      "symbol": "DEXEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765832402556,
+      "closedAt": 1765832696785
+    },
+    {
+      "tradeId": 192,
+      "symbol": "LDOUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765803183343,
+      "closedAt": 1765832710365
+    },
+    {
+      "tradeId": 193,
+      "symbol": "LINKUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765652762291,
+      "closedAt": 1765835884658
+    },
+    {
+      "tradeId": 194,
+      "symbol": "LINKUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765835939826,
+      "closedAt": 1765844130377
+    },
+    {
+      "tradeId": 195,
+      "symbol": "NMRUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765747503295,
+      "closedAt": 1765845885617
+    },
+    {
+      "tradeId": 196,
+      "symbol": "IDOLUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765638603585,
+      "closedAt": 1765845960084
+    },
+    {
+      "tradeId": 197,
+      "symbol": "TONUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765715581193,
+      "closedAt": 1765846925196
+    },
+    {
+      "tradeId": 198,
+      "symbol": "FETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765816199792,
+      "closedAt": 1765847943878
+    },
+    {
+      "tradeId": 199,
+      "symbol": "1000BONKUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765635660631,
+      "closedAt": 1765848944841
+    },
+    {
+      "tradeId": 200,
+      "symbol": "ENAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765849800234,
+      "closedAt": 1765854391825
+    },
+    {
+      "tradeId": 201,
+      "symbol": "1000SHIBUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765736581777,
+      "closedAt": 1765855031186
+    },
+    {
+      "tradeId": 202,
+      "symbol": "PYTHUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765638421142,
+      "closedAt": 1765856008018
+    },
+    {
+      "tradeId": 203,
+      "symbol": "TONUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765846980628,
+      "closedAt": 1765859931572
+    },
+    {
+      "tradeId": 204,
+      "symbol": "WUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765747323354,
+      "closedAt": 1765860497221
+    },
+    {
+      "tradeId": 205,
+      "symbol": "ASTERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765785960799,
+      "closedAt": 1765860632996
+    },
+    {
+      "tradeId": 206,
+      "symbol": "WUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765860539824,
+      "closedAt": 1765861200593
+    },
+    {
+      "tradeId": 207,
+      "symbol": "1000PEPEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765854480323,
+      "closedAt": 1765863921053
+    },
+    {
+      "tradeId": 208,
+      "symbol": "1000PEPEUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765863960116,
+      "closedAt": 1765868829383
+    },
+    {
+      "tradeId": 209,
+      "symbol": "COTIUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765869480872,
+      "closedAt": 1765869821997
+    },
+    {
+      "tradeId": 210,
+      "symbol": "TONUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765859939744,
+      "closedAt": 1765879961873
+    },
+    {
+      "tradeId": 211,
+      "symbol": "WUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765861259853,
+      "closedAt": 1765882070324
+    },
+    {
+      "tradeId": 212,
+      "symbol": "VETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765748762943,
+      "closedAt": 1765887904999
+    },
+    {
+      "tradeId": 213,
+      "symbol": "VETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765887960975,
+      "closedAt": 1765895686254
+    },
+    {
+      "tradeId": 214,
+      "symbol": "VETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765895700192,
+      "closedAt": 1765895700217
+    },
+    {
+      "tradeId": 215,
+      "symbol": "VETUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765895762656,
+      "closedAt": 1765899587869
+    },
+    {
+      "tradeId": 216,
+      "symbol": "TAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765566541407,
+      "closedAt": 1765908779140
+    },
+    {
+      "tradeId": 217,
+      "symbol": "APTUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765746420387,
+      "closedAt": 1765909271894
+    },
+    {
+      "tradeId": 218,
+      "symbol": "ENAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765854422115,
+      "closedAt": 1765910742069
+    },
+    {
+      "tradeId": 219,
+      "symbol": "ENAUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765910760381,
+      "closedAt": 1765911399392
+    },
+    {
+      "tradeId": 220,
+      "symbol": "LAYERUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765785180587,
+      "closedAt": 1765912398185
+    },
+    {
+      "tradeId": 221,
+      "symbol": "WLFIUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765748520440,
+      "closedAt": 1765912793844
+    },
+    {
+      "tradeId": 222,
+      "symbol": "HBARUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765914000526,
+      "closedAt": 1765930321073
+    },
+    {
+      "tradeId": 223,
+      "symbol": "SEIUSDT",
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "openedAt": 1765771800565,
+      "closedAt": 1765938596456
     }
   ],
-  "lastId": 160
+  "lastId": 223
 }

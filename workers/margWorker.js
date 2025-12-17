@@ -1701,7 +1701,7 @@ await salvarCache(balance, 'Balance');
 
   // ---- GATILHOS DE STOP ----
   if ((
-    parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(perc) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
     )
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
@@ -1780,7 +1780,7 @@ await salvarCache(balance, 'Balance');
       balance = await getBalance();
       await salvarCache(balance, 'oldBalance');
       
-    }else if (perc >= parseFloat(process.env.TPDIA) && perc < 90) {
+    }else if (percReal >= parseFloat(process.env.TPDIA) && perc < 90) {
       
       activatePause(5); // pausa por 30 min
       let res = await fecharTodasPosicoes();
