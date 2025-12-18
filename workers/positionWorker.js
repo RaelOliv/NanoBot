@@ -6,6 +6,9 @@ const path = require('path');
 const crypto = require('crypto');
 require('dotenv').config();
 
+const { parentPort, workerData } = require('worker_threads');
+
+
 const API_KEY = process.env.API_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
@@ -36,6 +39,7 @@ function garantirCache() {
 garantirCache();
 
 let positions = {};
+let lastPNL = null;
 
 // Carrega cache existente
 function carregarCacheLocal() {
@@ -115,6 +119,8 @@ function signQuery(paramsObj, secret) {
   const signature = crypto.createHmac('sha256', secret).update(params).digest('hex');
   return `${params}&signature=${signature}`;
 }
+
+
 
 // 🔍 Sincroniza cache com posições reais da conta (assinada)
 async function sincronizarPosicoesAtuais() {
@@ -256,6 +262,67 @@ function iniciarVerificacaoPeriodica(intervalMinutes = 1) {
   console.log(`[positionsWorker] Verificação REST automática ativada (a cada ${intervalMinutes} minutos).`);
 }
 
+function gerarAssinatura(params) {
+  const query = new URLSearchParams(params).toString();
+  return crypto.createHmac('sha256', SECRET_KEY).update(query).digest('hex');
+}
+
+async function getLastClosedPositionPnL(symbol = null) {
+  let timestamp = Date.now(); // + offset;
+  let query = `timestamp=${timestamp}&limit=1000`;
+
+  if (symbol) {
+    query = `symbol=${symbol}&${query}`;
+  }
+
+  const signature = gerarAssinatura(query);
+  const url = `${BASE_URL}/fapi/v1/userTrades?${query}&signature=${signature}`;
+
+  const { data: trades } = await axios.get(url, {
+    headers: {
+      'X-MBX-APIKEY': process.env.API_KEY
+    }
+  });
+
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return null;
+  }
+
+  // ordena por tempo (mais recente primeiro)
+  trades.sort((a, b) => b.time - a.time);
+
+  let pnl = 0;
+  let positionQty = 0;
+  let lastCloseTime = null;
+  let tradeSymbol = null;
+
+  for (const trade of trades) {
+    const qty = Number(trade.qty);
+    const realized = Number(trade.realizedPnl || 0);
+
+    pnl += realized;
+
+    positionQty += trade.side === 'BUY' ? qty : -qty;
+
+    // posição zerou → posição fechada
+    if (positionQty === 0 && pnl !== 0) {
+      lastCloseTime = trade.time;
+      tradeSymbol = trade.symbol;
+      break;
+    }
+  }
+
+  if (lastCloseTime === null) {
+    return null;
+  }
+
+  return {
+    symbol: tradeSymbol,
+    pnl: Number(pnl.toFixed(4)),
+    closedAt: new Date(lastCloseTime)
+  };
+}
+
 // Inicia WebSocket
 async function iniciarWs() {
   try {
@@ -275,13 +342,13 @@ async function iniciarWs() {
 
       // sincronização inicial (REST assinada)
       await sincronizarPosicoesAtuais();
-
+      lastPNL = await getLastClosedPositionPnL();
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
       iniciarVerificacaoPeriodica(1);
     });
 
-    ws.on('message', (msg) => {
+    ws.on('message', async (msg) => {
       try {
         const data = JSON.parse(msg);
 
@@ -345,6 +412,20 @@ async function iniciarWs() {
           positions = novas;
           salvarCache();
           console.log(`[positionsWorker] Cache atualizado via WS (${Object.keys(positions).length} posições).`);
+
+          try {
+            const res = await getLastClosedPositionPnL();
+            if (res) {
+              lastPNL = res;
+              parentPort.postMessage(`lastPNL atualizado: ${JSON.stringify(lastPNL)}`);
+            } else {
+              parentPort.postMessage(`lastPNL: nenhum fechamento recente encontrado`);
+            }
+          } catch (err) {
+            parentPort.postMessage(`erro ao obter lastPNL: ${err.message || err}`);
+            console.error(`atualizarLastPnl error:`, err);
+          }
+
         } else {
           // outros eventos podem ser tratados aqui, se necessário
           // console.log('[positionsWorker] Evento WS:', data.e);
@@ -376,10 +457,29 @@ function getPositions() {
   return positions;
 }
 
+async function getLastPnL(){
+
+          try {
+            const res = await getLastClosedPositionPnL();
+            if (res) {
+              lastPNL = res;
+              parentPort.postMessage(`lastPNL atualizado: ${JSON.stringify(lastPNL)}`);
+            } else {
+              parentPort.postMessage(`lastPNL: nenhum fechamento recente encontrado`);
+            }
+          } catch (err) {
+            parentPort.postMessage(`erro ao obter lastPNL: ${err.message || err}`);
+            console.error(`atualizarLastPnl error:`, err);
+          }
+
+  return lastPNL;
+}
+
 // inicia tudo
 iniciarWs();
 
 // Export (opcional se você quiser requerir este módulo)
 module.exports = {
-  getPositions,
+  getPositions, 
+  getLastPnL
 };

@@ -945,7 +945,7 @@ const cryptSymbols = {
 */
 const cryptSymbols = {
     
-
+    /*
     aave: 'AAVEUSDT',
     ach: 'ACHUSDT',
     ada: 'ADAUSDT',
@@ -1010,6 +1010,7 @@ const cryptSymbols = {
     wld: 'WLDUSDT',
     wlfi: 'WLFIUSDT',
     //xpl: 'XPLUSDT',
+    */
     xrp: 'XRPUSDT'
 };
 

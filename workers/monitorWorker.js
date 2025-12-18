@@ -188,10 +188,13 @@ let stochRsi1h = null;
 let stochRsi4h = null;
 
 let plus = 0;
+let lastPNL = null;
 
 const { setLock, getLock, hasAnyLock, countLocks, releaseLock } = require("../lockManager");
 
 const roiTracker = require('../roiTracker');
+
+const {getLastPnL} = require('./positionWorker');
 
 /*
 // abrir posição
@@ -324,6 +327,8 @@ function carregarCache(currencyPair) {
     return {};
   }
 }
+
+
 
 
 function calcPnlFutBinance(precoEntrada, precoSaida, tamanhoPosicao, side) {
@@ -749,7 +754,18 @@ async function getQntbyBalance() {
 
     parentPort.postMessage('[ getQntbyBalance_End ]');
 
-    return qntty * pMarg;
+    let pMargemAlt = pMarg;
+
+      lastPNL = await getLastPnL();
+
+
+    if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
+      pMargemAlt = parseFloat(pMarg) - parseFloat(0.5);
+    } else if (lastPNL && parseFloat(lastPNL.pnl) < parseFloat(0.00)) {
+      pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
+    }
+
+    return qntty * parseFloat(pMargemAlt);
 
   } else {
 
@@ -1760,14 +1776,14 @@ async function criarTakeProfit(takePrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-    
-        const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
-          params,
-          headers: { 'X-MBX-APIKEY': API_KEY }
-        });
-        parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
-        return res.data;
-    
+
+    const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
+      params,
+      headers: { 'X-MBX-APIKEY': API_KEY }
+    });
+    parentPort.postMessage(`✅ Take (${oppositeSide}) criado @ ${takePrice}`);
+    return res.data;
+
     //return undefined;
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Take: ${JSON.stringify(err.response?.data || err.message)}`);
@@ -3087,6 +3103,10 @@ function iniciarWebSocketMarkPrice() {
     parentPort.postMessage(`🔎 unRealizedProfit: ${JSON.stringify(balance.unrealizedProfit)}`);
 
     parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
+      
+    lastPNL = await getLastPnL();
+
+    parentPort.postMessage(`🔎 lastPNL: ${JSON.stringify(lastPNL)}`);
 
     /*
         stochRsi3m = StochasticRSI.calculate({
@@ -3497,77 +3517,77 @@ function iniciarWebSocketMarkPrice() {
     if (posicaoAberta !== 0 && posicaoAberta !== null && posicaoAberta !== undefined && posicaoAberta !== false) {
 
 
-          if (posicaoAberta !== 0) {
+      if (posicaoAberta !== 0) {
 
-      if (posicaoAberta.positionAmt > 0) {
-        sideM = 'C';
-        sideOrd = 'BUY';
-      } else if (posicaoAberta.positionAmt < 0) {
-        sideM = 'V';
-        sideOrd = 'SELL';
-      }
-
-      let cachepos = await carregarCache('cachepos');
-
-      let pnlRoiAtual = await calcPnlFutBinance(posicaoAberta.entryPrice, preco_atual, Math.abs(posicaoAberta.positionAmt), sideOrd);
-      if (pnlRoiAtual !== null || pnlRoiAtual !== undefined) {
-        cachepos[symbol].percent = parseFloat(pnlRoiAtual.roi);
-        cachepos[symbol].unRealizedProfit = parseFloat(posicaoAberta.unrealizedProfit);
-
-        if (cachepos[symbol].maxPercent < parseFloat(pnlRoiAtual.roi)) {
-          cachepos[symbol].maxPercent = parseFloat(pnlRoiAtual.roi);
+        if (posicaoAberta.positionAmt > 0) {
+          sideM = 'C';
+          sideOrd = 'BUY';
+        } else if (posicaoAberta.positionAmt < 0) {
+          sideM = 'V';
+          sideOrd = 'SELL';
         }
 
-        if (cachepos[symbol].minPercent > parseFloat(pnlRoiAtual.roi)) {
-          cachepos[symbol].minPercent = parseFloat(pnlRoiAtual.roi);
+        let cachepos = await carregarCache('cachepos');
+
+        let pnlRoiAtual = await calcPnlFutBinance(posicaoAberta.entryPrice, preco_atual, Math.abs(posicaoAberta.positionAmt), sideOrd);
+        if (pnlRoiAtual !== null || pnlRoiAtual !== undefined) {
+          cachepos[symbol].percent = parseFloat(pnlRoiAtual.roi);
+          cachepos[symbol].unRealizedProfit = parseFloat(posicaoAberta.unrealizedProfit);
+
+          if (cachepos[symbol].maxPercent < parseFloat(pnlRoiAtual.roi)) {
+            cachepos[symbol].maxPercent = parseFloat(pnlRoiAtual.roi);
+          }
+
+          if (cachepos[symbol].minPercent > parseFloat(pnlRoiAtual.roi)) {
+            cachepos[symbol].minPercent = parseFloat(pnlRoiAtual.roi);
+          }
+
+          await salvarCache(cachepos, 'cachepos');
         }
-
-        await salvarCache(cachepos, 'cachepos');
       }
-    }
 
 
-/*
-      if (
-        //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt < 0
-        //sideOrd == 'BUY' &&
-        //parseFloat(ema1m400p) > parseFloat(sma1m400p)
-        && parseFloat(ema1m5p) > parseFloat(maiorMReg1m)
-        //parseFloat(preco_atual) > parseFloat(maiorMReg1m)
-        && parseFloat(ema1m5p) > parseFloat(ema1m10p_2)
-
-
-      ) {
-
-        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-        sideM = '';
-        sideOrd = '';
-        return;
-        //gatilhoAtivado = true;
-        //let returnPos = await abrirPosicao(sideOrd, quantity);
-
-
-      } else if (
-        //gatilhoAtivado == true && 
-        posicaoAberta.positionAmt > 0
-        //sideOrd == 'SELL' &&
-        //parseFloat(ema1m400p) < parseFloat(sma1m400p)
-        && parseFloat(ema1m5p) < parseFloat(menorMReg1m)
-        //parseFloat(preco_atual) < parseFloat(menorMReg1m)
-        && parseFloat(ema1m5p) < parseFloat(ema1m10p_2)
-
-      ) {
-
-        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-        sideM = '';
-        sideOrd = '';
-        return;
-        //gatilhoAtivado = true;
-        //let returnPos = await abrirPosicao(sideOrd, quantity);
-
-      }
-*/
+      /*
+            if (
+              //gatilhoAtivado == true && 
+              posicaoAberta.positionAmt < 0
+              //sideOrd == 'BUY' &&
+              //parseFloat(ema1m400p) > parseFloat(sma1m400p)
+              && parseFloat(ema1m5p) > parseFloat(maiorMReg1m)
+              //parseFloat(preco_atual) > parseFloat(maiorMReg1m)
+              && parseFloat(ema1m5p) > parseFloat(ema1m10p_2)
+      
+      
+            ) {
+      
+              await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+              sideM = '';
+              sideOrd = '';
+              return;
+              //gatilhoAtivado = true;
+              //let returnPos = await abrirPosicao(sideOrd, quantity);
+      
+      
+            } else if (
+              //gatilhoAtivado == true && 
+              posicaoAberta.positionAmt > 0
+              //sideOrd == 'SELL' &&
+              //parseFloat(ema1m400p) < parseFloat(sma1m400p)
+              && parseFloat(ema1m5p) < parseFloat(menorMReg1m)
+              //parseFloat(preco_atual) < parseFloat(menorMReg1m)
+              && parseFloat(ema1m5p) < parseFloat(ema1m10p_2)
+      
+            ) {
+      
+              await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+              sideM = '';
+              sideOrd = '';
+              return;
+              //gatilhoAtivado = true;
+              //let returnPos = await abrirPosicao(sideOrd, quantity);
+      
+            }
+      */
 
       if (posicaoAberta.positionAmt > 0) {
         sideM = 'C';
@@ -3584,14 +3604,14 @@ function iniciarWebSocketMarkPrice() {
       let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
-/*
-      if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
-        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-        sideM = '';
-        sideOrd = '';
-        return;
-      }
-*/
+      /*
+            if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
+              await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+              sideM = '';
+              sideOrd = '';
+              return;
+            }
+      */
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
@@ -4884,7 +4904,6 @@ function addTrade(symbol) {
   saveHistory(history);
 }
 
-
 async function iniciarWebSocketContinuo() {
 
   // if (monitoramentoAtivado == false) return;
@@ -4902,6 +4921,8 @@ async function iniciarWebSocketContinuo() {
 
   maxleverage = await obterAlavancagem(symbol);
   tickSize = await getTickSize(symbol);
+
+  lastPNL = await getLastPnL();
 
   let cacheJsonAux = await carregarCache(symbol);
 
@@ -4966,6 +4987,7 @@ async function iniciarWebSocketContinuo() {
         console.error('Erro no monitoramento PnL:', err.message);
       }
     */
+
 
     const payload = JSON.parse(data);
     const k = payload.k;
@@ -5047,6 +5069,11 @@ async function iniciarWebSocketContinuo() {
             //let fibo4h = calcularRetracoesFibonacci(zigZag4h.pontosUnificados);
             //let ltaltb4h = calcularLinhasTendencia(candles4h, zigZag4h.topos, zigZag4h.fundos);
       */
+
+                //lastPNL = await getLastClosedPositionPnL();
+                //console.log(`🔄 Último PnL realizado: ${lastPNL}`);
+
+
 
       const stochRsi1m = StochasticRSI.calculate({
         values: candles1m.map(c => c.close),
@@ -5436,11 +5463,11 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
             parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
             && parseFloat(preco_atual) >= parseFloat(menorMReg1m)
 
-            
-             //parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
-             //&& parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
-             //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-             
+
+            //parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
+            //&& parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
+            //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+
 
           )
         )
@@ -5696,7 +5723,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
             //&& parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
 
             //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-            
+
           )
           /*
           || (
@@ -6901,6 +6928,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
 }
 
+
+
 async function startWorker() {
 
   const res = await apiAxiosSpot.get('/api/v3/time');
@@ -6916,7 +6945,7 @@ async function startWorker() {
     iniciarWebSocketcandles15m();
     iniciarWebSocketcandles30m();
     iniciarWebSocketcandles1h();
-    //iniciarWebSocketcandles4h();
+    // iniciarWebSocketcandles4h();
     //   await monitorarGatilho();
     iniciarWebSocketMarkPrice();
     await iniciarWebSocketContinuo();
