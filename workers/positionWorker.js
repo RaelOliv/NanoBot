@@ -458,7 +458,7 @@ function getPositions() {
 }
 
 async function getLastPnL(){
-
+/*
           try {
             const res = await getLastClosedPositionPnL();
             if (res) {
@@ -471,7 +471,7 @@ async function getLastPnL(){
             parentPort.postMessage(`erro ao obter lastPNL: ${err.message || err}`);
             console.error(`atualizarLastPnl error:`, err);
           }
-
+*/
   return lastPNL;
 }
 
