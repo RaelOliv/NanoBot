@@ -252,7 +252,7 @@ async function criarListenKey() {
 }
 
 // ⏱️ Verificação automática de posições a cada intervalMinutes (inicia só uma vez)
-function iniciarVerificacaoPeriodica(intervalMinutes = 3) {
+function iniciarVerificacaoPeriodica(intervalMinutes = 30) {
   if (periodicStarted) return;
   periodicStarted = true;
 
@@ -378,7 +378,7 @@ async function iniciarWs() {
       coin = await getCoin();
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
-      iniciarVerificacaoPeriodica(1);
+      iniciarVerificacaoPeriodica(30);
     });
 
     ws.on('message', async (msg) => {
