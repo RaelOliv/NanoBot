@@ -4,6 +4,8 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const api = require('../api');// worker.js
+
 require('dotenv').config();
 
 const { parentPort, workerData } = require('worker_threads');
