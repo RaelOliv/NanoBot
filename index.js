@@ -2961,6 +2961,7 @@ async function execThreads() {
 
         //await configRisk(cryptSymbol);
         //main(cryptSymbol);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         iniciarWorkerMon(cryptSymbol);
         //await travaDeSeguranca(cryptSymbol);
 
