@@ -6652,6 +6652,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           }
         }
 
+        /*
         if (takeAtivo !== undefined) {
           if (takeAtivo.price == null) {
             //takeAtivo = await criarTakeProfit(novoTake);
@@ -6659,6 +6660,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           }
 
         }
+        */
+       
         if (takeAtivo === null || takeAtivo === undefined) {
 
           //takeAtivo = await criarTakeProfit(novoTake);
