@@ -1892,7 +1892,7 @@ async function startWorker() {
   // Loop contínuo a cada X segundos
   setInterval(() => {
     startWorker();
-  }, 3000);
+  }, 10000);
 
 
 })();

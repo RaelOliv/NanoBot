@@ -252,7 +252,7 @@ async function criarListenKey() {
 }
 
 // ⏱️ Verificação automática de posições a cada intervalMinutes (inicia só uma vez)
-function iniciarVerificacaoPeriodica(intervalMinutes = 1) {
+function iniciarVerificacaoPeriodica(intervalMinutes = 3) {
   if (periodicStarted) return;
   periodicStarted = true;
 
