@@ -21,7 +21,7 @@ const BASE_URL = 'https://fapi.binance.com';
 //const wsSymbol = symbol.toLowerCase();
 const api = require('../api');// worker.js
 //const PnlManager = require('./marginManager');
-const {getLastPnL, getBalance} = require('./positionWorker');
+const { getLastPnL, getBalance } = require('./positionWorker');
 
 const { activatePause } = require("./pauseManager");
 
@@ -1639,7 +1639,7 @@ async function monitorarMargem() {
     //balance.initResetMarg = balance.walletBalance;
     await salvarCache(balance, 'oldBalance');
   }
-await salvarCache(balance, 'Balance');
+  await salvarCache(balance, 'Balance');
   //if(oldBalance.percent === null){
   //await salvarCache(balance, 'Balance');
   //}
@@ -1653,7 +1653,7 @@ await salvarCache(balance, 'Balance');
     toFixedNumber(oldBalance.walletBalance),
     toFixedNumber(balance.walletBalance)
   );
-  
+
 
   oldBalance.percent = toFixedNumber(perc, 2);
 
@@ -1704,10 +1704,10 @@ await salvarCache(balance, 'Balance');
   // ---- GATILHOS DE STOP ----
   if ((
     parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
-    && parseFloat(perc) !== null 
-    && parseFloat(perc) !== parseFloat (-100)
-    && parseFloat(oldBalance) !== parseFloat (undefined)
-  
+    && parseFloat(perc) !== null
+    && parseFloat(perc) !== parseFloat(-100)
+    && parseFloat(oldBalance) !== parseFloat(undefined)
+
   )
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
@@ -1782,35 +1782,39 @@ await salvarCache(balance, 'Balance');
     //}
 
     if (perc >= 90) {
-      
+
       balance = await getBalance();
       await salvarCache(balance, 'oldBalance');
-      
-    }else if (percReal >= parseFloat(process.env.TPDIA) && perc < 90) {
-      
+
+    } else if (percReal >= parseFloat(process.env.TPDIA) && perc < 90) {
+
       activatePause(5); // pausa por 30 min
       let res = await fecharTodasPosicoes();
       if (res == true) {
-        
+
         balance = await getBalance();
-        
-        oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
-        balanceHist.push(oldBalance);
-        
-      let capitalIni = oldBalance.walletBalance;
-      let pnlaReter = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
-      
-      //await transferir("USDT", capitalIni, 'UMFUTURE_MAIN');
-      await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
-      
-      balance = await getBalance();
-        await salvarCache(balance, 'oldBalance');
-        
-        
+
+
+        let capitalIni = oldBalance.walletBalance;
+        let pnlaReter = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
+
+        //await transferir("USDT", capitalIni, 'UMFUTURE_MAIN');
+        let resTr = await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
+        if (resTr !== null) {
+
+          oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
+          balanceHist.push(oldBalance);
+
+          balance = await getBalance();
+          await salvarCache(balance, 'oldBalance');
+          return;
+          
+        }
+
       }
-      
-      
-    } 
+
+
+    }
     /*
     else if (percReal < -1.0) {
 
@@ -1832,9 +1836,9 @@ await salvarCache(balance, 'Balance');
       if (res == true) {
         oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
         balanceHist.push(oldBalance);
-        
 
-      balance = await getBalance();
+
+        balance = await getBalance();
       }
       await salvarCache(balance, 'oldBalance');
       await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
@@ -1843,7 +1847,7 @@ await salvarCache(balance, 'Balance');
     }
     // salvar saldo/histórico de margem
 
-    
+
 
   }
 }
