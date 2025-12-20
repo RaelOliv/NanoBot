@@ -40,6 +40,7 @@ garantirCache();
 
 let positions = {};
 let lastPNL = null;
+let coin = null;
 
 // Carrega cache existente
 function carregarCacheLocal() {
@@ -323,6 +324,35 @@ async function getLastClosedPositionPnL(symbol = null) {
   };
 }
 
+async function getCoin() {
+
+  parentPort.postMessage('');
+  parentPort.postMessage('[ getQntbyBalance_Start ]');
+
+  const carteira = await api.accountFutures(Date.now());
+
+  if (carteira !== undefined) {
+    var coin = undefined;
+
+    coin = await carteira.assets.filter(b => b.asset === 'USDT'); // || b.asset === 'USDT');
+
+    parentPort.postMessage('');
+    parentPort.postMessage('[ coin0 ]: ', coin[0]);
+
+    //var symbol = process.env.SYMBOL;
+
+    var availableBalance = coin[0].availableBalance;
+    var balance = coin[0].walletBalance;
+
+    return coin[0];
+
+  } else {
+    return null;
+  }
+
+}
+
+
 // Inicia WebSocket
 async function iniciarWs() {
   try {
@@ -343,6 +373,7 @@ async function iniciarWs() {
       // sincronização inicial (REST assinada)
       await sincronizarPosicoesAtuais();
       lastPNL = await getLastClosedPositionPnL();
+      coin = await getCoin();
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
       iniciarVerificacaoPeriodica(1);
@@ -412,6 +443,7 @@ async function iniciarWs() {
           positions = novas;
           salvarCache();
           console.log(`[positionsWorker] Cache atualizado via WS (${Object.keys(positions).length} posições).`);
+          coin = await getCoin();
 
           try {
             const res = await getLastClosedPositionPnL();
@@ -457,6 +489,10 @@ function getPositions() {
   return positions;
 }
 
+async function getBalance() {
+  return coin;
+}
+
 async function getLastPnL(){
 /*
           try {
@@ -481,5 +517,6 @@ iniciarWs();
 // Export (opcional se você quiser requerir este módulo)
 module.exports = {
   getPositions, 
-  getLastPnL
+  getLastPnL,
+  getBalance
 };

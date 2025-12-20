@@ -194,7 +194,7 @@ const { setLock, getLock, hasAnyLock, countLocks, releaseLock } = require("../lo
 
 const roiTracker = require('../roiTracker');
 
-const {getLastPnL} = require('./positionWorker');
+const {getLastPnL, getBalance} = require('./positionWorker');
 
 /*
 // abrir posição
@@ -687,7 +687,7 @@ function adjustPrice(price, tickSize) {
 
   return Number(adjusted.toFixed(precisions.pricePrecision));
 }
-
+/*
 async function getBalance() {
 
   parentPort.postMessage('');
@@ -715,7 +715,7 @@ async function getBalance() {
   }
 
 }
-
+*/
 async function getQntbyBalance() {
 
   parentPort.postMessage('');
