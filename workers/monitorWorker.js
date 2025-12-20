@@ -1972,6 +1972,8 @@ function sleep(ms) {
 
 async function abrirPosicao(side, quantityX, type = 0) {
 
+let release = null;
+
   if (type == 0) {
 
     if (!canTrade(symbol)) {
@@ -1988,7 +1990,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
 
     parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
-    const release = await acquireLock(symbol); // <-- trava única por símbolo
+    release = await acquireLock(symbol); // <-- trava única por símbolo
     parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
 
   }
