@@ -21,7 +21,7 @@ const BASE_URL = 'https://fapi.binance.com';
 //const wsSymbol = symbol.toLowerCase();
 const api = require('../api');// worker.js
 //const PnlManager = require('./marginManager');
-const { getLastPnL, getBalance } = require('./positionWorker');
+//const { getLastPnL, getBalance } = require('./positionWorker');
 
 const { activatePause } = require("./pauseManager");
 
@@ -500,7 +500,7 @@ function adjustPrice(price, tickSize) {
   return Number(adjusted.toFixed(precisions.pricePrecision));
 }
 
-/*
+
 async function getBalance() {
 
   parentPort.postMessage('');
@@ -528,7 +528,7 @@ async function getBalance() {
   }
 
 }
-*/
+
 async function getQntbyBalance() {
 
   parentPort.postMessage('');
