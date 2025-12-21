@@ -751,7 +751,7 @@ async function getQntbyBalance() {
     parentPort.postMessage(`symbol: ${symbol}`);
     parentPort.postMessage(`maxleverage: ${maxleverage}`);
     parentPort.postMessage(`preco_atual: ${preco_atual}`);
-    parentPort.postMessage(`balance: ${balance}`);
+    parentPort.postMessage(`balance: ${balanceFixed}`);
     parentPort.postMessage(`qnttyX: ${qnttyX}`);
     parentPort.postMessage(`qntty: ${qntty}`);
     parentPort.postMessage('');
