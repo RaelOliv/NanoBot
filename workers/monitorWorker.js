@@ -6969,8 +6969,8 @@ async function startWorker() {
     //await monitorar30Minutos(); // se existir
   } catch (e) {
     parentPort.postMessage(`❌ Erro fatal no Worker: ${JSON.stringify(e.stack || e.message || e)}
- Reinício em 2m`);
-    setTimeout(startWorker, 120000);
+ Reinício em 3m`);
+    setTimeout(startWorker, 180000);
   }
 }
 

@@ -2842,8 +2842,8 @@ async function iniciarWorkerMon(symbol) {
     });
 
     worker.on('exit', (code) => {
-        console.log(`[${symbol}] Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
-        setTimeout(() => iniciarWorkerMon(symbol), 30000);
+        console.log(`[${symbol}] Worker finalizou com código: ${code}.. Reiniciando em 3m..`);
+        setTimeout(() => iniciarWorkerMon(symbol), 180000);
     });
 }
 
