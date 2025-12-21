@@ -500,11 +500,19 @@ function adjustPrice(price, tickSize) {
   return Number(adjusted.toFixed(precisions.pricePrecision));
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function getBalance() {
 
   parentPort.postMessage('');
   parentPort.postMessage('[ getBalance_Start ]');
+
+      const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+    console.log(`Aguardando ${delay} ms antes de consultar balanço...`);
+
+    await sleep(delay);
 
   const carteira = await api.accountFutures(Date.now());
 
