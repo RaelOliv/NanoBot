@@ -482,7 +482,7 @@ async function iniciarWs() {
 
   } catch (err) {
     console.error('[positionsWorker] Erro ao iniciar WS:', err.message || err);
-    setTimeout(iniciarWs, 30000);
+    //setTimeout(iniciarWs, 30000);
   }
 }
 
