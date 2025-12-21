@@ -3619,14 +3619,14 @@ function iniciarWebSocketMarkPrice() {
       let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
-      /*
+      
             if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
               await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
               sideM = '';
               sideOrd = '';
               return;
             }
-      */
+      
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
