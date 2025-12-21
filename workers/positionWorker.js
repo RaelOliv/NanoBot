@@ -326,10 +326,20 @@ async function getLastClosedPositionPnL(symbol = null) {
   };
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 async function getCoin() {
 
   parentPort.postMessage('');
   parentPort.postMessage('[ getQntbyBalance_Start ]');
+
+        const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+    console.log(`Aguardando ${delay} ms antes de consultar balanço...`);
+
+    await sleep(delay);
 
   const carteira = await api.accountFutures(Date.now());
 
