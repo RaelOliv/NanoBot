@@ -728,15 +728,10 @@ async function getQntbyBalance() {
   if (coin !== null && coin !== undefined) {
 
     var availableBalance = coin.availableBalance;
+    var balance = coin.walletBalance;
     var qnttyX = null;
 
-    let oldBalance = await carregarCache('oldBalance');
-
-    var balance = coin.walletBalance;
-    var balanceFixed = oldBalance.walletBalance;
-
-
-    qnttyX = parseFloat(balanceFixed) / 20;
+    qnttyX = parseFloat(balance) / 20;
     //qnttyX = parseFloat(availableBalance) / 15;
     //qnttyX = parseFloat(availableBalance);
 
@@ -6666,7 +6661,6 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
         }
         */
-
         if (takeAtivo === null || takeAtivo === undefined) {
 
           //takeAtivo = await criarTakeProfit(novoTake);
