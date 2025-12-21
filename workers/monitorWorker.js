@@ -2167,6 +2167,12 @@ async function verificarOrdemAberta() {
 
 async function verificarStopAtivo() {
 
+    const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+    console.log(`Aguardando ${delay} ms antes de verificar stop em ${symbol}...`);
+
+    await sleep(delay);
+
+
   let stopLss = undefined;
   let timestamp = Date.now() + offset;
 
@@ -2223,6 +2229,13 @@ async function verificarStopAtivo() {
 }
 
 async function verificarTakeAtivo() {
+
+      const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+    console.log(`Aguardando ${delay} ms antes de verificar take em ${symbol}...`);
+
+    await sleep(delay);
+
+
   let takeProfit = undefined;
   let timestamp = Date.now() + offset;
 
