@@ -1799,8 +1799,8 @@ async function monitorarMargem() {
         let pnlaReter = parseFloat(balance.marginBalance) - parseFloat(oldBalance.marginBalance);
 
         //await transferir("USDT", capitalIni, 'UMFUTURE_MAIN');
-        let resTr = await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
-        if (resTr !== null) {
+        //let resTr = await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
+        //if (resTr !== null) {
 
           oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
           balanceHist.push(oldBalance);
@@ -1808,8 +1808,8 @@ async function monitorarMargem() {
           balance = await getBalance();
           await salvarCache(balance, 'oldBalance');
           return;
-          
-        }
+
+        //}
 
       }
 
