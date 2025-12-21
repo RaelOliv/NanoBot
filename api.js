@@ -41,6 +41,31 @@ function verificarConexao() {
     });
   });
 }
+
+// --- Simple global lock to avoid request stacking and Binance "too many requests" bans
+let requestInFlight = false;
+const REQUEST_POLL_DELAY = 100; // ms between availability checks
+const REQUEST_MAX_RETRIES = 300; // max checks before timing out (~30s)
+
+async function executeWithLock(fn) {
+  let retries = 0;
+  while (requestInFlight) {
+    await new Promise(r => setTimeout(r, REQUEST_POLL_DELAY));
+    retries++;
+    if (retries > REQUEST_MAX_RETRIES) {
+      throw new Error('Timeout waiting for request availability');
+    }
+  }
+  requestInFlight = true;
+  try {
+    return await fn();
+  } finally {
+    // small cooldown to reduce bursts
+    await new Promise(r => setTimeout(r, REQUEST_POLL_DELAY));
+    requestInFlight = false;
+  }
+}
+
 /*
 // Loop para checar conexão constantemente
 setInterval(async () => {
@@ -105,103 +130,104 @@ setInterval(() => {
 
 
 async function publicCall(path, data, method = 'GET', headers = {}) {
-var status = await verificarConexao();
-  if(status){
-    
-    // Passo 1: pegar hora do servidor
-
-const res = await axios.get('https://api.binance.com/api/v3/time');
-
-const serverTime = res.data.serverTime; // ex.: 1659123456789
-
-// Passo 2: calcular diferença com seu relógio local
-const localTime = Date.now();
-const offset = serverTime - localTime;
-
-// Passo 3: corrigir timestamp nas próximas requisições
-let timestamp = Date.now() + offset;
-    
+  var status = await verificarConexao();
+  if (status) {
     try {
+      return await executeWithLock(async () => {
+        // Passo 1: pegar hora do servidor
+        const res = await axios.get('https://api.binance.com/api/v3/time');
+        const serverTime = res.data.serverTime; // ex.: 1659123456789
+
+        // Passo 2: calcular diferença com seu relógio local
+        const localTime = Date.now();
+        const offset = serverTime - localTime;
+
+        // Passo 3: corrigir timestamp nas próximas requisições
+        let timestamp = Date.now() + offset;
+
         const qs = data ? `?${queryString.stringify(data)}` : '';
         const result = await axios({
-            method,
-            url: `${apiUrl}${path}${qs}`
+          method,
+          url: `${apiUrl}${path}${qs}`
         });
         return result;
+      });
     } catch (err) {
-        console.error(err);
+      console.error(err);
     }
   }
 }
 
 async function publicFutCall(path, data, method = 'GET', headers = {}) {
-var status = await verificarConexao();
-  if(status){
-    
-    // Passo 1: pegar hora do servidor
-const res = await axios.get('https://api.binance.com/api/v3/time');
-const serverTime = res.data.serverTime; // ex.: 1659123456789
-
-// Passo 2: calcular diferença com seu relógio local
-const localTime = Date.now();
-const offset = serverTime - localTime;
-
-// Passo 3: corrigir timestamp nas próximas requisições
-let timestamp = Date.now() + offset;
-    
+  var status = await verificarConexao();
+  if (status) {
     try {
+      return await executeWithLock(async () => {
+        // Passo 1: pegar hora do servidor
+        const res = await axios.get('https://api.binance.com/api/v3/time');
+        const serverTime = res.data.serverTime; // ex.: 1659123456789
+
+        // Passo 2: calcular diferença com seu relógio local
+        const localTime = Date.now();
+        const offset = serverTime - localTime;
+
+        // Passo 3: corrigir timestamp nas próximas requisições
+        let timestamp = Date.now() + offset;
+
         const qs = data ? `?${queryString.stringify(data)}` : '';
         const result = await axios({
-            method,
-            url: `${apiUrlFut}${path}${qs}`
+          method,
+          url: `${apiUrlFut}${path}${qs}`
         });
         return result;
+      });
     } catch (err) {
-        console.error(err);
+      console.error(err);
     }
   }
 
 }
 
 async function privateCall(path, timestampOld, data = {}, method = 'GET') {
-var status = await verificarConexao();
-  if(status){
-    
-    // Passo 1: pegar hora do servidor
-const res = await axios.get('https://api.binance.com/api/v3/time');
-const serverTime = res.data.serverTime; // ex.: 1659123456789
-
-// Passo 2: calcular diferença com seu relógio local
-const localTime = Date.now();
-const offset = serverTime - localTime;
-
-// Passo 3: corrigir timestamp nas próximas requisições
-let timestamp = Date.now() + offset;
-    
-    if (!apiKey || !apiSecret) {
-        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-    }
-    const type = "FUTURES";
-    //const timestamp = (Date.now())-1000;
-    const recvWindow = 50000;//máximo permitido, default 5000
-
-    const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
-        .digest('hex');
-
-    const newData = { ...data, type, timestamp, recvWindow, signature };
-    const qs = `?${queryString.stringify(newData)}`;
-
+  var status = await verificarConexao();
+  if (status) {
     try {
+      return await executeWithLock(async () => {
+        // Passo 1: pegar hora do servidor
+        const res = await axios.get('https://api.binance.com/api/v3/time');
+        const serverTime = res.data.serverTime; // ex.: 1659123456789
+
+        // Passo 2: calcular diferença com seu relógio local
+        const localTime = Date.now();
+        const offset = serverTime - localTime;
+
+        // Passo 3: corrigir timestamp nas próximas requisições
+        let timestamp = Date.now() + offset;
+
+        if (!apiKey || !apiSecret) {
+          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+        }
+        const type = "FUTURES";
+        //const timestamp = (Date.now())-1000;
+        const recvWindow = 50000;//máximo permitido, default 5000
+
+        const signature = crypto
+          .createHmac('sha256', apiSecret)
+          .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
+          .digest('hex');
+
+        const newData = { ...data, type, timestamp, recvWindow, signature };
+        const qs = `?${queryString.stringify(newData)}`;
+
         const result = await axios({
-            method,
-            url: `${apiUrl}${path}${qs}`,
-            headers: { 'X-MBX-APIKEY': apiKey }
+          method,
+          url: `${apiUrl}${path}${qs}`,
+          headers: { 'X-MBX-APIKEY': apiKey }
         });
         return result.data;
+      });
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
   }
 
@@ -218,99 +244,89 @@ const retryConfig = {
 
 async function privateFutCall(path, timestampOld, data = {}, method = 'GET') {
   var status = await verificarConexao();
-  if(status){
-    
-    // Passo 1: pegar hora do servidor
-const res = await axios.get('https://api.binance.com/api/v3/time');
-const serverTime = res.data.serverTime; // ex.: 1659123456789
-
-// Passo 2: calcular diferença com seu relógio local
-const localTime = Date.now();
-const offset = serverTime - localTime;
-
-// Passo 3: corrigir timestamp nas próximas requisições
-let timestamp = Date.now() + offset;
-    
-    if (!apiKey || !apiSecret) {
-        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-    }
-    const type = "FUTURES";
-    //const timestamp = (Date.now())-1000;
-    const recvWindow = 50000;//máximo permitido, default 5000
-
-    const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
-        .digest('hex');
-
-    const newData = { ...data, type, timestamp, recvWindow, signature };
-    const qs = `?${queryString.stringify(newData)}`;
-
-    /*
-       try {
-           const response = await retryAxios(api, retryConfig)[method.toLowerCase()](path, {
-             params: data,
-             headers,
-           });
-           return response.data;
-         } catch (error) {
-           throw new Error(`Erro ao fazer requisição: ${error.message}`);
-         }
-   */
-
+  if (status) {
     try {
+      return await executeWithLock(async () => {
+        // Passo 1: pegar hora do servidor
+        const res = await axios.get('https://api.binance.com/api/v3/time');
+        const serverTime = res.data.serverTime; // ex.: 1659123456789
+
+        // Passo 2: calcular diferença com seu relógio local
+        const localTime = Date.now();
+        const offset = serverTime - localTime;
+
+        // Passo 3: corrigir timestamp nas próximas requisições
+        let timestamp = Date.now() + offset;
+
+        if (!apiKey || !apiSecret) {
+          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+        }
+        const type = "FUTURES";
+        //const timestamp = (Date.now())-1000;
+        const recvWindow = 50000;//máximo permitido, default 5000
+
+        const signature = crypto
+          .createHmac('sha256', apiSecret)
+          .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
+          .digest('hex');
+
+        const newData = { ...data, type, timestamp, recvWindow, signature };
+        const qs = `?${queryString.stringify(newData)}`;
+
         const result = await axios({
-            method,
-            url: `${apiUrlFut}${path}${qs}`,
-            headers: { 'X-MBX-APIKEY': apiKey }
+          method,
+          url: `${apiUrlFut}${path}${qs}`,
+          headers: { 'X-MBX-APIKEY': apiKey }
         });
         return result.data;
+      });
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
   }
-  
+
 }
 
 async function privateFutCall2(path, timestampOld, data = {}, method = 'GET') {
-var status = await verificarConexao();
-  if(status){
-    
-    // Passo 1: pegar hora do servidor
-const res = await axios.get('https://api.binance.com/api/v3/time');
-const serverTime = res.data.serverTime; // ex.: 1659123456789
-
-// Passo 2: calcular diferença com seu relógio local
-const localTime = Date.now();
-const offset = serverTime - localTime;
-
-// Passo 3: corrigir timestamp nas próximas requisições
-let timestamp = Date.now() + offset;
-    
-    if (!apiKey || !apiSecret) {
-        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-    }
-    //const type = "FUTURES";
-    //const timestamp = (Date.now())-1000;
-    const recvWindow = 50000;//máximo permitido, default 5000
-
-    const signature = crypto
-        .createHmac('sha256', apiSecret)
-        .update(`${queryString.stringify({ ...data, recvWindow, timestamp })}`)
-        .digest('hex');
-
-    const newData = { ...data, recvWindow, timestamp, signature };
-    const qs = `?${queryString.stringify(newData)}`;
-
+  var status = await verificarConexao();
+  if (status) {
     try {
+      return await executeWithLock(async () => {
+        // Passo 1: pegar hora do servidor
+        const res = await axios.get('https://api.binance.com/api/v3/time');
+        const serverTime = res.data.serverTime; // ex.: 1659123456789
+
+        // Passo 2: calcular diferença com seu relógio local
+        const localTime = Date.now();
+        const offset = serverTime - localTime;
+
+        // Passo 3: corrigir timestamp nas próximas requisições
+        let timestamp = Date.now() + offset;
+
+        if (!apiKey || !apiSecret) {
+          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+        }
+        //const type = "FUTURES";
+        //const timestamp = (Date.now())-1000;
+        const recvWindow = 50000;//máximo permitido, default 5000
+
+        const signature = crypto
+          .createHmac('sha256', apiSecret)
+          .update(`${queryString.stringify({ ...data, recvWindow, timestamp })}`)
+          .digest('hex');
+
+        const newData = { ...data, recvWindow, timestamp, signature };
+        const qs = `?${queryString.stringify(newData)}`;
+
         const result = await axios({
-            method,
-            url: `${apiUrlFut}${path}${qs}`,
-            headers: { 'X-MBX-APIKEY': apiKey }
+          method,
+          url: `${apiUrlFut}${path}${qs}`,
+          headers: { 'X-MBX-APIKEY': apiKey }
         });
         return result.data;
+      });
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
   }
 
