@@ -2098,9 +2098,11 @@ let release = null;
       && (parseFloat(perc) >= parseFloat(2.5) || parseFloat(perc) <= parseFloat(-10.0))
       
       ) || */ contPos < parseFloat(process.env.TRDSIMULT)) || type == 1 || type == 2) {
-      const res = await apiAxios.post('/fapi/v1/order', null, {
+      // Opening position: use no timeout so this critical request isn't cut by global short timeout
+    const res = await apiAxios.post('/fapi/v1/order', null, {
         params,
         headers: { 'X-MBX-APIKEY': API_KEY },
+        timeout: 0 // no timeout for opening position
       });
       parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
       return res.data;
