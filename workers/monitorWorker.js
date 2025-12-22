@@ -250,15 +250,29 @@ cacheRisk[symbol] = {
   
 };
 */
-// Configuração de axios com retries infinitos
+// Configuração de axios com retries limitados
+const Bottleneck = require('bottleneck');
+const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 300;
+const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 60;
+const BINANCE_RESERVOIR_REFRESH_INTERVAL = 60 * 1000;
+
+const limiter = new Bottleneck({
+  maxConcurrent: 1,
+  minTime: BINANCE_MIN_TIME_MS,
+  reservoir: BINANCE_RESERVOIR,
+  reservoirRefreshAmount: BINANCE_RESERVOIR,
+  reservoirRefreshInterval: BINANCE_RESERVOIR_REFRESH_INTERVAL
+});
+
 const apiAxios = axios.create({
   baseURL: 'https://fapi.binance.com',
   timeout: 15000
 });
+// retries bounded to avoid endless retry storms
 axiosRetry(apiAxios, {
-  retries: Infinity,
+  retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status >= 500
+  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || (error.response?.status >= 500)
 });
 
 const apiAxiosSpot = axios.create({
@@ -266,10 +280,42 @@ const apiAxiosSpot = axios.create({
   timeout: 15000
 });
 axiosRetry(apiAxiosSpot, {
-  retries: Infinity,
+  retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status >= 500
+  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || (error.response?.status >= 500)
 });
+
+// Throttle all outgoing requests via limiter using request interceptors
+const throttleRequest = async (config) => {
+  // wait for token from limiter
+  await limiter.schedule(() => Promise.resolve());
+  return config;
+};
+
+apiAxios.interceptors.request.use(throttleRequest);
+apiAxiosSpot.interceptors.request.use(throttleRequest);
+axios.interceptors.request.use(throttleRequest);
+
+// Response interceptor to handle 429 by waiting Retry-After and retrying once
+async function handle429(err, instance) {
+  const status = err.response?.status;
+  const config = err.config || {};
+  if ((status === 429 || status === 418) && !config._retryAfter) {
+    config._retryAfter = true;
+    const retryAfter = parseInt(err.response.headers['retry-after'] || err.response.headers['Retry-After'] || '1', 10);
+    const waitMs = (isNaN(retryAfter) ? 1000 : retryAfter * 1000) + Math.floor(Math.random() * 500);
+    console.warn(`[MonitorWorker] ${status} received. Waiting ${waitMs}ms before retrying request to ${config.url}`);
+    await new Promise(r => setTimeout(r, waitMs));
+    // respect limiter before retrying
+    await limiter.schedule(() => Promise.resolve());
+    return instance(config);
+  }
+  return Promise.reject(err);
+}
+
+apiAxios.interceptors.response.use(res => res, err => handle429(err, apiAxios));
+apiAxiosSpot.interceptors.response.use(res => res, err => handle429(err, apiAxiosSpot));
+axios.interceptors.response.use(res => res, err => handle429(err, axios));
 
 //const res = undefined;
 /*

@@ -97,8 +97,9 @@ async function enviarMensagemParaTodos(usuarios, texto) {
     } catch (err) {
       
       
-      if (err.response.status === 429) {
-  const retryAfter = err.response.data.parameters.retry_after;
+      if (err.response.status === 429 || err.response.status === 418) {
+  // Telegram normalmente usa 429, mas aceite 418 também (alguma infra retorna 418 para 'rate limit')
+  const retryAfter = err.response.data?.parameters?.retry_after || parseInt(err.response.headers['retry-after'] || err.response.headers['Retry-After'] || '5', 10);
   console.error(`Aguardar ${retryAfter} segundos antes de reenviar.`);
   console.error(`[Telegram] Falha ao enviar msg para ${u.first_name} (${uid}):`, err.message);
   await sleep((retryAfter + 1) * 1000);

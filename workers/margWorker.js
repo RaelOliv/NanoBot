@@ -142,10 +142,11 @@ const apiAxios = axios.create({
   baseURL: 'https://fapi.binance.com',
   timeout: 15000
 });
+// limitar retries para evitar storm de retries em caso de bloqueio
 axiosRetry(apiAxios, {
-  retries: Infinity,
+  retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status >= 500
+  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status === 418 || error.response?.status >= 500
 });
 
 const apiAxiosSpot = axios.create({
@@ -153,9 +154,9 @@ const apiAxiosSpot = axios.create({
   timeout: 15000
 });
 axiosRetry(apiAxiosSpot, {
-  retries: Infinity,
+  retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status >= 500
+  retryCondition: (error) => error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET' || error.response?.status === 429 || error.response?.status === 418 || error.response?.status >= 500
 });
 
 //const res = undefined;

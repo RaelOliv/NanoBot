@@ -64,12 +64,14 @@ const rateMetrics = {
   requests: 0,
   retries: 0,
   rateLimit429: 0,
+  rateLimit418: 0,
   last429At: null,
+  last418At: null,
   lastError: null,
   lastRequestAt: null
 };
 
-// Helper that runs axios calls through the limiter and retries on 429 / 5xx with backoff
+// Helper that runs axios calls through the limiter and retries on rate-limit (418/429) / 5xx with backoff
 async function requestWithRateLimit(opts, maxAttempts = 5) {
   let attempts = 0;
   while (attempts < maxAttempts) {
@@ -87,13 +89,18 @@ async function requestWithRateLimit(opts, maxAttempts = 5) {
       attempts++;
       rateMetrics.retries++;
       const status = err.response?.status;
-      // Rate limited by Binance
-      if (status === 429) {
-        rateMetrics.rateLimit429++;
-        rateMetrics.last429At = Date.now();
+      // Rate limited by Binance (429 or 418 - some endpoints return 418 for bans)
+      if (status === 429 || status === 418) {
+        if (status === 429) {
+          rateMetrics.rateLimit429++;
+          rateMetrics.last429At = Date.now();
+        } else {
+          rateMetrics.rateLimit418++;
+          rateMetrics.last418At = Date.now();
+        }
         const retryAfter = parseInt(err.response.headers['retry-after'] || err.response.headers['Retry-After'] || '1', 10);
         const waitMs = (isNaN(retryAfter) ? 1000 : retryAfter * 1000) + Math.floor(Math.random() * 500);
-        console.warn(`Binance 429 - waiting ${waitMs}ms before retry (attempt ${attempts})`);
+        console.warn(`Binance ${status} - waiting ${waitMs}ms before retry (attempt ${attempts})`);
         await new Promise(r => setTimeout(r, waitMs));
         continue;
       }
@@ -117,7 +124,9 @@ function getRateLimitStats() {
     requests: rateMetrics.requests,
     retries: rateMetrics.retries,
     rateLimit429: rateMetrics.rateLimit429,
+    rateLimit418: rateMetrics.rateLimit418,
     last429At: rateMetrics.last429At,
+    last418At: rateMetrics.last418At,
     lastError: rateMetrics.lastError,
     lastRequestAt: rateMetrics.lastRequestAt,
     minTimeMs: BINANCE_MIN_TIME_MS,
@@ -130,7 +139,9 @@ function resetRateLimitStats() {
   rateMetrics.requests = 0;
   rateMetrics.retries = 0;
   rateMetrics.rateLimit429 = 0;
+  rateMetrics.rateLimit418 = 0;
   rateMetrics.last429At = null;
+  rateMetrics.last418At = null;
   rateMetrics.lastError = null;
   rateMetrics.lastRequestAt = null;
 }
