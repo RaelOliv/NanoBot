@@ -138,7 +138,7 @@ cacheRisk[symbol] = {
 };
 */
 // Configuração de axios com retries infinitos
-const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 100;
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 1000;
 axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 
 const apiAxios = axios.create({
