@@ -49,8 +49,8 @@ const Bottleneck = require('bottleneck');
 
 // --- Bottleneck-based rate limiter to avoid Binance "too many requests" bans
 // Defaults set to conservative values; override via env vars if needed
-const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 300; // ms between requests (controls RPS)
-const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 60; // requests per minute (adjust as needed)
+const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 50; // ms between requests (controls RPS)
+const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 2000; // requests per minute (adjust as needed)
 const BINANCE_RESERVOIR_REFRESH_INTERVAL = 60 * 1000; // 1 minute
 const BINANCE_STATS_LOG_INTERVAL_MS = process.env.BINANCE_STATS_LOG_INTERVAL_MS ? parseInt(process.env.BINANCE_STATS_LOG_INTERVAL_MS) : 60000; // set 0 to disable periodic logging
 

@@ -255,8 +255,8 @@ cacheRisk[symbol] = {
 */
 // Configuração de axios com retries limitados
 const Bottleneck = require('bottleneck');
-const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 300;
-const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 60;
+const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 50;
+const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 2000;
 const BINANCE_RESERVOIR_REFRESH_INTERVAL = 60 * 1000;
 
 const limiter = new Bottleneck({
