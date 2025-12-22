@@ -5491,9 +5491,10 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
 */
 
-        parseFloat(sRsiLast15m.k) <= parseFloat(20)
-        && parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-        && parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
+        //parseFloat(sRsiLast15m.k) <= parseFloat(20)
+        //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
+        //&& 
+        parseFloat(sRsiLast5m_2.k) <= parseFloat(10)
         && parseFloat(sRsiLast5m_2.d) <= parseFloat(10) 
         && parseFloat(sRsiLast5m.k) >= parseFloat(10)
         && parseFloat(sRsiLast5m.k) >=  parseFloat(sRsiLast5m.d) 
@@ -5763,9 +5764,10 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
 */
 
-        parseFloat(sRsiLast15m.k) >= parseFloat(80)
-        && parseFloat(sRsiLast15m.d) >= parseFloat(80) 
-        && parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
+        //parseFloat(sRsiLast15m.k) >= parseFloat(80)
+        //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+        //&& 
+        parseFloat(sRsiLast5m_2.k) >= parseFloat(90)
         && parseFloat(sRsiLast5m_2.d) >= parseFloat(90) 
         && parseFloat(sRsiLast5m.k) <= parseFloat(90)
         && parseFloat(sRsiLast5m.k) <=  parseFloat(sRsiLast5m.d) 
