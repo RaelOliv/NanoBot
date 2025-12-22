@@ -14,7 +14,7 @@ const { parentPort, workerData } = require('worker_threads');
 const API_KEY = process.env.API_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
-const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 1000;
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 50;
 axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 
 if (!API_KEY || !SECRET_KEY) {
