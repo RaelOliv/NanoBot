@@ -44,7 +44,8 @@
     "rimraf": "^5.0.5",
     "technicalindicators": "^3.1.0",
     "trendline": "^0.3.1",
-    "ws": "^8.13.0"
+    "ws": "^8.13.0",
+    "bottleneck": "^2.19.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

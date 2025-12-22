@@ -42,29 +42,107 @@ function verificarConexao() {
   });
 }
 
-// --- Simple global lock to avoid request stacking and Binance "too many requests" bans
-let requestInFlight = false;
-const REQUEST_POLL_DELAY = 100; // ms between availability checks
-const REQUEST_MAX_RETRIES = 300; // max checks before timing out (~30s)
+const Bottleneck = require('bottleneck');
 
-async function executeWithLock(fn) {
-  let retries = 0;
-  while (requestInFlight) {
-    await new Promise(r => setTimeout(r, REQUEST_POLL_DELAY));
-    retries++;
-    if (retries > REQUEST_MAX_RETRIES) {
-      throw new Error('Timeout waiting for request availability');
+// --- Bottleneck-based rate limiter to avoid Binance "too many requests" bans
+// Defaults set to conservative values; override via env vars if needed
+const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 300; // ms between requests (controls RPS)
+const BINANCE_RESERVOIR = parseInt(process.env.BINANCE_RESERVOIR) || 60; // requests per minute (adjust as needed)
+const BINANCE_RESERVOIR_REFRESH_INTERVAL = 60 * 1000; // 1 minute
+const BINANCE_STATS_LOG_INTERVAL_MS = process.env.BINANCE_STATS_LOG_INTERVAL_MS ? parseInt(process.env.BINANCE_STATS_LOG_INTERVAL_MS) : 60000; // set 0 to disable periodic logging
+
+const limiter = new Bottleneck({
+  maxConcurrent: 1,
+  minTime: BINANCE_MIN_TIME_MS,
+  reservoir: BINANCE_RESERVOIR,
+  reservoirRefreshAmount: BINANCE_RESERVOIR,
+  reservoirRefreshInterval: BINANCE_RESERVOIR_REFRESH_INTERVAL
+});
+
+// Simple in-memory metrics for monitoring
+const rateMetrics = {
+  requests: 0,
+  retries: 0,
+  rateLimit429: 0,
+  last429At: null,
+  lastError: null,
+  lastRequestAt: null
+};
+
+// Helper that runs axios calls through the limiter and retries on 429 / 5xx with backoff
+async function requestWithRateLimit(opts, maxAttempts = 5) {
+  let attempts = 0;
+  while (attempts < maxAttempts) {
+    try {
+      const res = await limiter.schedule(() => axios(opts));
+      // optional: observe weight headers
+      const used = res.headers?.['x-mbx-used-weight'] || res.headers?.['x-mbx-used-weight-(apiKey)'];
+      if (used) {
+        // console.debug('Binance used weight:', used);
+      }
+      rateMetrics.requests++;
+      rateMetrics.lastRequestAt = Date.now();
+      return res;
+    } catch (err) {
+      attempts++;
+      rateMetrics.retries++;
+      const status = err.response?.status;
+      // Rate limited by Binance
+      if (status === 429) {
+        rateMetrics.rateLimit429++;
+        rateMetrics.last429At = Date.now();
+        const retryAfter = parseInt(err.response.headers['retry-after'] || err.response.headers['Retry-After'] || '1', 10);
+        const waitMs = (isNaN(retryAfter) ? 1000 : retryAfter * 1000) + Math.floor(Math.random() * 500);
+        console.warn(`Binance 429 - waiting ${waitMs}ms before retry (attempt ${attempts})`);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+      // Transient server/network errors -> exponential backoff
+      if (status >= 500 || err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET') {
+        rateMetrics.lastError = err.message;
+        const waitMs = Math.pow(2, attempts) * 250 + Math.floor(Math.random() * 250);
+        console.warn(`Transient error (status: ${status || err.code}). Backing off ${waitMs}ms (attempt ${attempts})`);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+      rateMetrics.lastError = err.message;
+      throw err;
     }
   }
-  requestInFlight = true;
-  try {
-    return await fn();
-  } finally {
-    // small cooldown to reduce bursts
-    await new Promise(r => setTimeout(r, REQUEST_POLL_DELAY));
-    requestInFlight = false;
-  }
+  throw new Error('Max retries reached for request');
 }
+
+function getRateLimitStats() {
+  return {
+    requests: rateMetrics.requests,
+    retries: rateMetrics.retries,
+    rateLimit429: rateMetrics.rateLimit429,
+    last429At: rateMetrics.last429At,
+    lastError: rateMetrics.lastError,
+    lastRequestAt: rateMetrics.lastRequestAt,
+    minTimeMs: BINANCE_MIN_TIME_MS,
+    reservoir: BINANCE_RESERVOIR,
+    reservoirRefreshInterval: BINANCE_RESERVOIR_REFRESH_INTERVAL
+  };
+}
+
+function resetRateLimitStats() {
+  rateMetrics.requests = 0;
+  rateMetrics.retries = 0;
+  rateMetrics.rateLimit429 = 0;
+  rateMetrics.last429At = null;
+  rateMetrics.lastError = null;
+  rateMetrics.lastRequestAt = null;
+}
+
+function logRateLimitStats() {
+  const s = getRateLimitStats();
+  console.info(`[RateLimitStats] req=${s.requests} 429=${s.rateLimit429} retries=${s.retries} minTime=${s.minTimeMs} reservoir=${s.reservoir} last429=${s.last429At?new Date(s.last429At).toISOString():'-'} lastErr=${s.lastError||'-'}`);
+}
+
+if (BINANCE_STATS_LOG_INTERVAL_MS && BINANCE_STATS_LOG_INTERVAL_MS > 0) {
+  setInterval(logRateLimitStats, BINANCE_STATS_LOG_INTERVAL_MS);
+} 
 
 /*
 // Loop para checar conexão constantemente
@@ -133,105 +211,79 @@ async function publicCall(path, data, method = 'GET', headers = {}) {
   var status = await verificarConexao();
   if (status) {
     try {
-      return await executeWithLock(async () => {
-        // Passo 1: pegar hora do servidor
-        const res = await axios.get('https://api.binance.com/api/v3/time');
-        const serverTime = res.data.serverTime; // ex.: 1659123456789
+      // sync server time then perform request through rate-limiter
+      const timeRes = await requestWithRateLimit({ method: 'get', url: `${apiUrl}/api/v3/time` });
+      const serverTime = timeRes.data.serverTime; // ex.: 1659123456789
+      const localTime = Date.now();
+      const offset = serverTime - localTime;
+      let timestamp = Date.now() + offset;
 
-        // Passo 2: calcular diferença com seu relógio local
-        const localTime = Date.now();
-        const offset = serverTime - localTime;
-
-        // Passo 3: corrigir timestamp nas próximas requisições
-        let timestamp = Date.now() + offset;
-
-        const qs = data ? `?${queryString.stringify(data)}` : '';
-        const result = await axios({
-          method,
-          url: `${apiUrl}${path}${qs}`
-        });
-        return result;
-      });
+      const qs = data ? `?${queryString.stringify(data)}` : '';
+      const result = await requestWithRateLimit({ method, url: `${apiUrl}${path}${qs}` });
+      return result;
     } catch (err) {
       console.error(err);
     }
   }
-}
+} 
 
 async function publicFutCall(path, data, method = 'GET', headers = {}) {
   var status = await verificarConexao();
   if (status) {
     try {
-      return await executeWithLock(async () => {
-        // Passo 1: pegar hora do servidor
-        const res = await axios.get('https://api.binance.com/api/v3/time');
-        const serverTime = res.data.serverTime; // ex.: 1659123456789
+      const timeRes = await requestWithRateLimit({ method: 'get', url: `${apiUrl}/api/v3/time` });
+      const serverTime = timeRes.data.serverTime; // ex.: 1659123456789
+      const localTime = Date.now();
+      const offset = serverTime - localTime;
+      let timestamp = Date.now() + offset;
 
-        // Passo 2: calcular diferença com seu relógio local
-        const localTime = Date.now();
-        const offset = serverTime - localTime;
-
-        // Passo 3: corrigir timestamp nas próximas requisições
-        let timestamp = Date.now() + offset;
-
-        const qs = data ? `?${queryString.stringify(data)}` : '';
-        const result = await axios({
-          method,
-          url: `${apiUrlFut}${path}${qs}`
-        });
-        return result;
-      });
+      const qs = data ? `?${queryString.stringify(data)}` : '';
+      const result = await requestWithRateLimit({ method, url: `${apiUrlFut}${path}${qs}` });
+      return result;
     } catch (err) {
       console.error(err);
     }
   }
 
-}
+} 
 
 async function privateCall(path, timestampOld, data = {}, method = 'GET') {
   var status = await verificarConexao();
   if (status) {
     try {
-      return await executeWithLock(async () => {
-        // Passo 1: pegar hora do servidor
-        const res = await axios.get('https://api.binance.com/api/v3/time');
-        const serverTime = res.data.serverTime; // ex.: 1659123456789
+      // sync time
+      const timeRes = await requestWithRateLimit({ method: 'get', url: `${apiUrl}/api/v3/time` });
+      const serverTime = timeRes.data.serverTime;
+      const localTime = Date.now();
+      const offset = serverTime - localTime;
+      let timestamp = Date.now() + offset;
 
-        // Passo 2: calcular diferença com seu relógio local
-        const localTime = Date.now();
-        const offset = serverTime - localTime;
+      if (!apiKey || !apiSecret) {
+        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+      }
+      const type = "FUTURES";
+      const recvWindow = 50000;//máximo permitido, default 5000
 
-        // Passo 3: corrigir timestamp nas próximas requisições
-        let timestamp = Date.now() + offset;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
+        .digest('hex');
 
-        if (!apiKey || !apiSecret) {
-          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-        }
-        const type = "FUTURES";
-        //const timestamp = (Date.now())-1000;
-        const recvWindow = 50000;//máximo permitido, default 5000
+      const newData = { ...data, type, timestamp, recvWindow, signature };
+      const qs = `?${queryString.stringify(newData)}`;
 
-        const signature = crypto
-          .createHmac('sha256', apiSecret)
-          .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
-          .digest('hex');
-
-        const newData = { ...data, type, timestamp, recvWindow, signature };
-        const qs = `?${queryString.stringify(newData)}`;
-
-        const result = await axios({
-          method,
-          url: `${apiUrl}${path}${qs}`,
-          headers: { 'X-MBX-APIKEY': apiKey }
-        });
-        return result.data;
+      const result = await requestWithRateLimit({
+        method,
+        url: `${apiUrl}${path}${qs}`,
+        headers: { 'X-MBX-APIKEY': apiKey }
       });
+      return result.data;
     } catch (err) {
       console.log(err);
     }
   }
 
-}
+} 
 
 // Defina o número de retries e o tempo de espera entre retries
 const retryConfig = {
@@ -246,85 +298,68 @@ async function privateFutCall(path, timestampOld, data = {}, method = 'GET') {
   var status = await verificarConexao();
   if (status) {
     try {
-      return await executeWithLock(async () => {
-        // Passo 1: pegar hora do servidor
-        const res = await axios.get('https://api.binance.com/api/v3/time');
-        const serverTime = res.data.serverTime; // ex.: 1659123456789
+      const timeRes = await requestWithRateLimit({ method: 'get', url: `${apiUrl}/api/v3/time` });
+      const serverTime = timeRes.data.serverTime;
+      const localTime = Date.now();
+      const offset = serverTime - localTime;
+      let timestamp = Date.now() + offset;
 
-        // Passo 2: calcular diferença com seu relógio local
-        const localTime = Date.now();
-        const offset = serverTime - localTime;
+      if (!apiKey || !apiSecret) {
+        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+      }
+      const type = "FUTURES";
+      const recvWindow = 50000;//máximo permitido, default 5000
 
-        // Passo 3: corrigir timestamp nas próximas requisições
-        let timestamp = Date.now() + offset;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
+        .digest('hex');
 
-        if (!apiKey || !apiSecret) {
-          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-        }
-        const type = "FUTURES";
-        //const timestamp = (Date.now())-1000;
-        const recvWindow = 50000;//máximo permitido, default 5000
+      const newData = { ...data, type, timestamp, recvWindow, signature };
+      const qs = `?${queryString.stringify(newData)}`;
 
-        const signature = crypto
-          .createHmac('sha256', apiSecret)
-          .update(`${queryString.stringify({ ...data, type, timestamp, recvWindow })}`)
-          .digest('hex');
-
-        const newData = { ...data, type, timestamp, recvWindow, signature };
-        const qs = `?${queryString.stringify(newData)}`;
-
-        const result = await axios({
-          method,
-          url: `${apiUrlFut}${path}${qs}`,
-          headers: { 'X-MBX-APIKEY': apiKey }
-        });
-        return result.data;
+      const result = await requestWithRateLimit({
+        method,
+        url: `${apiUrlFut}${path}${qs}`,
+        headers: { 'X-MBX-APIKEY': apiKey }
       });
+      return result.data;
     } catch (err) {
       console.log(err);
     }
   }
 
-}
+} 
 
 async function privateFutCall2(path, timestampOld, data = {}, method = 'GET') {
   var status = await verificarConexao();
   if (status) {
     try {
-      return await executeWithLock(async () => {
-        // Passo 1: pegar hora do servidor
-        const res = await axios.get('https://api.binance.com/api/v3/time');
-        const serverTime = res.data.serverTime; // ex.: 1659123456789
+      const timeRes = await requestWithRateLimit({ method: 'get', url: `${apiUrl}/api/v3/time` });
+      const serverTime = timeRes.data.serverTime;
+      const localTime = Date.now();
+      const offset = serverTime - localTime;
+      let timestamp = Date.now() + offset;
 
-        // Passo 2: calcular diferença com seu relógio local
-        const localTime = Date.now();
-        const offset = serverTime - localTime;
+      if (!apiKey || !apiSecret) {
+        throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
+      }
+      const recvWindow = 50000;//máximo permitido, default 5000
 
-        // Passo 3: corrigir timestamp nas próximas requisições
-        let timestamp = Date.now() + offset;
+      const signature = crypto
+        .createHmac('sha256', apiSecret)
+        .update(`${queryString.stringify({ ...data, recvWindow, timestamp })}`)
+        .digest('hex');
 
-        if (!apiKey || !apiSecret) {
-          throw new Error('Preencha corretamente sua API KEY e SECRET KEY');
-        }
-        //const type = "FUTURES";
-        //const timestamp = (Date.now())-1000;
-        const recvWindow = 50000;//máximo permitido, default 5000
+      const newData = { ...data, recvWindow, timestamp, signature };
+      const qs = `?${queryString.stringify(newData)}`;
 
-        const signature = crypto
-          .createHmac('sha256', apiSecret)
-          .update(`${queryString.stringify({ ...data, recvWindow, timestamp })}`)
-          .digest('hex');
-
-        const newData = { ...data, recvWindow, timestamp, signature };
-        const qs = `?${queryString.stringify(newData)}`;
-
-        const result = await axios({
-          method,
-          url: `${apiUrlFut}${path}${qs}`,
-          headers: { 'X-MBX-APIKEY': apiKey }
-        });
-        return result.data;
+      const result = await requestWithRateLimit({
+        method,
+        url: `${apiUrlFut}${path}${qs}`,
+        headers: { 'X-MBX-APIKEY': apiKey }
       });
+      return result.data;
     } catch (err) {
       console.log(err);
     }
@@ -601,7 +636,7 @@ async function setMargIsolated(symbol) {
     return privateFutCall2('/fapi/v1/marginType', timestamp, { symbol, marginType }, "POST");
 }
 
-module.exports = { time, depth, exchangeInfo, accountSnapshot, balance, accountFutures, klines, openOrders, allOrders, newOrderLimit, newOrderBuy, newOrderSell, newStopLossBuy, modifyStopLossBuy, newStopLossSell, modifyStopLossSell, newTakeProfitBuy, newTakeProfitSell, cancelOrder, cancelAllOrders, closePositionSell, closePositionBuy, closeAllsltpBySymbol, income, userTrades, newStopBuy, newStopSell, newTakeBuy, newTakeSell, getPositRisk, getMaxLeverage, setLeverage, setMargIsolated }
+module.exports = { time, depth, exchangeInfo, accountSnapshot, balance, accountFutures, klines, openOrders, allOrders, newOrderLimit, newOrderBuy, newOrderSell, newStopLossBuy, modifyStopLossBuy, newStopLossSell, modifyStopLossSell, newTakeProfitBuy, newTakeProfitSell, cancelOrder, cancelAllOrders, closePositionSell, closePositionBuy, closeAllsltpBySymbol, income, userTrades, newStopBuy, newStopSell, newTakeBuy, newTakeSell, getPositRisk, getMaxLeverage, setLeverage, setMargIsolated, getRateLimitStats, resetRateLimitStats, logRateLimitStats }
 
 /*
 GET /sapi/v1/accountSnapshot (HMAC SHA256)
