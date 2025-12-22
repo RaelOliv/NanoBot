@@ -14,6 +14,8 @@ const { parentPort, workerData } = require('worker_threads');
 const API_KEY = process.env.API_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
 const BASE_URL = 'https://fapi.binance.com';
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 1000;
+axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 
 if (!API_KEY || !SECRET_KEY) {
   console.error('[positionsWorker] ERRO: API_KEY e SECRET_KEY devem estar no .env');
@@ -141,7 +143,7 @@ async function sincronizarPosicoesAtuais() {
 
     const res = await axios.get(url, {
       headers: { 'X-MBX-APIKEY': API_KEY },
-      timeout: 15_000,
+      timeout: GLOBAL_AXIOS_TIMEOUT,
     });
 
     let cachepos = await carregarCache('cachepos');
@@ -224,7 +226,7 @@ function iniciarRenovacaoListenKey() {
     try {
       await axios.put(`${BASE_URL}/fapi/v1/listenKey`, null, {
         headers: { 'X-MBX-APIKEY': API_KEY },
-        timeout: 10_000,
+        timeout: GLOBAL_AXIOS_TIMEOUT,
       });
       console.log('[positionsWorker] listenKey renovada.');
     } catch (err) {

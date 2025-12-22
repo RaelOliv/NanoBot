@@ -1,4 +1,7 @@
 const axios = require('axios');
+// Global axios timeout for all requests (ms). Set via env GLOBAL_AXIOS_TIMEOUT.
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 1000;
+axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 //const retryAxios = require('retry-axios');
 const queryString = require('querystring');
 const crypto = require('crypto');

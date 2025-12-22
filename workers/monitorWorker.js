@@ -3,6 +3,9 @@
 
 const WebSocket = require('ws');
 const axios = require('axios');
+// Global axios timeout for all worker requests
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 1000;
+axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 const axiosRetry = require('axios-retry').default;
 const crypto = require('crypto');
 const notifier = require('node-notifier');
@@ -266,7 +269,7 @@ const limiter = new Bottleneck({
 
 const apiAxios = axios.create({
   baseURL: 'https://fapi.binance.com',
-  timeout: 15000
+  timeout: GLOBAL_AXIOS_TIMEOUT
 });
 // retries bounded to avoid endless retry storms
 axiosRetry(apiAxios, {
@@ -277,7 +280,7 @@ axiosRetry(apiAxios, {
 
 const apiAxiosSpot = axios.create({
   baseURL: 'https://api.binance.com',
-  timeout: 15000
+  timeout: GLOBAL_AXIOS_TIMEOUT
 });
 axiosRetry(apiAxiosSpot, {
   retries: 3,
