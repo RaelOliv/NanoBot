@@ -4,7 +4,7 @@
 const WebSocket = require('ws');
 const axios = require('axios');
 // Global axios timeout for all worker requests
-const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 50;
+const GLOBAL_AXIOS_TIMEOUT = parseInt(process.env.GLOBAL_AXIOS_TIMEOUT) || 100;
 axios.defaults.timeout = GLOBAL_AXIOS_TIMEOUT;
 const axiosRetry = require('axios-retry').default;
 const crypto = require('crypto');
