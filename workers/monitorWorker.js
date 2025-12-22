@@ -5509,7 +5509,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
         //&& parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
-/*
+
         parseFloat(ema1m400p) <= parseFloat(sma1m400p)
         && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
         && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
@@ -5520,7 +5520,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
           parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
           && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
           ) ||
-          *
+          */
           (
 
             //parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
@@ -5540,18 +5540,18 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(candles15m.slice(-2)[0].high) <= parseFloat(candles15m.slice(-1)[0].high)
         && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
-*/
 
+/*
         //parseFloat(sRsiLast15m.k) <= parseFloat(20)
         //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-        //&& 
+        && 
         parseFloat(sRsiLast3m_2.k) <= parseFloat(10)
         && parseFloat(sRsiLast3m_2.d) <= parseFloat(10) 
         && parseFloat(sRsiLast3m.k) >= parseFloat(10)
         && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
         && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
         && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
-
+*/
 
       ) {
 
@@ -5783,7 +5783,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
         //&& parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
-/*
+
         parseFloat(ema1m400p) >= parseFloat(sma1m400p)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
         && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
@@ -5808,13 +5808,13 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
           parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
           && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
           )
-          *
+          */
         )
         && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
         && parseFloat(candles15m.slice(-2)[0].low) >= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
-*/
 
+/*
         //parseFloat(sRsiLast15m.k) >= parseFloat(80)
         //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
         //&& 
@@ -5824,7 +5824,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
         && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
         && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
-        
+        */
 
 
       ) {
