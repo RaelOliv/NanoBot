@@ -197,7 +197,7 @@ const { setLock, getLock, hasAnyLock, countLocks, releaseLock } = require("../lo
 
 const roiTracker = require('../roiTracker');
 
-const {getLastPnL, getBalance} = require('./positionWorker');
+const { getLastPnL, getBalance } = require('./positionWorker');
 
 /*
 // abrir posição
@@ -805,7 +805,7 @@ async function getQntbyBalance() {
 
     let pMargemAlt = pMarg;
 
-      lastPNL = await getLastPnL();
+    lastPNL = await getLastPnL();
 
 
     if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
@@ -2021,7 +2021,7 @@ function sleep(ms) {
 
 async function abrirPosicao(side, quantityX, type = 0) {
 
-let release = null;
+  let release = null;
 
   if (type == 0) {
 
@@ -2099,7 +2099,7 @@ let release = null;
       
       ) || */ contPos < parseFloat(process.env.TRDSIMULT)) || type == 1 || type == 2) {
       // Opening position: use no timeout so this critical request isn't cut by global short timeout
-    const res = await apiAxios.post('/fapi/v1/order', null, {
+      const res = await apiAxios.post('/fapi/v1/order', null, {
         params,
         headers: { 'X-MBX-APIKEY': API_KEY },
         timeout: 0 // no timeout for opening position
@@ -2218,10 +2218,10 @@ async function verificarOrdemAberta() {
 
 async function verificarStopAtivo() {
 
-    const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
-    console.log(`Aguardando ${delay} ms antes de verificar stop em ${symbol}...`);
+  const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+  console.log(`Aguardando ${delay} ms antes de verificar stop em ${symbol}...`);
 
-    await sleep(delay);
+  await sleep(delay);
 
 
   let stopLss = undefined;
@@ -2281,10 +2281,10 @@ async function verificarStopAtivo() {
 
 async function verificarTakeAtivo() {
 
-      const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
-    console.log(`Aguardando ${delay} ms antes de verificar take em ${symbol}...`);
+  const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+  console.log(`Aguardando ${delay} ms antes de verificar take em ${symbol}...`);
 
-    await sleep(delay);
+  await sleep(delay);
 
 
   let takeProfit = undefined;
@@ -3169,7 +3169,7 @@ function iniciarWebSocketMarkPrice() {
     parentPort.postMessage(`🔎 unRealizedProfit: ${JSON.stringify(balance.unrealizedProfit)}`);
 
     parentPort.postMessage(`🔎 Perc: ${JSON.stringify(perc)}`);
-      
+
     lastPNL = await getLastPnL();
 
     parentPort.postMessage(`🔎 lastPNL: ${JSON.stringify(lastPNL)}`);
@@ -3667,17 +3667,17 @@ function iniciarWebSocketMarkPrice() {
 
       // Fechar posição se atingir o limite negativo
 
-      let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
+      let percRangeStop = parseFloat(cachepos[symbol].minPercent) + parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
-      
-            if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
-              await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-              sideM = '';
-              sideOrd = '';
-              return;
-            }
-      
+
+      if (parseFloat(cachepos[symbol].percent) > parseFloat(percRangeStop)) {
+        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+        sideM = '';
+        sideOrd = '';
+        return;
+      }
+
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
@@ -5136,8 +5136,8 @@ async function iniciarWebSocketContinuo() {
             //let ltaltb4h = calcularLinhasTendencia(candles4h, zigZag4h.topos, zigZag4h.fundos);
       */
 
-                //lastPNL = await getLastClosedPositionPnL();
-                //console.log(`🔄 Último PnL realizado: ${lastPNL}`);
+      //lastPNL = await getLastClosedPositionPnL();
+      //console.log(`🔄 Último PnL realizado: ${lastPNL}`);
 
 
 
@@ -5541,27 +5541,27 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
         //&& parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
-        && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d) 
+        && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d)
 
 
-/*
-        //parseFloat(sRsiLast15m.k) <= parseFloat(20)
-        //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-        && 
-        parseFloat(sRsiLast3m_2.k) <= parseFloat(10)
-        && parseFloat(sRsiLast3m_2.d) <= parseFloat(10) 
-        && parseFloat(sRsiLast3m.k) >= parseFloat(10)
-        && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
-        && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
-        && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
-*/
+        /*
+                //parseFloat(sRsiLast15m.k) <= parseFloat(20)
+                //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
+                && 
+                parseFloat(sRsiLast3m_2.k) <= parseFloat(10)
+                && parseFloat(sRsiLast3m_2.d) <= parseFloat(10) 
+                && parseFloat(sRsiLast3m.k) >= parseFloat(10)
+                && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
+                && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
+                && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+        */
 
       ) {
 
-        sideM = 'V';
-        sideOrd = 'SELL';
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        //sideM = 'V';
+        //sideOrd = 'SELL';
+        sideM = 'C';
+        sideOrd = 'BUY';
         gatilhoAtivado = true;
 
       } else if (
@@ -5817,28 +5817,28 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //&& parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
         && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
         //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
-        && parseFloat(sRsiLast30m.k) >=  parseFloat(sRsiLast30m.d) 
+        && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d)
 
 
-/*
-        //parseFloat(sRsiLast15m.k) >= parseFloat(80)
-        //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
-        //&& 
-        parseFloat(sRsiLast3m_2.k) >= parseFloat(90)
-        && parseFloat(sRsiLast3m_2.d) >= parseFloat(90) 
-        && parseFloat(sRsiLast3m.k) <= parseFloat(90)
-        && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
-        && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
-        && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
-        */
+        /*
+                //parseFloat(sRsiLast15m.k) >= parseFloat(80)
+                //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+                //&& 
+                parseFloat(sRsiLast3m_2.k) >= parseFloat(90)
+                && parseFloat(sRsiLast3m_2.d) >= parseFloat(90) 
+                && parseFloat(sRsiLast3m.k) <= parseFloat(90)
+                && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
+                && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
+                && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+                */
 
 
       ) {
 
-        sideM = 'C';
-        sideOrd = 'BUY';
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
+        sideM = 'V';
+        sideOrd = 'SELL';
         gatilhoAtivado = true;
 
       } else {
