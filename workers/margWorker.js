@@ -1715,10 +1715,11 @@ async function monitorarMargem() {
 
   // ---- GATILHOS DE STOP ----
   if ((
-    parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0) // || parseFloat(percReal) >= parseFloat(1.0)  
+    (parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0)) // || parseFloat(percReal) >= parseFloat(1.0)  
     && parseFloat(perc) !== null
     && parseFloat(perc) !== parseFloat(-100)
     && parseFloat(oldBalance) !== parseFloat(undefined)
+    && parseFloat(balance.unRealizedProfit) > parseFloat(0.02)
 
   )
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
