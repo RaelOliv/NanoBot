@@ -1709,7 +1709,7 @@ async function monitorarMargem() {
   parentPort.postMessage(`resetHist(-1): ${JSON.stringify(resetHist[resetHist.length - 1], null, 2)}`);
   parentPort.postMessage(`OldBalance: ${JSON.stringify(oldBalance, null, 2)}`);
   parentPort.postMessage(`Balance: ${JSON.stringify(balance, null, 2)}`);
-  parentPort.postMessage(`percReal: ${JSON.stringify(perc, null, 2)}`);
+  parentPort.postMessage(`percReal: ${JSON.stringify(percReal, null, 2)}`);
   parentPort.postMessage(`perc: ${JSON.stringify(perc, null, 2)}`);
   parentPort.postMessage(`resetData: ${JSON.stringify(resetData, null, 2)}`);
   parentPort.postMessage(`Atualizado: ${formatTime(Date.now())}`);
