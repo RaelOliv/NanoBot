@@ -2036,7 +2036,6 @@ async function abrirPosicao(side, quantityX, type = 0) {
       await new Promise(resolve => setTimeout(resolve, 60000));
       return null;
     }
-    activatePause(3); // pausa por 3 min
 
     parentPort.postMessage(`🔒 Tentando adquirir lock para ${symbol}`);
 
@@ -2106,7 +2105,10 @@ async function abrirPosicao(side, quantityX, type = 0) {
         timeout: 0 // no timeout for opening position
       });
       parentPort.postMessage(`✅ Posição aberta via Market Ordem: ${JSON.stringify(res.data)}`);
+          activatePause(3); // pausa por 3 min
+
       return res.data;
+
     }
     else {
       return null;
