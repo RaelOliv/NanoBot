@@ -5563,7 +5563,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         //sideOrd = 'SELL';
         sideM = 'C';
         sideOrd = 'BUY';
-        gatilhoAtivado = true;
+        //gatilhoAtivado = true;
 
       } else if (
         /*
@@ -5840,7 +5840,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //sideOrd = 'BUY';
         sideM = 'V';
         sideOrd = 'SELL';
-        gatilhoAtivado = true;
+        //gatilhoAtivado = true;
 
       } else {
 
