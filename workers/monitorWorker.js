@@ -805,7 +805,7 @@ async function getQntbyBalance() {
 
     let pMargemAlt = pMarg;
 
-    /*
+    
     lastPNL = await getLastPnL();
 
     if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
@@ -813,7 +813,7 @@ async function getQntbyBalance() {
     } else if (lastPNL && parseFloat(lastPNL.pnl) < parseFloat(0.00)) {
       pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
     }
-    */
+    
 
     return qntty * parseFloat(pMargemAlt);
 
