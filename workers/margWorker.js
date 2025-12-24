@@ -1720,7 +1720,7 @@ async function monitorarMargem() {
     && parseFloat(perc) !== null
     && parseFloat(perc) !== parseFloat(-100)
     && parseFloat(oldBalance) !== parseFloat(undefined)
-    && parseFloat(perc) > (parseFloat(percReal) + parseFloat(0.1))
+    && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
 
   )
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
