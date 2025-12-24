@@ -3670,7 +3670,7 @@ function iniciarWebSocketMarkPrice() {
       let cachepos = await carregarCache('cachepos');
 
       // Fechar posição se atingir o limite negativo
-
+/*
       let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
@@ -3681,7 +3681,7 @@ function iniciarWebSocketMarkPrice() {
         sideOrd = '';
         return;
       }
-
+*/
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
@@ -5559,10 +5559,12 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
                 && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
                 && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
         */
-        parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m.d) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) 
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m_2.k) <= parseFloat(sRsiLast3m_2.d) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+        parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
       ) {
 
         //sideM = 'V';
@@ -5842,6 +5844,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m_2.k) >= parseFloat(sRsiLast3m_2.d) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
         parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
 
       ) {
