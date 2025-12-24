@@ -328,7 +328,6 @@ axios.interceptors.response.use(res => res, err => handle429(err, axios));
 */
 var offset = undefined;
 
-
 /*
 //Exemplo de uso:
 (async () => {
@@ -805,7 +804,6 @@ async function getQntbyBalance() {
 
     let pMargemAlt = pMarg;
 
-    
     lastPNL = await getLastPnL();
 
     if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
@@ -814,7 +812,6 @@ async function getQntbyBalance() {
       pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
     }
     
-
     return qntty * parseFloat(pMargemAlt);
 
   } else {
@@ -868,8 +865,6 @@ async function notificWin(preco_atualiz, cryptSymbol, op, side = '', roi) {
   var entryPrice = undefined;
   var take = undefined;
   var stop = undefined;
-
-
 
   var symbolNotifId = getSymbolId(symbol);
   //cacheSimul = await carregarCache('SIMUL');
@@ -5559,12 +5554,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
                 && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
                 && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
         */
-        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+
+        parseFloat(sRsiLast30m.k) <= parseFloat(20.0) &&
+        parseFloat(sRsiLast30m.k) > parseFloat(sRsiLast30m.d) &&
+        
+        parseFloat(sRsiLast3m.k) >= parseFloat(10.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m_2.k) <= parseFloat(sRsiLast3m_2.d) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
         parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+        
+        && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+        && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
+      
       ) {
 
         //sideM = 'V';
@@ -5840,13 +5843,18 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
                 && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
                 && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
                 */
-
-        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(80.0) &&
+        parseFloat(sRsiLast30m.k) < parseFloat(sRsiLast30m.d) &&
+        
+        parseFloat(sRsiLast3m.k) <= parseFloat(90.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m_2.k) >= parseFloat(sRsiLast3m_2.d) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
         parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+        
+        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
+        && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
 
       ) {
 
