@@ -513,10 +513,10 @@ async function getBalance() {
   parentPort.postMessage('');
   parentPort.postMessage('[ getBalance_Start ]');
 
-      const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
-    console.log(`Aguardando ${delay} ms antes de consultar balanço...`);
+  const delay = Math.floor(Math.random() * 5000) + 1000; // 1 a 5 s
+  console.log(`Aguardando ${delay} ms antes de consultar balanço...`);
 
-    await sleep(delay);
+  await sleep(delay);
 
   const carteira = await api.accountFutures(Date.now());
 
@@ -1715,14 +1715,15 @@ async function monitorarMargem() {
   parentPort.postMessage(`Atualizado: ${formatTime(Date.now())}`);
 
   // ---- GATILHOS DE STOP ----
-  if ((
-    (parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0)) // || parseFloat(percReal) >= parseFloat(1.0)  
-    && parseFloat(perc) !== null
-    && parseFloat(perc) !== parseFloat(-100)
-    && parseFloat(oldBalance) !== parseFloat(undefined)
-    && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
+  if (
+    (
+      (parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0)) // || parseFloat(percReal) >= parseFloat(1.0)  
+      && parseFloat(perc) !== null
+      && parseFloat(perc) !== parseFloat(-100)
+      && parseFloat(oldBalance) !== parseFloat(undefined)
+      //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
 
-  )
+    )
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1816,12 +1817,12 @@ async function monitorarMargem() {
         //let resTr = await transferir("USDT", pnlaReter, 'UMFUTURE_FUNDING');
         //if (resTr !== null) {
 
-          oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
-          balanceHist.push(oldBalance);
+        oldBalance.newBalance = toFixedNumber(balance.marginBalance, 2);
+        balanceHist.push(oldBalance);
 
-          balance = await getBalance();
-          await salvarCache(balance, 'oldBalance');
-          return;
+        balance = await getBalance();
+        await salvarCache(balance, 'oldBalance');
+        return;
 
         //}
 
