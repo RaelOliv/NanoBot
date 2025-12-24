@@ -286,7 +286,8 @@ async function getLastClosedPositionPnL(symbol = null) {
   const { data: trades } = await axios.get(url, {
     headers: {
       'X-MBX-APIKEY': process.env.API_KEY
-    }
+    },
+    timeout: 0
   });
 
   if (!Array.isArray(trades) || trades.length === 0) {
