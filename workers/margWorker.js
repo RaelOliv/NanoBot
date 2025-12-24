@@ -1803,7 +1803,7 @@ async function monitorarMargem() {
 
     } else if (percReal >= parseFloat(process.env.TPDIA) && perc < 90) {
 
-      activatePause(5); // pausa por 30 min
+      activatePause(3); // pausa por 30 min
       let res = await fecharTodasPosicoes();
       if (res == true) {
 
