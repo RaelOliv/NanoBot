@@ -3668,7 +3668,7 @@ function iniciarWebSocketMarkPrice() {
 
       // Fechar posição se atingir o limite negativo
 
-      let percRangeStop = parseFloat(cachepos[symbol].minPercent) - parseFloat(process.env.RANGE);
+      let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
 
