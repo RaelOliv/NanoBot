@@ -946,6 +946,7 @@ const cryptSymbols = {
 const cryptSymbols = {
     
     
+    btc: 'BTCUSDT',
     aave: 'AAVEUSDT',
     ach: 'ACHUSDT',
     ada: 'ADAUSDT',
