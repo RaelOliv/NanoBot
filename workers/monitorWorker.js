@@ -3667,11 +3667,11 @@ function iniciarWebSocketMarkPrice() {
 
       // Fechar posição se atingir o limite negativo
 
-      let percRangeStop = parseFloat(cachepos[symbol].minPercent) + parseFloat(process.env.RANGE);
+      let percRangeStop = parseFloat(cachepos[symbol].minPercent) - parseFloat(process.env.RANGE);
 
       parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
 
-      if (parseFloat(cachepos[symbol].percent) > parseFloat(percRangeStop)) {
+      if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
         await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
         sideM = '';
         sideOrd = '';
