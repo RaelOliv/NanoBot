@@ -1813,7 +1813,16 @@ async function monitorarMargem() {
       balance = await getBalance();
       await salvarCache(balance, 'oldBalance');
 
-    } else if (percReal >= parseFloat(process.env.TPDIA) && perc < 90) {
+    } else if (
+      (
+        (
+          parseFloat(percReal) >= parseFloat(process.env.TPDIA)
+          && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
+        )
+        || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
+      )
+      && perc < 90
+    ) {
 
       activatePause(3); // pausa por 30 min
       let res = await fecharTodasPosicoes();
