@@ -1717,13 +1717,21 @@ async function monitorarMargem() {
   // ---- GATILHOS DE STOP ----
   if (
     (
-      (parseFloat(perc) <= parseFloat(process.env.SLDIA) || parseFloat(percReal) >= parseFloat(process.env.TPDIA) || parseFloat(perc) >= parseFloat(90.0)) // || parseFloat(percReal) >= parseFloat(1.0)  
-      && parseFloat(perc) !== null
-      && parseFloat(perc) !== parseFloat(-100)
-      && parseFloat(oldBalance) !== parseFloat(undefined)
+      (
+        parseFloat(perc) <= parseFloat(process.env.SLDIA)
+        || (
+          parseFloat(percReal) >= parseFloat(process.env.TPDIA)
+          && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
+        )
+        || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
+        || parseFloat(perc) >= parseFloat(90.0)
+      )
+
+      // || parseFloat(percReal) >= parseFloat(1.0)  
       //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
 
     )
+
     /* || parseFloat(percReal) <= parseFloat(-1.0) */
     /*
     || 
@@ -1734,6 +1742,10 @@ async function monitorarMargem() {
     (oldBalance.maxPercent >= 45.0 && perc <= 30.0) ||
     (oldBalance.maxPercent >= 15.0 && perc <= 2.0)
     */
+
+    && parseFloat(perc) !== null
+    && parseFloat(perc) !== parseFloat(-100)
+    && parseFloat(oldBalance) !== parseFloat(undefined)
 
     && parseFloat(oldBalance.marginBalance) !== null
     && parseFloat(balance.marginBalance) !== null
