@@ -116,6 +116,7 @@ let ema1m5p = undefined;
 let ema1m10p = undefined;
 let sma1m100p = undefined;
 let ema1m100p = undefined;
+let ema1m100p_2 = undefined;
 let sma1m400p = undefined;
 let ema1m400p = undefined;
 
@@ -2640,6 +2641,8 @@ function iniciarWebSocketcandles1m() {
       ema1m10p_2 = ema1m10p;
       ema1m400p_2 = ema1m400p;
       sma1m400p_2 = sma1m400p;
+
+      ema1m100p_2 = ema1m100p;
 
 
       ema1m5p = calcularEMA(5, candles1m);
