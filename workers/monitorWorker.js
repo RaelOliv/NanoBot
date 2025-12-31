@@ -5567,7 +5567,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         
         && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
         && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
-*/
+*
         parseFloat(sRsiLast3m.k) <= parseFloat(60.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
@@ -5581,14 +5581,30 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
         
         && parseFloat(preco_atual) >= parseFloat(ema1m10p_2)
+*/
 
+        parseFloat(ema1m400p) > parseFloat(ema1m400p_2)
+        && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
+
+        && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
+        && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
+        && parseFloat(sRsiLast5m.k) > parseFloat(sRsiLast5m_2.k)
+
+        && parseFloat(sRsiLast1m.k) < parseFloat(50.0)
+        && parseFloat(sRsiLast1m.k) > parseFloat(20.0)
+        && parseFloat(sRsiLast3m.k) < parseFloat(50.0)
+        && parseFloat(sRsiLast3m.k) < parseFloat(20.0)
       
       ) {
 
-        sideM = 'V';
-        sideOrd = 'SELL';
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        sideM = 'C';
+        sideOrd = 'BUY';
+        
+        //// --- INVERSÃO DO SINAL ---
+        //sideM = 'V';
+        //sideOrd = 'SELL';
+        //// --- INVERSÃO DO SINAL ---
+
         gatilhoAtivado = true;
 
       } else if (
@@ -5870,7 +5886,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         
         && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
         && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
-*/
+*
 
         parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(40.0) &&
@@ -5885,14 +5901,30 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
         
         && parseFloat(preco_atual) <= parseFloat(ema1m10p_2)
+*/
 
+        parseFloat(ema1m400p) < parseFloat(ema1m400p_2)
+        && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
+
+        && parseFloat(sRsiLast1m.k) < parseFloat(sRsiLast1m_2.k)
+        && parseFloat(sRsiLast3m.k) < parseFloat(sRsiLast3m_2.k)
+        && parseFloat(sRsiLast5m.k) < parseFloat(sRsiLast5m_2.k)
+
+        && parseFloat(sRsiLast1m.k) > parseFloat(50.0)
+        && parseFloat(sRsiLast1m.k) < parseFloat(80.0)
+        && parseFloat(sRsiLast3m.k) > parseFloat(50.0)
+        && parseFloat(sRsiLast3m.k) < parseFloat(80.0)
 
       ) {
 
-        sideM = 'C';
-        sideOrd = 'BUY';
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        sideM = 'V';
+        sideOrd = 'SELL';
+
+        //// --- INVERSÃO DO SINAL ---
+        //sideM = 'C';
+        //sideOrd = 'BUY';
+        //// --- INVERSÃO DO SINAL ---
+
         gatilhoAtivado = true;
 
       } else {
