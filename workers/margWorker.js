@@ -1721,9 +1721,9 @@ async function monitorarMargem() {
         parseFloat(perc) <= parseFloat(process.env.SLDIA)
         || (
           parseFloat(percReal) >= parseFloat(process.env.TPDIA)
-          && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
+          //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
         )
-        || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
+        // || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
         || parseFloat(perc) >= parseFloat(90.0)
       )
 
@@ -1817,9 +1817,9 @@ async function monitorarMargem() {
       (
         (
           parseFloat(percReal) >= parseFloat(process.env.TPDIA)
-          && parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
+          //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
         )
-        || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
+        // || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
       )
       && perc < 90
     ) {
