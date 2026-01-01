@@ -1850,6 +1850,7 @@ async function monitorarMargem() {
 
 
     }
+    
     /*
     else if (percReal < -1.0) {
 
@@ -1864,7 +1865,8 @@ async function monitorarMargem() {
       await salvarCache(balance, 'oldBalance');
       //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
     }
-*/
+    */
+
     else if (perc <= process.env.SLDIA && perc >= -90.0) {
 
       let res = await fecharTodasPosicoes();

@@ -1886,15 +1886,16 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-
+  /*
     const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
-
-    //return undefined;
+  */
+    return undefined;
+    
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -2071,7 +2072,6 @@ async function abrirPosicao(side, quantityX, type = 0) {
       parentPort.postMessage(`⚠️ Já existem tres posições abertas. Abortando nova abertura.`);
       return null;
     }
-
 
     /*
     const amtPos = await verificarSeTemPosicao(3);
@@ -3143,11 +3143,15 @@ function iniciarWebSocketMarkPrice() {
     maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
     menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
 
+    maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(ema1m400p));
+    menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(ema1m400p));
+
+
     //nLocks = countLocks();
     parentPort.postMessage(`sideOrd: ${sideOrd}`);
     parentPort.postMessage(`gatilhoAtivado: ${gatilhoAtivado}`);
-    parentPort.postMessage(`ema1m100p: ${ema1m100p}`);
-    parentPort.postMessage(`sma1m100p: ${sma1m100p}`);
+    parentPort.postMessage(`maiorMReg1m: ${maiorMReg1m}`);
+    parentPort.postMessage(`menorMReg1m: ${menorMReg1m}`);
 
     contPos = await verificarSeTemPosicao(2);
     parentPort.postMessage(`🔎 Total de posições abertas: ${contPos}`);
@@ -5083,8 +5087,8 @@ async function iniciarWebSocketContinuo() {
       maiorMedia3m = Math.max(...medias3m);
       menorMedia3m = Math.min(...medias3m);
 
-      maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(sma1m100p));
-      menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(sma1m100p));
+      maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(ema1m400p));
+      menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(ema1m400p));
 
       maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
       menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
@@ -5584,17 +5588,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
         
         && parseFloat(preco_atual) >= parseFloat(ema1m10p_2)
-*/
+        */
 
-        parseFloat(ema1m100p) > parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
+        parseFloat(ema1m100p) >= parseFloat(ema1m400p)
+        && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
+        && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
+        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
 
         && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) > parseFloat(sRsiLast5m_2.k)
 
-        && parseFloat(sRsiLast5m.k) < parseFloat(50.0)
-        && parseFloat(sRsiLast5m.k) > parseFloat(20.0)
+        //&& parseFloat(sRsiLast5m.k) < parseFloat(50.0)
+        //&& parseFloat(sRsiLast5m.k) > parseFloat(20.0)
         //&& parseFloat(sRsiLast5m_2.k) < parseFloat(20.0)
 
         /*
@@ -5603,6 +5610,15 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast3m.k) < parseFloat(50.0)
         && parseFloat(sRsiLast3m.k) < parseFloat(20.0)
         */
+
+        && parseFloat(candles1m.slice(-3)[0].open) >= parseFloat(candles1m.slice(-3)[0].close)
+        && parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
+
+        && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+
+        && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
+        && parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(reg1mMenor)
+
       ) {
 
         sideM = 'C';
@@ -5909,17 +5925,20 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
         
         && parseFloat(preco_atual) <= parseFloat(ema1m10p_2)
-*/
+        */
 
-        parseFloat(ema1m100p) < parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
+        parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
+        && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
+        && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
+        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
 
         && parseFloat(sRsiLast1m.k) < parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) < parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) < parseFloat(sRsiLast5m_2.k)
 
-        && parseFloat(sRsiLast5m.k) > parseFloat(50.0)
-        && parseFloat(sRsiLast5m.k) < parseFloat(80.0)
+        //&& parseFloat(sRsiLast5m.k) > parseFloat(50.0)
+        //&& parseFloat(sRsiLast5m.k) < parseFloat(80.0)
         //&& parseFloat(sRsiLast5m_2.k) > parseFloat(80.0)
 
         /*
@@ -5928,6 +5947,14 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast3m.k) > parseFloat(50.0)
         && parseFloat(sRsiLast3m.k) < parseFloat(80.0)
         */
+
+        && parseFloat(candles1m.slice(-3)[0].open) <= parseFloat(candles1m.slice(-3)[0].close)
+        && parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close)
+        
+        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
+
+        && parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(reg1mMaior)
+        && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
 
       ) {
 
