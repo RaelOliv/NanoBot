@@ -1895,7 +1895,7 @@ async function criarStopLoss(stopPrice) {
     return res.data;
   */
     return undefined;
-    
+
   } catch (err) {
     parentPort.postMessage(`❌ Erro criando Stop: ${JSON.stringify(err.response?.data || err.message)}`);
 
@@ -5593,12 +5593,14 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(ema1m100p) >= parseFloat(ema1m400p)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
         && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
-
+        && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
+        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
+        
+        /*
         && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) > parseFloat(sRsiLast5m_2.k)
+        */
 
         //&& parseFloat(sRsiLast5m.k) < parseFloat(50.0)
         //&& parseFloat(sRsiLast5m.k) > parseFloat(20.0)
@@ -5930,12 +5932,14 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
         && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
         && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
-
+        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
+        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
+        
+        /*
         && parseFloat(sRsiLast1m.k) < parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) < parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) < parseFloat(sRsiLast5m_2.k)
+        */
 
         //&& parseFloat(sRsiLast5m.k) > parseFloat(50.0)
         //&& parseFloat(sRsiLast5m.k) < parseFloat(80.0)
