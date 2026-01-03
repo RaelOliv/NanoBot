@@ -3293,7 +3293,7 @@ function iniciarWebSocketMarkPrice() {
           (
             sideOrd == 'BUY' 
             && parseFloat(preco_atual) > parseFloat(preco_anterior)
-            && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
+            && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMReg1m)
             && parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
 
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
@@ -3347,7 +3347,7 @@ function iniciarWebSocketMarkPrice() {
 
             sideOrd == 'SELL' 
             && parseFloat(preco_atual) < parseFloat(preco_anterior)
-            && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
+            && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMReg1m)
             && parseFloat(preco_atual) <= parseFloat(menorMReg1m)
 
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
