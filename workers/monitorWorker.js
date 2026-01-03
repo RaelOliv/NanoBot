@@ -3143,8 +3143,8 @@ function iniciarWebSocketMarkPrice() {
     maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
     menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
 
-    maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(ema1m400p));
-    menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(ema1m400p));
+    maiorMReg1m = Math.max(parseFloat(sma1m400p), parseFloat(ema1m400p));
+    menorMReg1m = Math.min(parseFloat(sma1m400p), parseFloat(ema1m400p));
 
 
     //nLocks = countLocks();
@@ -3294,7 +3294,7 @@ function iniciarWebSocketMarkPrice() {
             sideOrd == 'BUY' 
             && parseFloat(preco_atual) > parseFloat(preco_anterior)
             && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
-            && parseFloat(preco_atual) >= parseFloat(reg1mMaior)
+            && parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
 
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
@@ -3348,7 +3348,7 @@ function iniciarWebSocketMarkPrice() {
             sideOrd == 'SELL' 
             && parseFloat(preco_atual) < parseFloat(preco_anterior)
             && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
-            && parseFloat(preco_atual) <= parseFloat(reg1mMenor)
+            && parseFloat(preco_atual) <= parseFloat(menorMReg1m)
 
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
@@ -5091,8 +5091,8 @@ async function iniciarWebSocketContinuo() {
       maiorMedia3m = Math.max(...medias3m);
       menorMedia3m = Math.min(...medias3m);
 
-      maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(ema1m400p));
-      menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(ema1m400p));
+      maiorMReg1m = Math.max(parseFloat(sma1m400p), parseFloat(ema1m400p));
+      menorMReg1m = Math.min(parseFloat(sma1m400p), parseFloat(ema1m400p));
 
       maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
       menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
@@ -5630,7 +5630,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
 
         && parseFloat(ema1m10p) >= parseFloat(ema1m100p)
-        && parseFloat(ema1m10p) <= parseFloat(reg1mMaior)
+        && parseFloat(ema1m10p) <= parseFloat(maiorMReg1m)
         && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
         && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
 
@@ -5977,7 +5977,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
 
         && parseFloat(ema1m10p) <= parseFloat(ema1m100p)
-        && parseFloat(ema1m10p) >= parseFloat(reg1mMenor)
+        && parseFloat(ema1m10p) >= parseFloat(menorMReg1m)
         && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
         && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
 
