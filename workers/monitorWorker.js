@@ -3291,8 +3291,10 @@ function iniciarWebSocketMarkPrice() {
 
         if (
           (
-            sideOrd == 'BUY' &&
-            parseFloat(preco_atual) > parseFloat(preco_anterior)
+            sideOrd == 'BUY' 
+            && parseFloat(preco_atual) > parseFloat(preco_anterior)
+            && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
+            && parseFloat(preco_atual) >= parseFloat(reg1mMaior)
 
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
@@ -3343,8 +3345,10 @@ function iniciarWebSocketMarkPrice() {
                         */
           ) || (
 
-            sideOrd == 'SELL' &&
-            parseFloat(preco_atual) < parseFloat(preco_anterior) //&&
+            sideOrd == 'SELL' 
+            && parseFloat(preco_atual) < parseFloat(preco_anterior)
+            && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
+            && parseFloat(preco_atual) <= parseFloat(reg1mMenor)
 
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
@@ -5588,13 +5592,13 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
         
         && parseFloat(preco_atual) >= parseFloat(ema1m10p_2)
-        */
+        *
 
         parseFloat(ema1m100p) >= parseFloat(ema1m400p)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
         && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
+        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
+        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
         
         /*
         && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
@@ -5611,7 +5615,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast1m.k) > parseFloat(20.0)
         && parseFloat(sRsiLast3m.k) < parseFloat(50.0)
         && parseFloat(sRsiLast3m.k) < parseFloat(20.0)
-        */
+        *
 
         && parseFloat(candles1m.slice(-3)[0].open) >= parseFloat(candles1m.slice(-3)[0].close)
         && parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
@@ -5620,6 +5624,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
         && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
         && parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(reg1mMenor)
+        */
+
+        parseFloat(ema1m400p) >= parseFloat(sma1m400p)
+        && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
+
+        && parseFloat(ema1m10p) >= parseFloat(ema1m100p)
+        && parseFloat(ema1m10p) <= parseFloat(reg1mMaior)
+        && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
+
+        && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k)
+
+        && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+
 
       ) {
 
@@ -5929,11 +5947,6 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(preco_atual) <= parseFloat(ema1m10p_2)
         */
 
-        parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
-        && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
-        && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
         
         /*
         && parseFloat(sRsiLast1m.k) < parseFloat(sRsiLast1m_2.k)
@@ -5950,15 +5963,30 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast1m.k) < parseFloat(80.0)
         && parseFloat(sRsiLast3m.k) > parseFloat(50.0)
         && parseFloat(sRsiLast3m.k) < parseFloat(80.0)
-        */
+        *
 
         && parseFloat(candles1m.slice(-3)[0].open) <= parseFloat(candles1m.slice(-3)[0].close)
         && parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close)
         
-        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
 
         && parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(reg1mMaior)
         && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
+        */
+
+        parseFloat(ema1m400p) <= parseFloat(sma1m400p)
+        && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
+
+        && parseFloat(ema1m10p) <= parseFloat(ema1m100p)
+        && parseFloat(ema1m10p) >= parseFloat(reg1mMenor)
+        && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
+
+        && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k)
+
+        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
+
+
+
 
       ) {
 
