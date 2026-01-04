@@ -117,6 +117,8 @@ let ema1m10p = undefined;
 let sma1m100p = undefined;
 let ema1m100p = undefined;
 let ema1m100p_2 = undefined;
+let ema1m250p = undefined;
+let ema1m250p_2 = undefined;
 let sma1m400p = undefined;
 let ema1m400p = undefined;
 
@@ -1429,6 +1431,7 @@ async function carregarCandlesHistoricos() {
     sma1m400p = calcularSMA(400, candles1m);
 
     ema1m100p = calcularEMA(100, candles1m);
+    ema1m250p = calcularEMA(250, candles1m);
     sma1m100p = calcularSMA(100, candles1m);
 
     const s100 = calcularSMA(100, candles1m);
@@ -2643,6 +2646,7 @@ function iniciarWebSocketcandles1m() {
       sma1m400p_2 = sma1m400p;
 
       ema1m100p_2 = ema1m100p;
+      ema1m250p_2 = ema1m250p;
 
 
       ema1m5p = calcularEMA(5, candles1m);
@@ -2651,6 +2655,7 @@ function iniciarWebSocketcandles1m() {
       sma1m400p = calcularSMA(400, candles1m);
 
       ema1m100p = calcularEMA(100, candles1m);
+      ema1m250p = calcularEMA(250, candles1m);
       sma1m100p = calcularSMA(100, candles1m);
 
       const s50 = calcularSMA(50, candles1m);
@@ -5624,7 +5629,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
         && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(reg1mMaior)
         && parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(reg1mMenor)
-        */
+        *
 
         parseFloat(ema1m400p) >= parseFloat(sma1m400p)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
@@ -5637,7 +5642,18 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+        */
 
+        parseFloat(ema1m100p) >= parseFloat(ema1m250p)
+        && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m250p) >= parseFloat(ema1m250p_2)
+
+        && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema1m100p)
+        && parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(ema1m250p)
+        && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+
+        && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
+        && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
 
       ) {
 
@@ -5971,7 +5987,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
         && parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(reg1mMaior)
         && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(reg1mMenor)
-        */
+        *
 
         parseFloat(ema1m400p) <= parseFloat(sma1m400p)
         && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
@@ -5984,9 +6000,18 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
+        */
 
+        parseFloat(ema1m100p) <= parseFloat(ema1m250p)
+        && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
+        && parseFloat(ema1m250p) <= parseFloat(ema1m250p_2)
 
+        && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema1m100p)
+        && parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(ema1m250p)
+        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
 
+        && parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
+        && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k)
 
       ) {
 
