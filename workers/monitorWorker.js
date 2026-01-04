@@ -3148,8 +3148,8 @@ function iniciarWebSocketMarkPrice() {
     maiorMRegIn3m = Math.max(menorMedia3m, menorM3m20p);
     menorMRegIn3m = Math.min(maiorMedia3m, maiorM3m20p);
 
-    maiorMReg1m = Math.max(parseFloat(sma1m400p), parseFloat(ema1m400p));
-    menorMReg1m = Math.min(parseFloat(sma1m400p), parseFloat(ema1m400p));
+    maiorMReg1m = Math.max(parseFloat(ema1m100p), parseFloat(ema1m250p));
+    menorMReg1m = Math.min(parseFloat(ema1m100p), parseFloat(ema1m250p));
 
 
     //nLocks = countLocks();
