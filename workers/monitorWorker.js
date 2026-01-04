@@ -816,7 +816,7 @@ async function getQntbyBalance() {
       pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
     }
     */
-   
+
     return qntty * parseFloat(pMargemAlt);
 
   } else {
@@ -3300,8 +3300,11 @@ function iniciarWebSocketMarkPrice() {
           (
             sideOrd == 'BUY' 
             && parseFloat(preco_atual) > parseFloat(preco_anterior)
-            && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMReg1m)
-            && parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
+            && parseFloat(preco_anterior) <= parseFloat(candles1m.slice(-2)[0].high)
+            && parseFloat(preco_atual) > parseFloat(candles1m.slice(-2)[0].high)
+
+            // parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMReg1m)
+            // parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
 
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
@@ -3354,8 +3357,12 @@ function iniciarWebSocketMarkPrice() {
 
             sideOrd == 'SELL' 
             && parseFloat(preco_atual) < parseFloat(preco_anterior)
-            && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMReg1m)
-            && parseFloat(preco_atual) <= parseFloat(menorMReg1m)
+            && parseFloat(preco_anterior) >= parseFloat(candles1m.slice(-2)[0].low)
+            && parseFloat(preco_atual) < parseFloat(candles1m.slice(-2)[0].low)
+
+            
+            //&& parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMReg1m)
+            //&& parseFloat(preco_atual) <= parseFloat(menorMReg1m)
 
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
@@ -5654,8 +5661,8 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(ema1m250p)
         && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
 
-        && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
-        && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
+        //&& parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
+        //&& parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
 
       ) {
 
@@ -6012,8 +6019,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(ema1m250p)
         && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
 
-        && parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
-        && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k)
+        //&& parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
+        //&& parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k)
 
       ) {
 
