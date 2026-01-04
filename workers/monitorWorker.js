@@ -7154,6 +7154,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       */
     }
 
+    /*
     if (posicaoAberta == 0 && ultimaPosicao !== 0 && ultimaPosicao !== undefined) {
 
       parentPort.postMessage(`✅ Posição encerrada. Parando STOP.`);
@@ -7167,6 +7168,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       novoStop = undefined;
       //await cancelarTodasOrdens();
     }
+    */
 
     ultimaPosicao = posicaoAberta;
 
