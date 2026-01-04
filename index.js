@@ -963,7 +963,7 @@ const cryptSymbols = {
     bnb: 'BNBUSDT',
     bonk: '1000BONKUSDT',
     coti: 'COTIUSDT',
-    cvx: 'CVXUSDT',
+    //cvx: 'CVXUSDT',
     dexe: 'DEXEUSDT',
     doge: 'DOGEUSDT',
     dot: 'DOTUSDT',
