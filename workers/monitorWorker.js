@@ -3168,7 +3168,7 @@ function iniciarWebSocketMarkPrice() {
     let oldBalance = await carregarCache('oldBalance');
 
     let perc = percentage(
-      toFixedNumber(oldBalance.marginBalance),
+      toFixedNumber(oldBalance.walletBalance),
       toFixedNumber(balance.marginBalance)
     );
 
