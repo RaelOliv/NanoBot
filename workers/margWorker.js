@@ -1657,7 +1657,7 @@ async function monitorarMargem() {
   //}
 
   let perc = percentage(
-    toFixedNumber(oldBalance.marginBalance),
+    toFixedNumber(oldBalance.walletBalance),
     toFixedNumber(balance.marginBalance)
   );
 
