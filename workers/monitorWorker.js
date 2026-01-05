@@ -807,7 +807,6 @@ async function getQntbyBalance() {
 
     let pMargemAlt = pMarg;
 
-    
     lastPNL = await getLastPnL();
 
     if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
@@ -815,7 +814,6 @@ async function getQntbyBalance() {
     } else if (lastPNL && parseFloat(lastPNL.pnl) < parseFloat(0.00)) {
       pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
     }
-    
 
     return qntty * parseFloat(pMargemAlt);
 
@@ -1664,47 +1662,47 @@ async function carregarCandlesHistoricos() {
   } catch (err) {
     parentPort.postMessage(`❌ Erro ao carregar histórico de candles30m: ${JSON.stringify(err.message)}`);
   }
-  /*
-      try {
-        const response = await apiAxios.get('/fapi/v1/klines', {
-          params: {
-            symbol: symbol,
-            interval: '4h',
-            limit: 400,
-            recvWindow: 15000
-          }
-        });
-    
-        let i4h = 0;
-    
-        response.data.forEach(k => {
-          candles4h.push({
-            index: i4h++,
-            timestamp: k[0],
-            timestampHD: formatTime(k[0]),
-            open: parseFloat(k[1]),
-            high: parseFloat(k[2]),
-            low: parseFloat(k[3]),
-            close: parseFloat(k[4]),
-            isFinal: true
-          });
-        });
-    
-        parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles4h carregado com sucesso.`);
-        *
-            const s100 = calcularSMA(100, candles4h);
-            const s110 = calcularSMA(110, candles4h);
-            const e100 = calcularEMA(100, candles4h);
-            const e110 = calcularEMA(110, candles4h);
-        
-            if (s100 && s110 && e100 && e110) {
-              medias4h = [s100, s110, e100, e110];
-            }
-        *
-      } catch (err) {
-        parentPort.postMessage(`❌ Erro ao carregar histórico de candles4h: ${JSON.stringify(err.message)}`);
+
+  try {
+    const response = await apiAxios.get('/fapi/v1/klines', {
+      params: {
+        symbol: symbol,
+        interval: '4h',
+        limit: 400,
+        recvWindow: 15000
       }
+    });
+
+    let i4h = 0;
+
+    response.data.forEach(k => {
+      candles4h.push({
+        index: i4h++,
+        timestamp: k[0],
+        timestampHD: formatTime(k[0]),
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4]),
+        isFinal: true
+      });
+    });
+
+    parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles4h carregado com sucesso.`);
+    /*
+        const s100 = calcularSMA(100, candles4h);
+        const s110 = calcularSMA(110, candles4h);
+        const e100 = calcularEMA(100, candles4h);
+        const e110 = calcularEMA(110, candles4h);
+    
+        if (s100 && s110 && e100 && e110) {
+          medias4h = [s100, s110, e100, e110];
+        }
     */
+  } catch (err) {
+    parentPort.postMessage(`❌ Erro ao carregar histórico de candles4h: ${JSON.stringify(err.message)}`);
+  }
+
 
 }
 
@@ -1891,14 +1889,14 @@ async function criarStopLoss(stopPrice) {
   params.signature = gerarAssinatura(params);
 
   try {
-  
+
     const res = await axios.post('https://fapi.binance.com/fapi/v1/algoOrder', null, {
       params,
       headers: { 'X-MBX-APIKEY': API_KEY }
     });
     parentPort.postMessage(`✅ Stop (${oppositeSide}) criado @ ${stopPrice}`);
     return res.data;
-  
+
     //return undefined;
 
   } catch (err) {
@@ -2045,7 +2043,7 @@ async function abrirPosicao(side, quantityX, type = 0) {
     parentPort.postMessage(`✅ Lock adquirido para ${symbol}`);
 
   }
-            activatePause(1); // pausa por 3 min
+  activatePause(1); // pausa por 3 min
 
   try {
 
@@ -3298,7 +3296,7 @@ function iniciarWebSocketMarkPrice() {
 
         if (
           (
-            sideOrd == 'BUY' 
+            sideOrd == 'BUY'
             && parseFloat(preco_atual) > parseFloat(preco_anterior)
             //&& parseFloat(preco_anterior) <= parseFloat(candles1m.slice(-2)[0].high)
             //&& parseFloat(preco_atual) > parseFloat(candles1m.slice(-2)[0].high)
@@ -3355,7 +3353,7 @@ function iniciarWebSocketMarkPrice() {
                         */
           ) || (
 
-            sideOrd == 'SELL' 
+            sideOrd == 'SELL'
             && parseFloat(preco_atual) < parseFloat(preco_anterior)
             //&& parseFloat(preco_anterior) >= parseFloat(candles1m.slice(-1)[0].low)
             //&& parseFloat(preco_atual) < parseFloat(candles1m.slice(-1)[0].low)
@@ -3689,18 +3687,18 @@ function iniciarWebSocketMarkPrice() {
       let cachepos = await carregarCache('cachepos');
 
       // Fechar posição se atingir o limite negativo
-/*
-      let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
-
-      parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
-
-      if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
-        await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
-        sideM = '';
-        sideOrd = '';
-        return;
-      }
-*/
+      /*
+            let percRangeStop = parseFloat(cachepos[symbol].maxPercent) - parseFloat(process.env.RANGE);
+      
+            parentPort.postMessage(`----> percRangeStop: ${percRangeStop}`);
+      
+            if (parseFloat(cachepos[symbol].percent) < parseFloat(percRangeStop)) {
+              await fecharPosicao(sideOrd, Math.abs(posicaoAberta.positionAmt));
+              sideM = '';
+              sideOrd = '';
+              return;
+            }
+      */
       if (parseFloat(cachepos[symbol].percent) > parseFloat(15)
         && parseFloat(cachepos[symbol].plus) == parseFloat(0)) {
         cachepos[symbol].plus = 1;
@@ -5279,18 +5277,6 @@ async function iniciarWebSocketContinuo() {
         sRsiLast1h_2 = stochRsi1h.slice(-2)[0];
       }
 
-      /*
-          let sRsiLast15m = null;
-          let sRsiLast15m_2 = null;
-      
-          if (stochRsi15m !== null) {
-            sRsiLast15m = stochRsi15m.slice(-1)[0];
-            sRsiLast15m_2 = stochRsi15m.slice(-2)[0];
-          }
-      *
-
-
-      
       let sRsiLast4h = null;
       let sRsiLast4h_2 = null;
 
@@ -5298,7 +5284,6 @@ async function iniciarWebSocketContinuo() {
         sRsiLast4h = stochRsi4h.slice(-1)[0];
         sRsiLast4h_2 = stochRsi4h.slice(-2)[0];
       }
-*/
 
 
       //parseFloat(candles15m.slice(-1)[0].open) < parseFloat(candles15m.slice(-1)[0].close) &&
@@ -5532,92 +5517,92 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
         //&& parseFloat(ema1m5p) > parseFloat(sma3m400p) 
         */
-/*
-        //parseFloat(ema1m400p) <= parseFloat(sma1m400p)
-        //&& 
-        parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
-        && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
-        //&& parseFloat(ema1m10p) > parseFloat(ema1m10p_2)
-        && (
-          /*
-          (
-          parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
-          && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-          ) ||
-          *
-          (
-
-            //parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
-            //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-
-            parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
-            && parseFloat(preco_atual) >= parseFloat(menorMReg1m)
-
-
-            //parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
-            //&& parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
-            //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
-
-
-          )
-        )
-        && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
-        //&& parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
-        //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
-        && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d)
-
-
         /*
-                //parseFloat(sRsiLast15m.k) <= parseFloat(20)
-                //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
-                && 
-                parseFloat(sRsiLast3m_2.k) <= parseFloat(10)
-                && parseFloat(sRsiLast3m_2.d) <= parseFloat(10) 
-                && parseFloat(sRsiLast3m.k) >= parseFloat(10)
-                && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
-                && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
-                && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+                //parseFloat(ema1m400p) <= parseFloat(sma1m400p)
+                //&& 
+                parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
+                && parseFloat(ema1m5p) > parseFloat(ema1m5p_2)
+                //&& parseFloat(ema1m10p) > parseFloat(ema1m10p_2)
+                && (
+                  /*
+                  (
+                  parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+                  && parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+                  ) ||
+                  *
+                  (
+        
+                    //parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+                    //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+        
+                    parseFloat(ema1m5p_2) <= parseFloat(menorMReg1m)
+                    && parseFloat(preco_atual) >= parseFloat(menorMReg1m)
+        
+        
+                    //parseFloat(ema1m5p_2) <= parseFloat(ema1m10p_2)
+                    //&& parseFloat(ema1m5p) >= parseFloat(ema1m10p_2)
+                    //&& parseFloat(ema1m5p) >= parseFloat(menorMReg1m)
+        
+        
+                  )
+                )
+                && parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
+                //&& parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
+                //&& parseFloat(candles15m.slice(-1)[0].open) <= parseFloat(candles15m.slice(-1)[0].close)
+                && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m.d)
+        
+        
+                /*
+                        //parseFloat(sRsiLast15m.k) <= parseFloat(20)
+                        //&& parseFloat(sRsiLast15m.d) <= parseFloat(20) 
+                        && 
+                        parseFloat(sRsiLast3m_2.k) <= parseFloat(10)
+                        && parseFloat(sRsiLast3m_2.d) <= parseFloat(10) 
+                        && parseFloat(sRsiLast3m.k) >= parseFloat(10)
+                        && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
+                        && parseFloat(sRsiLast3m.k) >=  parseFloat(sRsiLast3m.d) 
+                        && parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+                *
+        
+                parseFloat(sRsiLast30m.k) <= parseFloat(20.0) &&
+                parseFloat(sRsiLast30m.k) > parseFloat(sRsiLast30m.d) &&
+                
+                parseFloat(sRsiLast3m.k) >= parseFloat(10.0) &&
+                parseFloat(sRsiLast3m.k) <= parseFloat(30.0) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+                parseFloat(sRsiLast3m_2.k) <= parseFloat(sRsiLast3m_2.d) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+                parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+                
+                && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
+                && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
         *
-
-        parseFloat(sRsiLast30m.k) <= parseFloat(20.0) &&
-        parseFloat(sRsiLast30m.k) > parseFloat(sRsiLast30m.d) &&
+                parseFloat(sRsiLast3m.k) <= parseFloat(60.0) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
+                parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+                //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
+                
+                parseFloat(sRsiLast5m.k) <= parseFloat(60.0) &&
+                parseFloat(sRsiLast5m.k) >= parseFloat(30.0) &&
+                parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) 
         
-        parseFloat(sRsiLast3m.k) >= parseFloat(10.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(30.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast3m_2.k) <= parseFloat(sRsiLast3m_2.d) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast1m.k) >=  parseFloat(sRsiLast1m.d) 
+                && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
+                && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
+                
+                && parseFloat(preco_atual) >= parseFloat(ema1m10p_2)
+                *
         
-        && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
-        && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
-*
-        parseFloat(sRsiLast3m.k) <= parseFloat(60.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
-        //parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m.d) &&
-        
-        parseFloat(sRsiLast5m.k) <= parseFloat(60.0) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(30.0) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) 
-
-        && parseFloat(ema1m5p) >= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) >= parseFloat(ema1m10p_2)
-        
-        && parseFloat(preco_atual) >= parseFloat(ema1m10p_2)
-        *
-
-        parseFloat(ema1m100p) >= parseFloat(ema1m400p)
-        && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
-        && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
-        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
-        
-        /*
-        && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
-        && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
-        && parseFloat(sRsiLast5m.k) > parseFloat(sRsiLast5m_2.k)
-        */
+                parseFloat(ema1m100p) >= parseFloat(ema1m400p)
+                && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
+                && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
+                && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
+                && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
+                
+                /*
+                && parseFloat(sRsiLast1m.k) > parseFloat(sRsiLast1m_2.k)
+                && parseFloat(sRsiLast3m.k) > parseFloat(sRsiLast3m_2.k)
+                && parseFloat(sRsiLast5m.k) > parseFloat(sRsiLast5m_2.k)
+                */
 
         //&& parseFloat(sRsiLast5m.k) < parseFloat(50.0)
         //&& parseFloat(sRsiLast5m.k) > parseFloat(20.0)
@@ -5660,20 +5645,25 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         */
         //&& parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ema1m100p)
         //&& parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ema1m250p)
-        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
+        //parseFloat(candles3m.slice(-2)[0].low) <= parseFloat(candles3m.slice(-1)[0].low)
 
-        && parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)
+         
+        parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k)
+        && parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k)
+        && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k)
+        && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k)
+        && parseFloat(sRsiLast4h.k) >= parseFloat(sRsiLast4h_2.k)
 
       ) {
 
-        //sideM = 'C';
-        //sideOrd = 'BUY';
-        
+        sideM = 'C';
+        sideOrd = 'BUY';
+
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'V';
-        sideOrd = 'SELL';
+        //sideM = 'V';
+        //sideOrd = 'SELL';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
@@ -5900,81 +5890,81 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
         //&& parseFloat(ema1m5p) < parseFloat(sma3m400p) 
         */
-/*
-        //parseFloat(ema1m400p) >= parseFloat(sma1m400p)
-        //&& 
-        parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
-        && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
-        //&& parseFloat(ema1m10p) < parseFloat(ema1m10p_2)
-        && (
-          (
-
-            //parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
-            //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-
-            parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
-            && parseFloat(preco_atual) <= parseFloat(maiorMReg1m)
-
-            //parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
-            //&& parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
-
-            //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-
-          )
-          /*
-          || (
-          parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
-          && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
-          )
-          *
-        )
-        //&& parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
-        && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
-        //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
-        && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d)
-
-
         /*
-                //parseFloat(sRsiLast15m.k) >= parseFloat(80)
-                //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+                //parseFloat(ema1m400p) >= parseFloat(sma1m400p)
                 //&& 
-                parseFloat(sRsiLast3m_2.k) >= parseFloat(90)
-                && parseFloat(sRsiLast3m_2.d) >= parseFloat(90) 
-                && parseFloat(sRsiLast3m.k) <= parseFloat(90)
-                && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
-                && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
-                && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
-                *
-        parseFloat(sRsiLast30m.k) >= parseFloat(80.0) &&
-        parseFloat(sRsiLast30m.k) < parseFloat(sRsiLast30m.d) &&
+                parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
+                && parseFloat(ema1m5p) < parseFloat(ema1m5p_2)
+                //&& parseFloat(ema1m10p) < parseFloat(ema1m10p_2)
+                && (
+                  (
         
-        parseFloat(sRsiLast3m.k) <= parseFloat(90.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
-        parseFloat(sRsiLast3m_2.k) >= parseFloat(sRsiLast3m_2.d) &&
-        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-        parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+                    //parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+                    //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
         
-        && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
-        && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
-*
+                    parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+                    && parseFloat(preco_atual) <= parseFloat(maiorMReg1m)
+        
+                    //parseFloat(ema1m5p_2) >= parseFloat(ema1m10p_2)
+                    //&& parseFloat(ema1m5p) <= parseFloat(ema1m10p_2)
+        
+                    //&& parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+        
+                  )
+                  /*
+                  || (
+                  parseFloat(ema1m5p_2) >= parseFloat(maiorMReg1m)
+                  && parseFloat(ema1m5p) <= parseFloat(maiorMReg1m)
+                  )
+                  *
+                )
+                //&& parseFloat(candles15m.slice(-2)[0].high) >= parseFloat(candles15m.slice(-1)[0].high)
+                && parseFloat(candles15m.slice(-2)[0].low) <= parseFloat(candles15m.slice(-1)[0].low)
+                //&& parseFloat(candles15m.slice(-1)[0].open) >= parseFloat(candles15m.slice(-1)[0].close)
+                && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m.d)
+        
+        
+                /*
+                        //parseFloat(sRsiLast15m.k) >= parseFloat(80)
+                        //&& parseFloat(sRsiLast15m.d) >= parseFloat(80) 
+                        //&& 
+                        parseFloat(sRsiLast3m_2.k) >= parseFloat(90)
+                        && parseFloat(sRsiLast3m_2.d) >= parseFloat(90) 
+                        && parseFloat(sRsiLast3m.k) <= parseFloat(90)
+                        && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
+                        && parseFloat(sRsiLast3m.k) <=  parseFloat(sRsiLast3m.d) 
+                        && parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+                        *
+                parseFloat(sRsiLast30m.k) >= parseFloat(80.0) &&
+                parseFloat(sRsiLast30m.k) < parseFloat(sRsiLast30m.d) &&
+                
+                parseFloat(sRsiLast3m.k) <= parseFloat(90.0) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(70.0) &&
+                parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+                parseFloat(sRsiLast3m_2.k) >= parseFloat(sRsiLast3m_2.d) &&
+                parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
+                parseFloat(sRsiLast1m.k) <=  parseFloat(sRsiLast1m.d) 
+                
+                && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
+                && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+        *
+        
+                parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(40.0) &&
+                parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+                //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
+                
+                parseFloat(sRsiLast5m.k) <= parseFloat(70.0) &&
+                parseFloat(sRsiLast5m.k) >= parseFloat(40.0) &&
+                parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) 
+        
+                && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
+                && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
+                
+                && parseFloat(preco_atual) <= parseFloat(ema1m10p_2)
+                */
 
-        parseFloat(sRsiLast3m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(40.0) &&
-        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
-        //parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m.d) &&
-        
-        parseFloat(sRsiLast5m.k) <= parseFloat(70.0) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(40.0) &&
-        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) 
 
-        && parseFloat(ema1m5p) <= parseFloat(ema1m5p_2)
-        && parseFloat(ema1m10p) <= parseFloat(ema1m10p_2)
-        
-        && parseFloat(preco_atual) <= parseFloat(ema1m10p_2)
-        */
-
-        
         /*
         && parseFloat(sRsiLast1m.k) < parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) < parseFloat(sRsiLast3m_2.k)
@@ -6021,21 +6011,24 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         */
         //&& parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ema1m100p)
         //&& parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ema1m250p)
-        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+        //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
 
-        && parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
+        parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k)
         && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k)
+        && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k)
+        && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k)
+        && parseFloat(sRsiLast4h.k) <= parseFloat(sRsiLast4h_2.k)
 
       ) {
 
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        sideM = 'V';
+        sideOrd = 'SELL';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'C';
-        sideOrd = 'BUY';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
@@ -7245,7 +7238,7 @@ async function startWorker() {
     iniciarWebSocketcandles15m();
     iniciarWebSocketcandles30m();
     iniciarWebSocketcandles1h();
-    // iniciarWebSocketcandles4h();
+    iniciarWebSocketcandles4h();
     //   await monitorarGatilho();
     iniciarWebSocketMarkPrice();
     await iniciarWebSocketContinuo();
