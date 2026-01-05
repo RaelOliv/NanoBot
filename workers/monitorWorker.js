@@ -3303,8 +3303,8 @@ function iniciarWebSocketMarkPrice() {
             //&& parseFloat(preco_anterior) <= parseFloat(candles1m.slice(-2)[0].high)
             //&& parseFloat(preco_atual) > parseFloat(candles1m.slice(-2)[0].high)
 
-            && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMReg1m)
-            && parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
+            //&& parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(maiorMReg1m)
+            //&& parseFloat(preco_atual) >= parseFloat(maiorMReg1m)
 
             //parseFloat(preco_atual) <= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) >= parseFloat(ema3m10p) 
@@ -3360,8 +3360,8 @@ function iniciarWebSocketMarkPrice() {
             //&& parseFloat(preco_anterior) >= parseFloat(candles1m.slice(-1)[0].low)
             //&& parseFloat(preco_atual) < parseFloat(candles1m.slice(-1)[0].low)
 
-            && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMReg1m)
-            && parseFloat(preco_atual) <= parseFloat(menorMReg1m)
+            //&& parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(menorMReg1m)
+            //&& parseFloat(preco_atual) <= parseFloat(menorMReg1m)
 
             //parseFloat(preco_atual) >= parseFloat(ema3m5p) &&
             //parseFloat(preco_atual) <= parseFloat(ema3m10p) 
@@ -5650,17 +5650,17 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
-        */
+        *
 
         parseFloat(ema1m100p) >= parseFloat(ema1m250p)
         && parseFloat(ema1m250p) >= parseFloat(ema1m400p)
         && parseFloat(ema1m100p) >= parseFloat(ema1m100p_2)
         && parseFloat(ema1m250p) >= parseFloat(ema1m250p_2)
         && parseFloat(ema1m400p) >= parseFloat(ema1m400p_2)
-
-        && parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ema1m100p)
-        && parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ema1m250p)
-        && parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
+        */
+        //&& parseFloat(candles1m.slice(-1)[0].low) <= parseFloat(ema1m100p)
+        //&& parseFloat(candles1m.slice(-1)[0].low) >= parseFloat(ema1m250p)
+        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low)
 
         && parseFloat(sRsiLast1m.k) >= parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k)
@@ -6011,21 +6011,22 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
-        */
+        *
 
         parseFloat(ema1m100p) <= parseFloat(ema1m250p)
         && parseFloat(ema1m250p) <= parseFloat(ema1m400p)
         && parseFloat(ema1m100p) <= parseFloat(ema1m100p_2)
         && parseFloat(ema1m250p) <= parseFloat(ema1m250p_2)
         && parseFloat(ema1m400p) <= parseFloat(ema1m400p_2)
-
-        && parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ema1m100p)
-        && parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ema1m250p)
-        && parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
+        */
+        //&& parseFloat(candles1m.slice(-1)[0].high) >= parseFloat(ema1m100p)
+        //&& parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(ema1m250p)
+        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high)
 
         && parseFloat(sRsiLast1m.k) <= parseFloat(sRsiLast1m_2.k)
         && parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k)
         && parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k)
+        && parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k)
 
       ) {
 
