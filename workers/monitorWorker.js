@@ -5212,7 +5212,7 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-      /*
+      
             stochRsi4h = StochasticRSI.calculate({
               values: candles4h.map(c => c.close),
               rsiPeriod: 14,
@@ -5220,7 +5220,7 @@ async function iniciarWebSocketContinuo() {
               kPeriod: 3,
               dPeriod: 3
             });
-      */
+      
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
 
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
