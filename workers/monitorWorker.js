@@ -808,11 +808,14 @@ async function getQntbyBalance() {
     let pMargemAlt = pMarg;
 
     lastPNL = await getLastPnL();
+    const latestPNL = (Array.isArray(lastPNL) && lastPNL.length) ? lastPNL[0] : lastPNL;
+    const latestPNL2 = (Array.isArray(lastPNL) && lastPNL.length) ? lastPNL[1] : lastPNL;
 
-    if (lastPNL && parseFloat(lastPNL.pnl) > parseFloat(0.00) && pMarg >= 2) {
-      pMargemAlt = parseFloat(pMarg) - parseFloat(0.5);
-    } else if (lastPNL && parseFloat(lastPNL.pnl) < parseFloat(0.00)) {
-      pMargemAlt = parseFloat(pMarg) + parseFloat(0.5);
+
+    if (latestPNL && parseFloat(latestPNL.pnl) > 0 && parseFloat(latestPNL2.pnl) > 0 && pMarg >= 2) {
+      pMargemAlt = parseFloat(pMarg) - 0.3;
+    } else if (latestPNL && parseFloat(latestPNL.pnl) < 0 && parseFloat(latestPNL2.pnl) < 0) {
+      pMargemAlt = parseFloat(pMarg) + 0.5;
     }
 
     return qntty * parseFloat(pMargemAlt);

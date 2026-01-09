@@ -272,9 +272,9 @@ function gerarAssinatura(params) {
   return crypto.createHmac('sha256', SECRET_KEY).update(query).digest('hex');
 }
 
-async function getLastClosedPositionPnL(symbol = null) {
-  let timestamp = Date.now(); // + offset;
-  let query = `timestamp=${timestamp}&limit=1000`;
+async function getLastClosedPositionPnL(symbol = null, maxClosures = 5) {
+  let timestamp = Date.now(); // + offset
+  let query = `timestamp=${timestamp}&limit=1000`; // fetch max allowed to increase chance of finding closures
 
   if (symbol) {
     query = `symbol=${symbol}&${query}`;
@@ -283,50 +283,76 @@ async function getLastClosedPositionPnL(symbol = null) {
   const signature = gerarAssinatura(query);
   const url = `${BASE_URL}/fapi/v1/userTrades?${query}&signature=${signature}`;
 
-  const { data: trades } = await axios.get(url, {
-    headers: {
-      'X-MBX-APIKEY': process.env.API_KEY
-    },
-    timeout: 0
-  });
+  try {
+    const { data: trades } = await axios.get(url, {
+      headers: {
+        'X-MBX-APIKEY': process.env.API_KEY
+      },
+      timeout: 0
+    });
 
-  if (!Array.isArray(trades) || trades.length === 0) {
-    return null;
-  }
+    if (!Array.isArray(trades) || trades.length === 0) return [];
 
-  // ordena por tempo (mais recente primeiro)
-  trades.sort((a, b) => b.time - a.time);
+    // Helper: extract closure events from a sequence of trades (chronological order)
+    function extractClosuresFromTrades(tradesArr) {
+      tradesArr.sort((a, b) => a.time - b.time); // oldest → newest
+      let positionQty = 0;
+      let pnlAcc = 0;
+      const closures = [];
 
-  let pnl = 0;
-  let positionQty = 0;
-  let lastCloseTime = null;
-  let tradeSymbol = null;
+      for (const trade of tradesArr) {
+        const qty = Number(trade.qty || 0);
+        const realized = Number(trade.realizedPnl || 0);
 
-  for (const trade of trades) {
-    const qty = Number(trade.qty);
-    const realized = Number(trade.realizedPnl || 0);
+        positionQty += trade.side === 'BUY' ? qty : -qty;
+        pnlAcc += realized;
 
-    pnl += realized;
+        if (positionQty === 0 && pnlAcc !== 0) {
+          closures.push({
+            symbol: trade.symbol,
+            pnl: Number(pnlAcc.toFixed(4)),
+            closedAt: new Date(trade.time)
+          });
+          // reset accumulators for next potential closure
+          pnlAcc = 0;
+          positionQty = 0;
+        }
+      }
 
-    positionQty += trade.side === 'BUY' ? qty : -qty;
-
-    // posição zerou → posição fechada
-    if (positionQty === 0 && pnl !== 0) {
-      lastCloseTime = trade.time;
-      tradeSymbol = trade.symbol;
-      break;
+      return closures; // chronological order
     }
-  }
 
-  if (lastCloseTime === null) {
-    return null;
-  }
+    if (symbol) {
+      const filtered = trades.filter(t => t.symbol === symbol);
+      const closures = extractClosuresFromTrades(filtered);
+      // return newest → oldest
+      return closures.reverse().slice(0, maxClosures);
+    }
 
-  return {
-    symbol: tradeSymbol,
-    pnl: Number(pnl.toFixed(4)),
-    closedAt: new Date(lastCloseTime)
-  };
+    // No symbol provided: group by symbol and collect closures across all
+    const bySymbol = {};
+    for (const t of trades) {
+      if (!bySymbol[t.symbol]) bySymbol[t.symbol] = [];
+      bySymbol[t.symbol].push(t);
+    }
+
+    let allClosures = [];
+    for (const sym of Object.keys(bySymbol)) {
+      allClosures = allClosures.concat(extractClosuresFromTrades(bySymbol[sym]));
+    }
+
+    // sort by closedAt desc (newest first) and take up to maxClosures
+    allClosures.sort((a, b) => b.closedAt - a.closedAt);
+    return allClosures.slice(0, maxClosures);
+
+  } catch (err) {
+    if (err.response && err.response.data) {
+      console.error('[positionsWorker] Erro API (userTrades):', err.response.status, JSON.stringify(err.response.data));
+    } else {
+      console.error('[positionsWorker] Erro ao buscar trades:', err.message);
+    }
+    return [];
+  }
 }
 
 function sleep(ms) {
@@ -387,7 +413,14 @@ async function iniciarWs() {
 
       // sincronização inicial (REST assinada)
       await sincronizarPosicoesAtuais();
-      lastPNL = await getLastClosedPositionPnL();
+      {
+        const res = await getLastClosedPositionPnL();
+        if (Array.isArray(res) && res.length) {
+          lastPNL = res; // array of closures (newest → oldest)
+        } else {
+          lastPNL = [];
+        }
+      }
       coin = await getCoin();
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
@@ -462,10 +495,11 @@ async function iniciarWs() {
 
           try {
             const res = await getLastClosedPositionPnL();
-            if (res) {
+            if (Array.isArray(res) && res.length) {
               lastPNL = res;
               parentPort.postMessage(`lastPNL atualizado: ${JSON.stringify(lastPNL)}`);
             } else {
+              lastPNL = [];
               parentPort.postMessage(`lastPNL: nenhum fechamento recente encontrado`);
             }
           } catch (err) {

@@ -1720,7 +1720,7 @@ async function monitorarMargem() {
       (
         parseFloat(perc) <= parseFloat(process.env.SLDIA)
         || (
-          parseFloat(percReal) >= parseFloat(process.env.TPDIA)
+          parseFloat(perc) >= parseFloat(process.env.TPDIA)
           //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
         )
         // || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
@@ -1816,7 +1816,7 @@ async function monitorarMargem() {
     } else if (
       (
         (
-          parseFloat(percReal) >= parseFloat(process.env.TPDIA)
+          parseFloat(perc) >= parseFloat(process.env.TPDIA)
           //&& parseFloat(perc) >= (parseFloat(percReal) + parseFloat(0.3))
         )
         // || parseFloat(perc) >= (parseFloat(process.env.TPDIA) + parseFloat(1.00))
@@ -1825,8 +1825,8 @@ async function monitorarMargem() {
     ) {
 
       activatePause(5); // pausa por 30 min
-      //let res = await fecharTodasPosicoes();
-      //if (res == true) {
+      let res = await fecharTodasPosicoes();
+      if (res == true) {
 
         balance = await getBalance();
 
@@ -1846,11 +1846,11 @@ async function monitorarMargem() {
 
         //}
 
-      //}
+      }
 
 
     }
-    
+
     /*
     else if (percReal < -1.0) {
 
