@@ -807,6 +807,7 @@ async function getQntbyBalance() {
 
     let pMargemAlt = pMarg;
 
+    /*
     lastPNL = await getLastPnL();
     const latestPNL = (Array.isArray(lastPNL) && lastPNL.length) ? lastPNL[0] : lastPNL;
     const latestPNL2 = (Array.isArray(lastPNL) && lastPNL.length) ? lastPNL[1] : lastPNL;
@@ -817,6 +818,7 @@ async function getQntbyBalance() {
     } else if (latestPNL && parseFloat(latestPNL.pnl) < 0 && parseFloat(latestPNL2.pnl) < 0) {
       pMargemAlt = parseFloat(pMarg) + 0.5;
     }
+    */
 
     return qntty * parseFloat(pMargemAlt);
 
@@ -5215,15 +5217,15 @@ async function iniciarWebSocketContinuo() {
         kPeriod: 3,
         dPeriod: 3
       });
-      
-            stochRsi4h = StochasticRSI.calculate({
-              values: candles4h.map(c => c.close),
-              rsiPeriod: 14,
-              stochasticPeriod: 14,
-              kPeriod: 3,
-              dPeriod: 3
-            });
-      
+
+      stochRsi4h = StochasticRSI.calculate({
+        values: candles4h.map(c => c.close),
+        rsiPeriod: 14,
+        stochasticPeriod: 14,
+        kPeriod: 3,
+        dPeriod: 3
+      });
+
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
 
       //let sRsiLast1m = stochRsi1m.slice(-1)[0];
@@ -5638,7 +5640,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast30m.k) >= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].low) <= parseFloat(candles1m.slice(-2)[0].low)
-        */
+        *
 
         parseFloat(ema1m100p) >= parseFloat(ema1m250p)
         && parseFloat(ema1m250p) >= parseFloat(ema1m400p)
@@ -5660,6 +5662,16 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) >= parseFloat(sRsiLast4h_2.k)
         */
+
+        //parseFloat(sRsiLast1h.k) <= parseFloat(10.0) &&
+        //parseFloat(sRsiLast30m.k) <= parseFloat(10.0) &&
+        //parseFloat(sRsiLast15m.k) <= parseFloat(80.0) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(10.0) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(10.0) &&
+        parseFloat(sRsiLast1m.k) <= parseFloat(10.0)
+
+        //parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-1)[0].low) 
+
 
       ) {
 
@@ -6006,7 +6018,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k)
 
         && parseFloat(candles1m.slice(-3)[0].high) >= parseFloat(candles1m.slice(-2)[0].high)
-        */
+        *
 
         parseFloat(ema1m100p) <= parseFloat(ema1m250p)
         && parseFloat(ema1m250p) <= parseFloat(ema1m400p)
@@ -6028,6 +6040,17 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) <= parseFloat(sRsiLast4h_2.k)
         */
+
+        //parseFloat(sRsiLast1h.k) >= parseFloat(90.0) &&
+        //parseFloat(sRsiLast30m.k) >= parseFloat(90.0) &&
+        //parseFloat(sRsiLast15m.k) >= parseFloat(80.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(90.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(90.0) &&
+        parseFloat(sRsiLast1m.k) >= parseFloat(90.0)
+
+        //parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(candles1m.slice(-1)[0].high) 
+
+
 
       ) {
 
