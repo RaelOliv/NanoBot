@@ -1,6 +1,6 @@
 
 //Considere o worker nodejs abaixo
-
+//
 const WebSocket = require('ws');
 const axios = require('axios');
 // Global axios timeout for all worker requests
