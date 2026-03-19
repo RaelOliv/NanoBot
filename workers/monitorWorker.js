@@ -6112,7 +6112,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(sRsiLast1h.k) >= parseFloat(80.0) &&
         //parseFloat(sRsiLast30m.k) >= parseFloat(90.0) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(90.0) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(80.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(20.0) &&
         //parseFloat(sRsiLast3m.k) >= parseFloat(90.0) &&
         //parseFloat(sRsiLast1m.k) >= parseFloat(90.0) 
         
