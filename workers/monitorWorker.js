@@ -5190,11 +5190,11 @@ async function iniciarWebSocketContinuo() {
       fibo5m = calcularRetracoesFibonacci(zigZag5m.pontosUnificados);
       ltaltb5m = calcularLinhasTendencia(candles5m, zigZag5m.topos, zigZag5m.fundos);
 
-      /*
-            zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
-            fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
-            ltaltb15m = calcularLinhasTendencia(candles15m, zigZag15m.topos, zigZag15m.fundos);
+      zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
+      fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
+      ltaltb15m = calcularLinhasTendencia(candles15m, zigZag15m.topos, zigZag15m.fundos);
       
+            /*
       
             
             zigZag3m = calcularZigZag(candles3m); // Defina o threshold adequado
