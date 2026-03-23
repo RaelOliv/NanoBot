@@ -3323,6 +3323,7 @@ function iniciarWebSocketMarkPrice() {
     zigZag1m = calcularZigZag(candles1m); // Defina o threshold adequado
     fibo1m = calcularRetracoesFibonacci(zigZag1m.pontosUnificados);
     ltaltb1m = calcularLinhasTendencia(candles1m, zigZag1m.topos, zigZag1m.fundos);
+    ltaltb3m = calcularLinhasTendencia(candles3m, zigZag3m.topos, zigZag3m.fundos);
 
 
     if (gatilhoAtivado === true
@@ -5196,12 +5197,9 @@ async function iniciarWebSocketContinuo() {
       
             /*
       
-            
             zigZag3m = calcularZigZag(candles3m); // Defina o threshold adequado
             fibo3m = calcularRetracoesFibonacci(zigZag3m.pontosUnificados);
             ltaltb3m = calcularLinhasTendencia(candles3m, zigZag3m.topos, zigZag3m.fundos);
-      
-      
       
             zigZag30m = calcularZigZag(candles30m); // Defina o threshold adequado
             fibo30m = calcularRetracoesFibonacci(zigZag30m.pontosUnificados);
