@@ -946,12 +946,12 @@ const cryptSymbols = {
 const cryptSymbols = {
     
     
-   /* btc: 'BTCUSDT',
+    btc: 'BTCUSDT',
     aave: 'AAVEUSDT',
-    ach: 'ACHUSDT',*/
+    ach: 'ACHUSDT',
     ada: 'ADAUSDT',
     //adx: 'ADXUSDT',
-  /*  aergo: 'AERGOUSDT',
+    aergo: 'AERGOUSDT',
     ain: 'AINUSDT',
     algorand: 'ALGOUSDT',
     //aleph: 'AZEROUSDT',
@@ -1012,7 +1012,7 @@ const cryptSymbols = {
     wlfi: 'WLFIUSDT',
     //xpl: 'XPLUSDT',
     
-    xrp: 'XRPUSDT'*/
+    xrp: 'XRPUSDT'
 };
 
 
