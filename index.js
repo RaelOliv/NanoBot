@@ -951,7 +951,7 @@ const cryptSymbols = {
     ach: 'ACHUSDT',*/
     ada: 'ADAUSDT',
     //adx: 'ADXUSDT',
-    aergo: 'AERGOUSDT',
+  /*  aergo: 'AERGOUSDT',
     ain: 'AINUSDT',
     algorand: 'ALGOUSDT',
     //aleph: 'AZEROUSDT',
@@ -961,8 +961,7 @@ const cryptSymbols = {
     //bas: 'BASUSDT', // volatilidade incompativel
     bat: 'BATUSDT',
     bnb: 'BNBUSDT',
-    bonk: '1000BONKUSDT'
-    /*
+    bonk: '1000BONKUSDT',
     coti: 'COTIUSDT',
     //cvx: 'CVXUSDT',
     dexe: 'DEXEUSDT',
