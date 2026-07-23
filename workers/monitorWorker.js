@@ -1502,8 +1502,12 @@ async function carregarCandlesHistoricos() {
     if (s100 && s110 && e100 && e110) {
       medias1m = [s100, s110, e100, e110];
     }
+    
+parentPort.postMessage(`carregado histórico de candles1m: ${JSON.stringify(candles1m)}`);
 
   } catch (err) {
+    
+    
     parentPort.postMessage(`❌ Erro ao carregar histórico de candles1m: ${JSON.stringify(err.message)}`);
   }
 
