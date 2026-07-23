@@ -5718,10 +5718,23 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast4h.k) >= parseFloat(sRsiLast4h_2.k)
         */
 
-        parseFloat(sRsiLast1h.k) <= parseFloat(20.0) &&
-        //parseFloat(sRsiLast30m.k) <= parseFloat(10.0) &&
-        //parseFloat(sRsiLast15m.k) <= parseFloat(10.0) &&
-        parseFloat(sRsiLast5m.k) <= parseFloat(80.0) &&
+        (
+          (
+            fibo1h.dir == 1 &&
+            parseFloat(ltaltb3m.lta) <= parseFloat(fibo1h.retr0618) &&
+            parseFloat(ltaltb3m.lta) >= parseFloat(fibo1h.retr1)
+          ) || (
+            fibo1h.dir == -1 &&
+            parseFloat(ltaltb3m.lta) <= parseFloat(fibo1h.retr0382) &&
+            parseFloat(ltaltb3m.lta) >= parseFloat(fibo1h.retr0)
+          )
+        ) &&
+
+        parseFloat(sRsiLast1h.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
+        parseFloat(sRsiLast30m.k) <= parseFloat(20.0) &&
+        //parseFloat(sRsiLast15m.k) <= parseFloat(20.0) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(20.0) &&
         //parseFloat(sRsiLast3m.k) <= parseFloat(10.0) &&
         //parseFloat(sRsiLast1m.k) <= parseFloat(10.0) 
 
@@ -5737,18 +5750,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         //parseFloat(preco_atual) > parseFloat(ema1m100p) &&
         //parseFloat(preco_atual) > parseFloat(ema1m5p)
 
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast5m.d) >= parseFloat(sRsiLast3m_2.d) &&
+
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m.d) >= parseFloat(sRsiLast3m_2.d)
 
-
       ) {
 
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        sideM = 'C';
+        sideOrd = 'BUY';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'V';
-        sideOrd = 'SELL';
+        //sideM = 'V';
+        //sideOrd = 'SELL';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
@@ -6109,10 +6124,24 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast4h.k) <= parseFloat(sRsiLast4h_2.k)
         */
 
-        parseFloat(sRsiLast1h.k) >= parseFloat(80.0) &&
-        //parseFloat(sRsiLast30m.k) >= parseFloat(90.0) &&
-        //parseFloat(sRsiLast15m.k) >= parseFloat(90.0) &&
-        parseFloat(sRsiLast5m.k) >= parseFloat(20.0) &&
+        (
+          (
+            fibo1h.dir == 1 &&
+            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo1h.retr0382) &&
+            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo1h.retr0)
+          ) || (
+            fibo1h.dir == -1 &&
+            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo1h.retr0618) &&
+            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo1h.retr1)
+          )
+        ) &&
+
+
+        parseFloat(sRsiLast1h.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(80.0) &&
+        //parseFloat(sRsiLast15m.k) >= parseFloat(80.0) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(80.0) &&
         //parseFloat(sRsiLast3m.k) >= parseFloat(90.0) &&
         //parseFloat(sRsiLast1m.k) >= parseFloat(90.0) 
         
@@ -6128,18 +6157,21 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //parseFloat(preco_atual) < parseFloat(ema1m100p) &&
         //parseFloat(preco_atual) < parseFloat(ema1m5p)
 
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(sRsiLast5m.d) <= parseFloat(sRsiLast5m_2.d) &&
+        
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m.d) <= parseFloat(sRsiLast3m_2.d)
 
 
       ) {
 
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        sideM = 'V';
+        sideOrd = 'SELL';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'C';
-        sideOrd = 'BUY';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
