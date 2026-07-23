@@ -2673,19 +2673,19 @@ async function limparTakes(symbol, side) {
 
 function iniciarWebSocketcandles1m() {
 
-
-
-
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1m: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_1m`);
   
 ws.on('open', () => {
-  console.log('WS conectado');
+  
+parentPort.postMessage(`[${symbol}] WebSocket1m conectado.`);
+
 });
 
 ws.on('ping', (data) => {
-  console.log('Ping recebido');
+  
+parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
@@ -2693,10 +2693,15 @@ ws.on('ping', (data) => {
 });
 
 ws.on('pong', () => {
-  console.log('Pong recebido');
+  
+parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
+
 });
 
   ws.on('message', (data) => {
+parentPort.postMessage(`[${symbol}] WebSocket1m message recebido.`);
+
+    
     const json = JSON.parse(data);
     const k = json.k;
 
@@ -3205,11 +3210,14 @@ function iniciarWebSocketMarkPrice() {
 
 
 ws.on('open', () => {
-  console.log('WS conectado');
+  
+parentPort.postMessage(`[${symbol}] WebSocketMP conectado.`);
+
 });
 
 ws.on('ping', (data) => {
-  console.log('Ping recebido');
+  
+parentPort.postMessage(`[${symbol}] WebSocketMP Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
@@ -3217,13 +3225,15 @@ ws.on('ping', (data) => {
 });
 
 ws.on('pong', () => {
-  console.log('Pong recebido');
+  
+parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
+
 });
 
 
   ws.on('message', async (data) => {
 
-
+parentPort.postMessage(`[${symbol}] WebSocketMP message recebido.`);
 
     const json = JSON.parse(data);
     const markPrice = parseFloat(json.p);
