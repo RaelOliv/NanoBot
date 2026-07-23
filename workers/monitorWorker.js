@@ -3209,7 +3209,7 @@ function iniciarWebSocketMarkPrice() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketMarkPrice: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@markPrice@5s`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/stream?streams=${wsSymbol}@markPrice`);
 
   contPos = verificarSeTemPosicao(2);
   parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
