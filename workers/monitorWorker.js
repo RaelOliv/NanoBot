@@ -3240,10 +3240,10 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
 
 
   ws.on('message', async (data) => {
+const json = JSON.parse(data);
+parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(json)}.`);
 
-parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(data)}.`);
-
-    const json = JSON.parse(data);
+    
     const markPrice = parseFloat(json.p);
     preco_anterior = preco_atual;
     preco_atual = markPrice;
