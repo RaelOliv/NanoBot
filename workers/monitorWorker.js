@@ -2688,15 +2688,12 @@ parentPort.postMessage(`[${symbol}] WebSocket1m conectado.`);
 });
 
 ws.on('ping', function(data){
-    
-
-
   
 parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
-const json = JSON.parse(data);
+
 parentPort.postMessage(`[${symbol}] WebSocket1m Ping ${json}.`);
 });
 
@@ -2706,10 +2703,13 @@ parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
 
 });
 
-const jsonDT = JSON.parse(data);
+
 
   ws.on('message', (data) => {
-parentPort.postMessage(`[${symbol}] WebSocket1m message recebido.`);
+    
+const jsonDT = JSON.parse(data);
+    
+parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)}.`);
 
     
     const json = jsonDT.data;
