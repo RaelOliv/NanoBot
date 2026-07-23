@@ -2673,9 +2673,28 @@ async function limparTakes(symbol, side) {
 
 function iniciarWebSocketcandles1m() {
 
+
+
+
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1m: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_1m`);
+  
+ws.on('open', () => {
+  console.log('WS conectado');
+});
+
+ws.on('ping', (data) => {
+  console.log('Ping recebido');
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+});
+
+ws.on('pong', () => {
+  console.log('Pong recebido');
+});
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -2742,11 +2761,13 @@ function iniciarWebSocketcandles1m() {
   });
 
   ws.on('close', (code, reason) => {
+console.log('WS fechado, iniciar reconexão');
     parentPort.postMessage(`[${symbol}] WebSocket1m fechado. Código: ${code}, Motivo: ${reason}`);
     setTimeout(iniciarWebSocketcandles1m, 5000);
   });
 
   ws.on('error', (err) => {
+console.error('WS erro:', err.message);
     parentPort.postMessage(`[${symbol}] WebSocket1m erro: ${err.message}`);
     ws.terminate();
     setTimeout(iniciarWebSocketcandles1m, 5000);
@@ -3175,12 +3196,29 @@ function iniciarWebSocketMarkPrice() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketMarkPrice: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice`);
+  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice@5s`);
 
   contPos = verificarSeTemPosicao(2);
   parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
   posicaoAberta = verificarSeTemPosicao(1);
   parentPort.postMessage(`🔎 Posição aberta_preOP: ${JSON.stringify(posicaoAberta)}`);
+
+
+ws.on('open', () => {
+  console.log('WS conectado');
+});
+
+ws.on('ping', (data) => {
+  console.log('Ping recebido');
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+});
+
+ws.on('pong', () => {
+  console.log('Pong recebido');
+});
 
 
   ws.on('message', async (data) => {
