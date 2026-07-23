@@ -1503,7 +1503,7 @@ async function carregarCandlesHistoricos() {
       medias1m = [s100, s110, e100, e110];
     }
     
-parentPort.postMessage(`carregado histórico de candles1m: ${JSON.stringify(candles1m)}`);
+parentPort.postMessage(`carregado histórico de candles1m: ${JSON.stringify(medias1m)}`);
 
   } catch (err) {
     
