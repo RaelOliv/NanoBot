@@ -3241,7 +3241,7 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
 
   ws.on('message', async (data) => {
 
-parentPort.postMessage(`[${symbol}] WebSocketMP message recebido.`);
+parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(data)}.`);
 
     const json = JSON.parse(data);
     const markPrice = parseFloat(json.p);
