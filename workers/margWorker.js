@@ -1824,7 +1824,7 @@ async function monitorarMargem() {
       && perc < 90
     ) {
 
-      activatePause(5); // pausa por 30 min
+      activatePause(15); // pausa por 30 min
       let res = await fecharTodasPosicoes();
       if (res == true) {
 
@@ -1878,7 +1878,7 @@ async function monitorarMargem() {
         balance = await getBalance();
       }
       await salvarCache(balance, 'oldBalance');
-      //await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
+      await transferir("USDT", parseFloat(balance.walletBalance), 'UMFUTURE_MAIN');
       await salvarCache(balanceHist, 'BalanceHist');
       activatePause(30); // pausa por 30 min
     }
