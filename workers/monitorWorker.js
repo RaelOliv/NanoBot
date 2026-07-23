@@ -2729,7 +2729,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
 
     };
     
-    console.log('chegou aqui', candles1m);
+    
     
     if (candle1m.isFinal) {
       candles1m.push(candle1m);
@@ -2744,7 +2744,8 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
       ema1m100p_2 = ema1m100p;
       ema1m250p_2 = ema1m250p;
 
-
+      console.log('chegou aqui', ema1m250p_2);
+      
       ema1m5p = calcularEMA(5, candles1m);
       ema1m10p = calcularEMA(10, candles1m);
       ema1m400p = calcularEMA(135, candles3m); // equivalrntr a 400p 1m
