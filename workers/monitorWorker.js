@@ -3240,7 +3240,8 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
 
 
   ws.on('message', async (data) => {
-const json = JSON.parse(data);
+const jdata = JSON.parse(data);
+const json = jdata.data;
 parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(json)}.`);
 
     
