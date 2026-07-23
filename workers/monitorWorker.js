@@ -2679,7 +2679,7 @@ function iniciarWebSocketcandles1m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_1m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1m`);
   
 ws.on('open', () => {
   
@@ -2706,11 +2706,13 @@ parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
 
 });
 
+const jsonDT = JSON.parse(data);
+
   ws.on('message', (data) => {
 parentPort.postMessage(`[${symbol}] WebSocket1m message recebido.`);
 
     
-    const json = JSON.parse(data);
+    const json = jsonDT.data;
     const k = json.k;
 
     const candle1m = {
