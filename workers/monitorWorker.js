@@ -1503,7 +1503,7 @@ async function carregarCandlesHistoricos() {
       medias1m = [s100, s110, e100, e110];
     }
     
-parentPort.postMessage(`carregado histórico de candles1m: ${JSON.stringify(medias1m)}`);
+    //parentPort.postMessage(`carregado histórico de candles1m: ${JSON.stringify(medias1m)}`);
 
   } catch (err) {
     
@@ -2679,7 +2679,7 @@ function iniciarWebSocketcandles1m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_1m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1m`);
   
 ws.on('open', () => {
   
@@ -3209,7 +3209,7 @@ function iniciarWebSocketMarkPrice() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketMarkPrice: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice@5s`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@markPrice@5s`);
 
   contPos = verificarSeTemPosicao(2);
   parentPort.postMessage(`🔎 Total de posições abertas_preOP: ${contPos}`);
