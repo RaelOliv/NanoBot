@@ -2692,7 +2692,8 @@ parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
-
+const json = JSON.parse(data);
+parentPort.postMessage(`[${symbol}] WebSocket1m Ping ${json}.`);
 });
 
 ws.on('pong', () => {
