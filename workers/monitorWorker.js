@@ -536,6 +536,61 @@ function calcularEMA(periodo, candles) {
 
   return parseFloat(parseFloat(adjustedPrice).toFixed(precisions.pricePrecision));
 }
+
+function detectHeadAndShoulders(candles, inverted = false) {
+  if (candles.length < 10) return false;
+
+  const recent = candles.slice(-50);
+
+  const extrema = [];
+  for (let i = 1; i < recent.length - 1; i++) {
+    if (inverted) {
+      // For inverted: local minima (lows)
+      if (recent[i].low < recent[i-1].low && recent[i].low < recent[i+1].low) {
+        extrema.push({index: i, value: recent[i].low});
+      }
+    } else {
+      // Regular: local maxima (highs)
+      if (recent[i].high > recent[i-1].high && recent[i].high > recent[i+1].high) {
+        extrema.push({index: i, value: recent[i].high});
+      }
+    }
+  }
+
+  if (extrema.length < 3) return false;
+
+  const e0 = extrema[extrema.length - 3];
+  const e1 = extrema[extrema.length - 2];
+  const e2 = extrema[extrema.length - 1];
+
+  if (inverted) {
+    // For inverted: head (e1) should be lower than shoulders (e0 and e2)
+    if (e1.value < e0.value && e1.value < e2.value) {
+      // Neckline: highs between
+      const neck1 = Math.max(...recent.slice(e0.index, e1.index).map(c => c.high));
+      const neck2 = Math.max(...recent.slice(e1.index, e2.index).map(c => c.high));
+      const avgNeck = (neck1 + neck2) / 2;
+      const tolerance = avgNeck * 0.02;
+      if (Math.abs(neck1 - neck2) <= tolerance) {
+        return true;
+      }
+    }
+  } else {
+    // Regular: head (e1) should be higher than shoulders
+    if (e1.value > e0.value && e1.value > e2.value) {
+      // Neckline: lows between
+      const neck1 = Math.min(...recent.slice(e0.index, e1.index).map(c => c.low));
+      const neck2 = Math.min(...recent.slice(e1.index, e2.index).map(c => c.low));
+      const avgNeck = (neck1 + neck2) / 2;
+      const tolerance = avgNeck * 0.02;
+      if (Math.abs(neck1 - neck2) <= tolerance) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /*
 function calcEMA_old(period, values) {
     const k = 2 / (period + 1);
