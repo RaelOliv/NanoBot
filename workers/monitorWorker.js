@@ -2712,7 +2712,7 @@ const jsonDT = JSON.parse(data);
 parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)}.`);
 
     
-    const json = jsonDT.data;
+    const json = JSON.parse(data);
     const k = json.k;
 
     const candle1m = {
@@ -2728,7 +2728,9 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
       isFinal: k.x
 
     };
-
+    
+    console.log('chegou aqui');
+    
     if (candle1m.isFinal) {
       candles1m.push(candle1m);
 
