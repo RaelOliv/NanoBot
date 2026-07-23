@@ -952,8 +952,7 @@ const cryptSymbols = {
     ada: 'ADAUSDT',
     //adx: 'ADXUSDT',
     aergo: 'AERGOUSDT',
-    ain: 'AINUSDT'
-    /*
+    ain: 'AINUSDT',
     algorand: 'ALGOUSDT',
     //aleph: 'AZEROUSDT',
     apt: 'APTUSDT',
@@ -963,7 +962,7 @@ const cryptSymbols = {
     bat: 'BATUSDT',
     bnb: 'BNBUSDT',
     bonk: '1000BONKUSDT'
-    
+    /*
     coti: 'COTIUSDT',
     //cvx: 'CVXUSDT',
     dexe: 'DEXEUSDT',
