@@ -2683,7 +2683,10 @@ parentPort.postMessage(`[${symbol}] WebSocket1m conectado.`);
 
 });
 
-ws.on('ping', (data) => {
+ws.on('ping', function(data){
+    
+
+
   
 parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
 
@@ -2762,7 +2765,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message recebido.`);
       }
 
     }
-    //parentPort.postMessage("medias1m", medias1m);
+    parentPort.postMessage("medias1m", medias1m);
   });
 
   ws.on('close', (code, reason) => {
