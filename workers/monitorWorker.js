@@ -5720,19 +5720,20 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
         (
           (
-            fibo1h.dir == 1 &&
-            parseFloat(ltaltb3m.lta) <= parseFloat(fibo1h.retr0618) &&
-            parseFloat(ltaltb3m.lta) >= parseFloat(fibo1h.retr1)
+            fibo15m.dir == 1 &&
+            parseFloat(ltaltb3m.lta) <= parseFloat(fibo15m.retr0618) &&
+            parseFloat(ltaltb3m.lta) >= parseFloat(fibo15m.retr1)
           ) || (
-            fibo1h.dir == -1 &&
-            parseFloat(ltaltb3m.lta) <= parseFloat(fibo1h.retr0382) &&
-            parseFloat(ltaltb3m.lta) >= parseFloat(fibo1h.retr0)
+            fibo15m.dir == -1 &&
+            parseFloat(ltaltb3m.lta) <= parseFloat(fibo15m.retr0382) &&
+            parseFloat(ltaltb3m.lta) >= parseFloat(fibo15m.retr0)
           )
         ) &&
 
-        parseFloat(sRsiLast1h.k) <= parseFloat(50.0) &&
-        parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
-        parseFloat(sRsiLast30m.k) <= parseFloat(20.0) &&
+        //parseFloat(sRsiLast1h.k) <= parseFloat(50.0) &&
+        //parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
+        parseFloat(sRsiLast30m.k) <= parseFloat(50.0) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(20.0) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(20.0) &&
         parseFloat(sRsiLast5m.k) <= parseFloat(20.0) &&
         //parseFloat(sRsiLast3m.k) <= parseFloat(10.0) &&
@@ -6126,20 +6127,20 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
         (
           (
-            fibo1h.dir == 1 &&
-            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo1h.retr0382) &&
-            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo1h.retr0)
+            fibo15m.dir == 1 &&
+            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo15m.retr0382) &&
+            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo15m.retr0)
           ) || (
-            fibo1h.dir == -1 &&
-            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo1h.retr0618) &&
-            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo1h.retr1)
+            fibo15m.dir == -1 &&
+            parseFloat(ltaltb3m.ltb) <= parseFloat(fibo15m.retr0618) &&
+            parseFloat(ltaltb3m.ltb) >= parseFloat(fibo15m.retr1)
           )
         ) &&
 
-
-        parseFloat(sRsiLast1h.k) >= parseFloat(50.0) &&
-        parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
-        parseFloat(sRsiLast30m.k) >= parseFloat(80.0) &&
+        //parseFloat(sRsiLast1h.k) >= parseFloat(50.0) &&
+        //parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
+        parseFloat(sRsiLast30m.k) >= parseFloat(50.0) &&
+        parseFloat(sRsiLast30m.k) <= parseFloat(80.0) &&
         //parseFloat(sRsiLast15m.k) >= parseFloat(80.0) &&
         parseFloat(sRsiLast5m.k) >= parseFloat(80.0) &&
         //parseFloat(sRsiLast3m.k) >= parseFloat(90.0) &&
