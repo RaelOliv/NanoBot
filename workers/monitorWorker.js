@@ -2729,7 +2729,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
 
     };
     
-    console.log('chegou aqui', candle1m);
+    console.log('chegou aqui', candles1m);
     
     if (candle1m.isFinal) {
       candles1m.push(candle1m);
