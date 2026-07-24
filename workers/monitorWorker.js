@@ -2683,23 +2683,23 @@ function iniciarWebSocketcandles1m() {
   
 ws.on('open', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket1m conectado.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1m conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket1m Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1m Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
 
 });
 
@@ -2736,7 +2736,7 @@ const jsonDT = JSON.parse(data);
 
       //if (candles1m.length > 400) candles1m.shift();
 
-console.log('chegou aqui', candle1m);
+//console.log('chegou aqui', candle1m);
 
       ema1m5p_2 = ema1m5p;
       ema1m10p_2 = ema1m10p;
@@ -2801,23 +2801,23 @@ function iniciarWebSocketcandles3m() {
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_3m`);
   
   ws.on('open', () => {
-  parentPort.postMessage(`[${symbol}] WebSocket3m conectado.`);
+  //parentPort.postMessage(`[${symbol}] WebSocket3m conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket3m Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket3m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket3m Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket3m Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket3m Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket3m Pong recebido.`);
 
 });
 
@@ -2903,23 +2903,23 @@ function iniciarWebSocketcandles5m() {
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_5m`);
 
 ws.on('open', () => {
-parentPort.postMessage(`[${symbol}] WebSocket5m conectado.`);
+//parentPort.postMessage(`[${symbol}] WebSocket5m conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket5m Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket5m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket5m Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket5m Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket5m Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket5m Pong recebido.`);
 
 });
 
@@ -2991,23 +2991,23 @@ function iniciarWebSocketcandles15m() {
   
   
   ws.on('open', () => {
-  parentPort.postMessage(`[${symbol}] WebSocket15m conectado.`);
+  //parentPort.postMessage(`[${symbol}] WebSocket15m conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket15m Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket15m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket15m Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket15m Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket15m Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket15m Pong recebido.`);
 
 });
 
@@ -3078,23 +3078,23 @@ function iniciarWebSocketcandles30m() {
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_30m`);
   
   ws.on('open', () => {
-  parentPort.postMessage(`[${symbol}] WebSocket30m conectado.`);
+  //parentPort.postMessage(`[${symbol}] WebSocket30m conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket30m Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket30m Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket30m Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket30m Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket30m Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket30m Pong recebido.`);
 
 });
 
@@ -3165,23 +3165,23 @@ function iniciarWebSocketcandles1h() {
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1h`);
   
   ws.on('open', () => {
-  parentPort.postMessage(`[${symbol}] WebSocket1h conectado.`);
+  //parentPort.postMessage(`[${symbol}] WebSocket1h conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket1h Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1h Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket1h Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1h Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket1h Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1h Pong recebido.`);
 
 });
 
@@ -3254,23 +3254,23 @@ function iniciarWebSocketcandles4h() {
 
 
 ws.on('open', () => {
-parentPort.postMessage(`[${symbol}] WebSocket4h conectado.`);
+//parentPort.postMessage(`[${symbol}] WebSocket4h conectado.`);
 
 });
 
 ws.on('ping', function(data){
   
-parentPort.postMessage(`[${symbol}] WebSocket4h Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket4h Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
 
-parentPort.postMessage(`[${symbol}] WebSocket4h Ping ${data}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket4h Ping ${data}.`);
 });
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocket4h Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocket4h Pong recebido.`);
 
 });
 
@@ -3360,13 +3360,13 @@ function iniciarWebSocketMarkPrice() {
 
 ws.on('open', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocketMP conectado.`);
+//parentPort.postMessage(`[${symbol}] WebSocketMP conectado.`);
 
 });
 
 ws.on('ping', (data) => {
   
-parentPort.postMessage(`[${symbol}] WebSocketMP Ping recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocketMP Ping recebido.`);
 
   // Responde exatamente o payload recebido
   ws.pong(data);
@@ -3375,7 +3375,7 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Ping recebido.`);
 
 ws.on('pong', () => {
   
-parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
+//parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
 
 });
 
@@ -3384,7 +3384,7 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
 const jdata = JSON.parse(data);
 const json = jdata.data;
 //parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(json)}.`);
-parentPort.postMessage(`[${symbol}] WebSocketMP message recebida.`);
+//parentPort.postMessage(`[${symbol}] WebSocketMP message recebida.`);
 
     
     const markPrice = parseFloat(json.p);
@@ -5325,6 +5325,21 @@ async function iniciarWebSocketContinuo() {
     parentPort.postMessage(` iniciarWebSocketContinuo conectado.`);
   });
 
+ws.on('ping', (data) => {
+  
+//parentPort.postMessage(`[${symbol}] WebSocketCont Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+});
+
+ws.on('pong', () => {
+  
+//parentPort.postMessage(`[${symbol}] WebSocketCont Pong recebido.`);
+
+});
+
   ws.on('message', async (data) => {
 
     /*
@@ -6341,7 +6356,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) <= parseFloat(sRsiLast4h_2.k)
         */
-
+/*
         (
           (
             fibo15m.dir == 1 &&
@@ -6353,7 +6368,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
             parseFloat(ltaltb3m.ltb) >= parseFloat(fibo15m.retr1)
           )
         ) &&
-
+*/
         
         //parseFloat(sRsiLast1h.k) >= parseFloat(50.0) &&
         //parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
