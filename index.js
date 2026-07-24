@@ -945,13 +945,11 @@ const cryptSymbols = {
 */
 const cryptSymbols = {
     
-    
     btc: 'BTCUSDT',
     aave: 'AAVEUSDT',
     ach: 'ACHUSDT',
     ada: 'ADAUSDT',
     //adx: 'ADXUSDT',
-    aergo: 'AERGOUSDT',
     ain: 'AINUSDT',
     algorand: 'ALGOUSDT',
     //aleph: 'AZEROUSDT',
@@ -981,7 +979,6 @@ const cryptSymbols = {
     //lilpepe: 'LILPEPEUSDT',
     link: 'LINKUSDT',
     m: 'MUSDT',
-    //matic: 'MATICUSDT',
     nmr: 'NMRUSDT',
     nxpc: 'NXPCUSDT',
     //ocean: 'OCEANUSDT',
@@ -989,9 +986,10 @@ const cryptSymbols = {
     op: 'OPUSDT',
     paxg: 'PAXGUSDT',
     pepe: '1000PEPEUSDT',
+    pol: 'POLUSDT',
     pump: 'PUMPUSDT',
     pyth: 'PYTHUSDT',
-    //render: 'RNDRUSDT',
+    render: 'RENDERUSDT',
     //rexas: 'RXSUSDT',
     sand: 'SANDUSDT',
     sei: 'SEIUSDT',
@@ -1002,8 +1000,7 @@ const cryptSymbols = {
     syrup: 'SYRUPUSDT',
     ta: 'TAUSDT',
     tia: 'TIAUSDT',
-    ton: 'TONUSDT',
-    /// trx: 'TRXUSDT', // poucas vol
+    trx: 'TRXUSDT', // poucas vol
     uni: 'UNIUSDT',
     vet: 'VETUSDT',
     virtual: 'VIRTUALUSDT',
@@ -1011,7 +1008,6 @@ const cryptSymbols = {
     wld: 'WLDUSDT',
     wlfi: 'WLFIUSDT',
     //xpl: 'XPLUSDT',
-    
     xrp: 'XRPUSDT'
 };
 
