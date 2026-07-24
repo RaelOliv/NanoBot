@@ -2799,6 +2799,27 @@ function iniciarWebSocketcandles3m() {
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles3m: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_3m`);
+  
+  parentPort.postMessage(`[${symbol}] WebSocket3m conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket3m Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket3m Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket3m Pong recebido.`);
+
+});
+
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -2880,6 +2901,27 @@ function iniciarWebSocketcandles5m() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_5m`);
 
+parentPort.postMessage(`[${symbol}] WebSocket5m conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket5m Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket5m Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket5m Pong recebido.`);
+
+});
+
+
   ws.on('message', (data) => {
     const json = JSON.parse(data);
     const k = json.k;
@@ -2944,6 +2986,27 @@ function iniciarWebSocketcandles15m() {
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles15m: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_15m`);
+  
+  parentPort.postMessage(`[${symbol}] WebSocket15m conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket15m Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket15m Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket15m Pong recebido.`);
+
+});
+
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3009,6 +3072,27 @@ function iniciarWebSocketcandles30m() {
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles30m: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_30m`);
+  
+  parentPort.postMessage(`[${symbol}] WebSocket30m conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket30m Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket30m Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket30m Pong recebido.`);
+
+});
+
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3074,6 +3158,27 @@ function iniciarWebSocketcandles1h() {
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1h: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1h`);
+  
+  parentPort.postMessage(`[${symbol}] WebSocket1h conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket1h Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket1h Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket1h Pong recebido.`);
+
+});
+
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3140,6 +3245,27 @@ function iniciarWebSocketcandles4h() {
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles4h: ${workerData.symbol}`);
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_4h`);
+
+parentPort.postMessage(`[${symbol}] WebSocket4h conectado.`);
+
+});
+
+ws.on('ping', function(data){
+  
+parentPort.postMessage(`[${symbol}] WebSocket4h Ping recebido.`);
+
+  // Responde exatamente o payload recebido
+  ws.pong(data);
+
+parentPort.postMessage(`[${symbol}] WebSocket4h Ping ${data}.`);
+});
+
+ws.on('pong', () => {
+  
+parentPort.postMessage(`[${symbol}] WebSocket4h Pong recebido.`);
+
+});
+
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
