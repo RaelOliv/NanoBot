@@ -2736,6 +2736,8 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
 
       //if (candles1m.length > 400) candles1m.shift();
 
+console.log('chegou aqui', candle1m);
+
       ema1m5p_2 = ema1m5p;
       ema1m10p_2 = ema1m10p;
       ema1m400p_2 = ema1m400p;
@@ -2744,7 +2746,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
       ema1m100p_2 = ema1m100p;
       ema1m250p_2 = ema1m250p;
 
-      console.log('chegou aqui', ema1m250p_2);
+      
       
       ema1m5p = calcularEMA(5, candles1m);
       ema1m10p = calcularEMA(10, candles1m);
@@ -2775,7 +2777,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)
       }
 
     }
-    parentPort.postMessage("medias1m", medias1m);
+    //parentPort.postMessage("medias1m", medias1m);
   });
 
   ws.on('close', (code, reason) => {
