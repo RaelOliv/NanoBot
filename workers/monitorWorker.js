@@ -2798,7 +2798,7 @@ function iniciarWebSocketcandles3m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles3m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_3m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_3m`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -2878,7 +2878,7 @@ function iniciarWebSocketcandles5m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles5m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_5m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_5m`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -2943,7 +2943,7 @@ function iniciarWebSocketcandles15m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles15m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_15m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_15m`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3008,7 +3008,7 @@ function iniciarWebSocketcandles30m() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles30m: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_30m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_30m`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3073,7 +3073,7 @@ function iniciarWebSocketcandles1h() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles1h: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_1h`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1h`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3139,7 +3139,7 @@ function iniciarWebSocketcandles4h() {
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketCandles4h: ${workerData.symbol}`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@kline_4h`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_4h`);
 
   ws.on('message', (data) => {
     const json = JSON.parse(data);
@@ -3249,7 +3249,8 @@ parentPort.postMessage(`[${symbol}] WebSocketMP Pong recebido.`);
   ws.on('message', async (data) => {
 const jdata = JSON.parse(data);
 const json = jdata.data;
-parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(json)}.`);
+//parentPort.postMessage(`[${symbol}] WebSocketMP message ${JSON.stringify(json)}.`);
+parentPort.postMessage(`[${symbol}] WebSocketMP message recebida.`);
 
     
     const markPrice = parseFloat(json.p);
@@ -4528,7 +4529,7 @@ async function monitorarGatilho() {
 
   // let percStpPrice = undefined;
 
-  ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@kline_1m`);
+  ws = new WebSocket(`wss://fstream.binance.com/market/ws/${symbol.toLowerCase()}@kline_1m`);
 
   ws.on('open', () => {
     parentPort.postMessage(`[${symbol}] WebSocket gatilho conectado.`);
@@ -5124,7 +5125,7 @@ async function iniciarWebSocketContinuo() {
 
   //const ws = new WebSocket(`wss://fstream.binance.com/ws/${wsSymbol}@markPrice`);
 
-  const ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@kline_1m`);
+  const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${symbol.toLowerCase()}@kline_1m`);
 
   const res = await apiAxiosSpot.get('/api/v3/time');
   const serverTime = res.data.serverTime;
