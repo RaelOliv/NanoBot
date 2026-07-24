@@ -2709,7 +2709,7 @@ parentPort.postMessage(`[${symbol}] WebSocket1m Pong recebido.`);
     
 const jsonDT = JSON.parse(data);
     
-parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)}.`);
+//parentPort.postMessage(`[${symbol}] WebSocket1m message ${JSON.stringify(jsonDT)}.`);
 
     
     const json = JSON.parse(data);
