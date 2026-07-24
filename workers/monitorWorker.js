@@ -2800,6 +2800,7 @@ function iniciarWebSocketcandles3m() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_3m`);
   
+  ws.on('open', () => {
   parentPort.postMessage(`[${symbol}] WebSocket3m conectado.`);
 
 });
@@ -2901,6 +2902,7 @@ function iniciarWebSocketcandles5m() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_5m`);
 
+ws.on('open', () => {
 parentPort.postMessage(`[${symbol}] WebSocket5m conectado.`);
 
 });
@@ -2987,6 +2989,8 @@ function iniciarWebSocketcandles15m() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_15m`);
   
+  
+  ws.on('open', () => {
   parentPort.postMessage(`[${symbol}] WebSocket15m conectado.`);
 
 });
@@ -3073,6 +3077,7 @@ function iniciarWebSocketcandles30m() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_30m`);
   
+  ws.on('open', () => {
   parentPort.postMessage(`[${symbol}] WebSocket30m conectado.`);
 
 });
@@ -3159,6 +3164,7 @@ function iniciarWebSocketcandles1h() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_1h`);
   
+  ws.on('open', () => {
   parentPort.postMessage(`[${symbol}] WebSocket1h conectado.`);
 
 });
@@ -3246,6 +3252,8 @@ function iniciarWebSocketcandles4h() {
 
   const ws = new WebSocket(`wss://fstream.binance.com/market/ws/${wsSymbol}@kline_4h`);
 
+
+ws.on('open', () => {
 parentPort.postMessage(`[${symbol}] WebSocket4h conectado.`);
 
 });
