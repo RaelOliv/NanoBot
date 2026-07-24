@@ -5914,7 +5914,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) >= parseFloat(sRsiLast4h_2.k)
         */
-
+/*
         (
           (
             fibo15m.dir == 1 &&
@@ -5926,7 +5926,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
             parseFloat(ltaltb3m.lta) >= parseFloat(fibo15m.retr0)
           )
         ) &&
-
+*/
         //parseFloat(sRsiLast1h.k) <= parseFloat(50.0) &&
         //parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(20.0) &&
