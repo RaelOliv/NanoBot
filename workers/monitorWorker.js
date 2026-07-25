@@ -5409,12 +5409,22 @@ ws.on('pong', () => {
       fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
       ltaltb15m = calcularLinhasTendencia(candles15m, zigZag15m.topos, zigZag15m.fundos);
       
-            /*
+      parentPort.postMessage(`🔎 zigZag15m: ${JSON.stringify(zigZag15m)}`);
+      parentPort.postMessage(`🔎 fibo15m: ${JSON.stringify(fibo15m)}`);
+      parentPort.postMessage(`🔎 ltaltb15m: ${JSON.stringify(ltaltb15m)}`);
+      
+      
       
             zigZag3m = calcularZigZag(candles3m); // Defina o threshold adequado
             fibo3m = calcularRetracoesFibonacci(zigZag3m.pontosUnificados);
             ltaltb3m = calcularLinhasTendencia(candles3m, zigZag3m.topos, zigZag3m.fundos);
+            
+            parentPort.postMessage(`🔎 zigZag3m: ${JSON.stringify(zigZag3m)}`);
+      parentPort.postMessage(`🔎 fibo3m: ${JSON.stringify(fibo3m)}`);
+      parentPort.postMessage(`🔎 ltaltb3m: ${JSON.stringify(ltaltb3m)}`);
       
+            
+      /*
             zigZag30m = calcularZigZag(candles30m); // Defina o threshold adequado
             fibo30m = calcularRetracoesFibonacci(zigZag30m.pontosUnificados);
             ltaltb30m = calcularLinhasTendencia(candles30m, zigZag30m.topos, zigZag30m.fundos);
