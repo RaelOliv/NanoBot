@@ -424,7 +424,7 @@ async function iniciarWs() {
       coin = await getCoin();
       // inicia renovação da listenKey e verificação periódica (apenas uma vez)
       iniciarRenovacaoListenKey();
-      iniciarVerificacaoPeriodica(30);
+      iniciarVerificacaoPeriodica(1);
     });
 
     ws.on('message', async (msg) => {
