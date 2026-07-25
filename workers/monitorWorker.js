@@ -5408,21 +5408,21 @@ ws.on('pong', () => {
       zigZag15m = calcularZigZag(candles15m); // Defina o threshold adequado
       fibo15m = calcularRetracoesFibonacci(zigZag15m.pontosUnificados);
       ltaltb15m = calcularLinhasTendencia(candles15m, zigZag15m.topos, zigZag15m.fundos);
-      
+      /*
       parentPort.postMessage(`🔎 zigZag15m: ${JSON.stringify(zigZag15m)}`);
       parentPort.postMessage(`🔎 fibo15m: ${JSON.stringify(fibo15m)}`);
       parentPort.postMessage(`🔎 ltaltb15m: ${JSON.stringify(ltaltb15m)}`);
-      
+      */
       
       
             zigZag3m = calcularZigZag(candles3m); // Defina o threshold adequado
             fibo3m = calcularRetracoesFibonacci(zigZag3m.pontosUnificados);
             ltaltb3m = calcularLinhasTendencia(candles3m, zigZag3m.topos, zigZag3m.fundos);
-            
+            /*
             parentPort.postMessage(`🔎 zigZag3m: ${JSON.stringify(zigZag3m)}`);
       parentPort.postMessage(`🔎 fibo3m: ${JSON.stringify(fibo3m)}`);
       parentPort.postMessage(`🔎 ltaltb3m: ${JSON.stringify(ltaltb3m)}`);
-      
+      */
             
       /*
             zigZag30m = calcularZigZag(candles30m); // Defina o threshold adequado
@@ -5939,7 +5939,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         && parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) >= parseFloat(sRsiLast4h_2.k)
         */
-/*
+
         (
           (
             fibo15m.dir == 1 &&
@@ -5951,7 +5951,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
             parseFloat(ltaltb3m.lta) >= parseFloat(fibo15m.retr0)
           )
         ) &&
-*/
+
         //parseFloat(sRsiLast1h.k) <= parseFloat(50.0) &&
         //parseFloat(sRsiLast1h.k) >= parseFloat(20.0) &&
         //parseFloat(sRsiLast15m.k) <= parseFloat(20.0) &&
@@ -6366,7 +6366,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         && parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h_2.k)
         && parseFloat(sRsiLast4h.k) <= parseFloat(sRsiLast4h_2.k)
         */
-/*
+
         (
           (
             fibo15m.dir == 1 &&
@@ -6378,7 +6378,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
             parseFloat(ltaltb3m.ltb) >= parseFloat(fibo15m.retr1)
           )
         ) &&
-*/
+
         
         //parseFloat(sRsiLast1h.k) >= parseFloat(50.0) &&
         //parseFloat(sRsiLast1h.k) <= parseFloat(80.0) &&
