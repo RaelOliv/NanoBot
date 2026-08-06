@@ -1,0 +1,384 @@
+{
+  "positions": {
+    "LDOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784853003580
+    },
+    "BATUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784853063438
+    },
+    "WUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784853123347
+    },
+    "MUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784853303502
+    },
+    "ACHUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784853483521
+    },
+    "JUPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784854503754
+    },
+    "BTCUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784854680170
+    },
+    "COTIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784858763335
+    },
+    "VETUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784858823544
+    },
+    "1000BONKUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784859003714
+    },
+    "AAVEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784860500775
+    },
+    "NMRUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784860563656
+    },
+    "WLFIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784860802341
+    },
+    "APTUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784863203544
+    },
+    "XLMUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784864821004
+    },
+    "LINKUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784868723555
+    },
+    "HBARUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784876702002
+    },
+    "SYRUPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784876763724
+    },
+    "ALGOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784879643225
+    },
+    "NXPCUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784879703724
+    },
+    "OPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784887143465
+    },
+    "SEIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784887260612
+    },
+    "LAYERUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784909523396
+    },
+    "PYTHUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784938083555
+    },
+    "XRPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784938980980
+    },
+    "FETUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784939703598
+    },
+    "ADAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784950323704
+    },
+    "VIRTUALUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784950383520
+    },
+    "SANDUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784956683558
+    },
+    "POLUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784970241136
+    },
+    "UNIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784978221665
+    },
+    "WLDUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1784996520827
+    },
+    "ARBUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785001740998
+    },
+    "TRXUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785008702854
+    },
+    "ENAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785012663802
+    },
+    "TAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785012723563
+    },
+    "1000PEPEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785013801669
+    },
+    "TIAUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785013862409
+    },
+    "SOLUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785015420574
+    },
+    "ASTERUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785017100694
+    },
+    "PAXGUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785017162962
+    },
+    "AINUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785046143338
+    },
+    "RENDERUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785046203739
+    },
+    "ONDOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785074943469
+    },
+    "SUIUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785075003522
+    },
+    "BNBUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785081061649
+    },
+    "DOGEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785102063496
+    },
+    "DOTUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785102303562
+    },
+    "IDOLUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785102963708
+    },
+    "1000SHIBUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785131461560
+    },
+    "PUMPUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785160743413
+    },
+    "DEXEUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785165960888
+    },
+    "KAITOUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785181200974
+    },
+    "ETHUSDT": {
+      "roiMax": 0,
+      "roiMin": 0,
+      "roiFinal": 0,
+      "isOpen": true,
+      "openedAt": 1785191100618
+    }
+  },
+  "history": [],
+  "lastId": 0
+}
