@@ -5987,8 +5987,8 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 */
 
         
-        parseFloat(sRsiLast30m.d) >= parseFloat(20.0) &&
-        parseFloat(sRsiLast30m.d) <= parseFloat(50.0) &&
+        //parseFloat(sRsiLast30m.d) >= parseFloat(20.0) &&
+        parseFloat(sRsiLast30m.d) <= parseFloat(30.0) &&
         
         parseFloat(sRsiLast30m.d) > parseFloat(sRsiLast30m_2.d) &&
         parseFloat(sRsiLast30m.k) > parseFloat(sRsiLast30m_2.k) &&
@@ -6011,12 +6011,12 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
       ) {
 
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        sideM = 'C';
+        sideOrd = 'BUY';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'V';
-        sideOrd = 'SELL';
+        //sideM = 'V';
+        //sideOrd = 'SELL';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
@@ -6425,11 +6425,11 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(sRsiLast30m.d) <= parseFloat(sRsiLast30m_2.d) &&
 */
 
-        parseFloat(sRsiLast30m.d) <= parseFloat(80.0) &&
-        parseFloat(sRsiLast30m.d) >= parseFloat(50.0) &&
+        //parseFloat(sRsiLast30m.d) <= parseFloat(80.0) &&
+        parseFloat(sRsiLast30m.d) >= parseFloat(70.0) &&
         parseFloat(sRsiLast30m.d) < parseFloat(sRsiLast30m_2.d) &&
 
-        //parseFloat(sRsiLast30m.k) < parseFloat(sRsiLast30m.d) &&
+        parseFloat(sRsiLast30m.k) < parseFloat(sRsiLast30m.d) &&
         (parseFloat(sRsiLast30m.k) - parseFloat(sRsiLast30m.d) <=
         parseFloat(sRsiLast30m_2.k) - parseFloat(sRsiLast30m_2.d)) &&
         
@@ -6449,12 +6449,12 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
       ) {
 
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        sideM = 'V';
+        sideOrd = 'SELL';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'C';
-        sideOrd = 'BUY';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
