@@ -2824,10 +2824,26 @@ var simultPos = parseInt(process.env.TRDSIMULT);
 //const path = require('path');
 const { Worker } = require('worker_threads');
 
+const workers = new Map();
+
 async function iniciarWorkerMon(symbol) {
+
+if (workers.has(symbol)) {
+        const antigo = workers.get(symbol);
+
+        console.error(
+            `[DUPLICADO] Já existe worker para ${symbol}! ` +
+            `threadId=${antigo.threadId}`
+        );
+
+        return;
+}
+  
     const worker = new Worker(path.join(__dirname, './workers/monitorWorker.js'), {
         workerData: { symbol }
     });
+
+  workers.set(symbol, worker);
 
     worker.on('message', (msg) => {
         console.log(`[${symbol}_${worker.threadId}]`, msg);
@@ -2958,7 +2974,7 @@ async function execThreads() {
 
         //await configRisk(cryptSymbol);
         //main(cryptSymbol);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
         iniciarWorkerMon(cryptSymbol);
         //await travaDeSeguranca(cryptSymbol);
 
