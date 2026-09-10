@@ -1824,7 +1824,7 @@ async function monitorarMargem() {
       && perc < 90
     ) {
 
-      activatePause(15); // pausa por 30 min
+      activatePause(30); // pausa por 30 min
       let res = await fecharTodasPosicoes();
       if (res == true) {
 
