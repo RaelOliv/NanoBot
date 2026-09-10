@@ -3425,7 +3425,8 @@ const json = jdata.data;
     posicaoAberta = await verificarSeTemPosicao(1);
     parentPort.postMessage(`🔎 Posição aberta: ${JSON.stringify(posicaoAberta)}`);
 
-    parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
+    //parentPort.postMessage(`🔎 Plus ---:> ${plus}`);
+    parentPort.postMessage(`🔎 Plus ---:> ${workerData.instanceId}`);
 
     //let balance = await getBalance();
     let balance = await carregarCache('Balance');
