@@ -2838,9 +2838,16 @@ if (workers.has(symbol)) {
 
         return;
 }
+
+  
+const instanceId = `${symbol}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
   
     const worker = new Worker(path.join(__dirname, './workers/monitorWorker.js'), {
-        workerData: { symbol }
+        workerData: { 
+          symbol,
+          instanceId
+        }
     });
 
   workers.set(symbol, worker);
