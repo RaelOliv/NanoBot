@@ -2858,10 +2858,16 @@ const instanceId = `${symbol}-${Date.now()}-${Math.random().toString(36).slice(2
     });
 
     worker.on('error', (err) => {
+      
+      workers.delete(symbol);
+
         console.error(`[${symbol}] Erro no Worker:`, err);
     });
 
     worker.on('exit', (code) => {
+
+      workers.delete(symbol);
+      
         console.log(`[${symbol}] Worker finalizou com código: ${code}.. Reiniciando em 3m..`);
         setTimeout(() => iniciarWorkerMon(symbol), 180000);
     });
