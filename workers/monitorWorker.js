@@ -5987,7 +5987,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(sRsiLast30m.d) >= parseFloat(sRsiLast30m_2.d) &&
 */
 
-
+/*
         parseFloat(sRsiLast30m.k) >= parseFloat(20.0) &&
         parseFloat(sRsiLast30m.d) <= parseFloat(20.0) &&
         
@@ -6005,6 +6005,9 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
         parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(sRsiLast5m.d) >= parseFloat(sRsiLast5m_2.d) &&
+*/
+        parseFloat(sRsiLast3m_2.k) <= parseFloat(10.0) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(10.0) &&
 
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.d)
@@ -6013,8 +6016,8 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
 
       ) {
 
-        //sideM = 'C';
-        //sideOrd = 'BUY';
+        sideM = 'C';
+        sideOrd = 'BUY';
 
         //// --- INVERSÃO DO SINAL ---
         sideM = 'V';
@@ -6426,7 +6429,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(sRsiLast30m.k) <= parseFloat(sRsiLast30m_2.k) &&
         parseFloat(sRsiLast30m.d) <= parseFloat(sRsiLast30m_2.d) &&
 */
-
+/*
         parseFloat(sRsiLast30m.k) <= parseFloat(80.0) &&
         parseFloat(sRsiLast30m.d) >= parseFloat(80.0) &&
         
@@ -6442,8 +6445,11 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         //parseFloat(sRsiLast5m.d) >= parseFloat(80.0) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(80.0) &&
 
-        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+     parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
         parseFloat(sRsiLast5m.d) <= parseFloat(sRsiLast5m_2.d) &&
+*/
+        parseFloat(sRsiLast3m_2.k) <= parseFloat(90.0) &&
+        parseFloat(sRsiLast3m.K) >= parseFloat(90.0) &&
         
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.d)
@@ -6453,12 +6459,12 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
       ) {
 
-        //sideM = 'V';
-        //sideOrd = 'SELL';
+        sideM = 'V';
+        sideOrd = 'SELL';
 
         //// --- INVERSÃO DO SINAL ---
-        sideM = 'C';
-        sideOrd = 'BUY';
+        //sideM = 'C';
+        //sideOrd = 'BUY';
         //// --- INVERSÃO DO SINAL ---
 
         gatilhoAtivado = true;
