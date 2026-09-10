@@ -2830,7 +2830,7 @@ async function iniciarWorkerMon(symbol) {
     });
 
     worker.on('message', (msg) => {
-        console.log(`[${symbol}]`, msg);
+        console.log(`[${symbol}_${worker.threadId}]`, msg);
         console.log("");
     });
 
