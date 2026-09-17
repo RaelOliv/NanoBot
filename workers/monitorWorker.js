@@ -6011,6 +6011,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(sRsiLast3m_2.k) <= parseFloat(10.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(10.0) &&
 */
+      /*
         parseFloat(sRsiLast1h.k) >= parseFloat(sRsiLast1h.d) &&
         
         parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
@@ -6023,6 +6024,17 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         
       && parseFloat(preco_atual) >= parseFloat(ema1m250p)
       && parseFloat(preco_atual) <= parseFloat(ema1m100p)
+*/
+    
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.d) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m.k) >= parseFloat(sRsiLast3m_2.d) &&
+
+        parseFloat(ema3m5p) >= parseFloat(ema3m10p) && 
+
+        parseFloat(preco_atual) >= parseFloat(ema3m10p) && 
+        parseFloat(preco_atual) <= parseFloat(ema3m5p)
 
        
 
@@ -6465,6 +6477,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(sRsiLast3m_2.k) >= parseFloat(90.0) &&
         parseFloat(sRsiLast3m.K) <= parseFloat(90.0) &&
     */    
+/*
+      
         parseFloat(sRsiLast1h.k) <= parseFloat(sRsiLast1h.d) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
         parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.d)
@@ -6476,6 +6490,18 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         
       && parseFloat(preco_atual) <= parseFloat(ema1m250p)
       && parseFloat(preco_atual) >= parseFloat(ema1m100p)
+*/
+
+        
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.k) &&
+        parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.d) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.k) &&
+        parseFloat(sRsiLast3m.k) <= parseFloat(sRsiLast3m_2.d) &&
+
+        parseFloat(ema3m5p) <= parseFloat(ema3m10p) && 
+
+        parseFloat(preco_atual) <= parseFloat(ema3m10p) && 
+        parseFloat(preco_atual) >= parseFloat(ema3m5p)
 
       ) {
 
