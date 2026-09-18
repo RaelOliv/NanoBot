@@ -6041,7 +6041,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
        */
 
         parseFloat(ema1m250p) > parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p) <= parseFloat(ema1m400p) && 
+        parseFloat(ema3m5p_2) <= parseFloat(ema1m400p) && 
         parseFloat(ema3m10p) <= parseFloat(ema1m400p) && 
         parseFloat(ema3m5p) > parseFloat(ema3m5p_2) 
 
@@ -6516,7 +6516,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 */
 
         parseFloat(ema1m250p) < parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p) >= parseFloat(ema1m400p) && 
+        parseFloat(ema3m5p_2) >= parseFloat(ema1m400p) && 
         parseFloat(ema3m10p) >= parseFloat(ema1m400p) && 
         parseFloat(ema3m5p) < parseFloat(ema3m5p_2) 
 
