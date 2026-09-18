@@ -6025,7 +6025,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
       && parseFloat(preco_atual) >= parseFloat(ema1m250p)
       && parseFloat(preco_atual) <= parseFloat(ema1m100p)
 */
-    
+    /*
         parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.d) &&
         parseFloat(sRsiLast15m.k) <= parseFloat(70.0) &&
@@ -6038,7 +6038,11 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(preco_atual) >= parseFloat(ema3m10p) && 
         parseFloat(preco_atual) <= parseFloat(ema3m5p)
 
-       
+       */
+
+        parseFloat(ema3m5p) > parseFloat(ema3m10p) && 
+        parseFloat(ema3m5p_2) < parseFloat(ema3m10p) 
+
 
       ) {
 
@@ -6494,8 +6498,8 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       && parseFloat(preco_atual) >= parseFloat(ema1m100p)
 */
 
-        
-        parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
+      /*  
+        //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.d) &&
         parseFloat(sRsiLast15m.k) >= parseFloat(30.0) &&
         parseFloat(sRsiLast3m.k) >= parseFloat(30.0) &&
@@ -6506,7 +6510,13 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
         parseFloat(preco_atual) <= parseFloat(ema3m10p) && 
         parseFloat(preco_atual) >= parseFloat(ema3m5p)
+*/
 
+        parseFloat(ema3m5p) <= parseFloat(ema3m10p) && 
+        parseFloat(ema3m5p_2) >= parseFloat(ema3m10p) 
+
+
+        
       ) {
 
         sideM = 'V';
