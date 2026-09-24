@@ -132,6 +132,8 @@ let ema3m5p = undefined;
 let ema3m10p = undefined;
 let sma3m400p = undefined;
 let ema3m400p = undefined;
+let sma3m400p_2 = undefined;
+let ema3m400p_2 = undefined;
 let ema3m5p_2 = undefined;
 let ema3m10p_2 = undefined;
 let maiorM3m20p = undefined;
@@ -1543,8 +1545,8 @@ async function carregarCandlesHistoricos() {
     ema3m5p = calcularEMA(5, candles3m);
     ema3m10p = calcularEMA(10, candles3m);
 
-    sma3m400p = calcularSMA(400, candles3m);
-    ema3m400p = calcularEMA(400, candles3m);
+    sma3m400p = calcularSMA(9, candles5m);
+    ema3m400p = calcularEMA(9, candles5m);
 
     const s20 = calcularSMA(20, candles3m);
     const e20 = calcularEMA(20, candles3m);
@@ -2857,11 +2859,13 @@ ws.on('pong', () => {
 
       ema3m5p_2 = ema3m5p;
       ema3m10p_2 = ema3m10p;
+      sma3m400p_2 = sma3m400p;
+      ema3m400p_2 = ema3m400p;
 
       ema3m5p = calcularEMA(5, candles3m);
       ema3m10p = calcularEMA(10, candles3m);
-      sma3m400p = calcularSMA(400, candles3m);
-      ema3m400p = calcularEMA(400, candles3m);
+      sma3m400p = calcularSMA(9, candles5m);
+      ema3m400p = calcularEMA(9, candles5m);
 
       const s20 = calcularSMA(20, candles3m);
       const e20 = calcularEMA(20, candles3m);
@@ -6047,27 +6051,28 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(ema3m5p) > parseFloat(ema3m5p_2) 
 
         */
-
-        parseFloat(ema1m250p) > parseFloat(ema1m400p) && 
-        parseFloat(candles1m.slice(-2)[0].close) >= (parseFloat(candles1m.slice(-3)[0].open) &&
-        parseFloat(candles1m.slice(-3)[0].close) )
+      (
+         parseFloat(ema1m250p) > parseFloat(sma1m400p) 
+         &&
+         parseFloat(ema1m400p) > parseFloat(sma1m400p)
+       )
         && 
-        parseFloat(candles1m.slice(-2)[0].open) <= parseFloat(candles1m.slice(-2)[0].close)
-        &&
-        parseFloat(candles1m.slice(-2)[0].low) >= parseFloat(candles1m.slice(-3)[0].low)
+        
+        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(candles1m.slice(-3)[0].low)
         &&
         parseFloat(preco_atual) >
         parseFloat(candles1m.slice(-2)[0].close)
         &&
-        (parseFloat(candles1m.slice(-3)[0].low) ||
-        parseFloat(candles1m.slice(-2)[0].low)) >= 
-        parseFloat(ema1m400p)
+        parseFloat(preco_atual) >= parseFloat(sma3m400p)
         &&
-        (parseFloat(candles1m.slice(-3)[0].low) ||
-        parseFloat(candles1m.slice(-2)[0].low)) <= 
-        parseFloat(ema1m250p)
-        //&&
-        //parseFloat(ema3m5p) > parseFloat(ema3m5p_2) 
+        parseFloat(preco_atual) <= parseFloat(ema3m400p)
+        &&
+        parseFloat(ema3m400p) >= parseFloat(sma3m400p) 
+        &&
+        parseFloat(ema3m400p) >= parseFloat(ema3m400p_2) 
+        &&
+        parseFloat(sma3m400p) >= parseFloat(sma3m400p_2) 
+        
         
         
       ) {
@@ -6548,26 +6553,27 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       */
       
 
-       parseFloat(ema1m250p) < parseFloat(ema1m400p) && 
-        parseFloat(candles1m.slice(-2)[0].close) <= (parseFloat(candles1m.slice(-3)[0].open) &&
-        parseFloat(candles1m.slice(-3)[0].close) )
+       (
+         parseFloat(ema1m250p) < parseFloat(sma1m400p) 
+         &&
+         parseFloat(ema1m400p) < parseFloat(sma1m400p)
+       )
         && 
-        parseFloat(candles1m.slice(-2)[0].open) >= parseFloat(candles1m.slice(-2)[0].close)
-        &&
+        
         parseFloat(candles1m.slice(-2)[0].high) <= parseFloat(candles1m.slice(-3)[0].high)
         &&
         parseFloat(preco_atual) <
         parseFloat(candles1m.slice(-2)[0].close)
         &&
-        (parseFloat(candles1m.slice(-3)[0].high) ||
-        parseFloat(candles1m.slice(-2)[0].high)) <= 
-        parseFloat(ema1m400p)
+        parseFloat(preco_atual) <= parseFloat(sma3m400p)
         &&
-        (parseFloat(candles1m.slice(-3)[0].high) ||
-        parseFloat(candles1m.slice(-2)[0].high)) >= 
-        parseFloat(ema1m400p)
-        //&&
-        //parseFloat(ema3m5p) < parseFloat(ema3m5p_2) 
+        parseFloat(preco_atual) >= parseFloat(ema3m400p)
+        &&
+        parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
+        &&
+        parseFloat(ema3m400p) <= parseFloat(ema3m400p_2) 
+        &&
+        parseFloat(sma3m400p) <= parseFloat(sma3m400p_2) 
         
         
       ) {
