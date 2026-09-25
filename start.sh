@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock
 
-SCRIPT_DIR="/data/data/com.termux/files/home/bot"
+SCRIPT_DIR="/data/data/com.termux/files/home/NanoBot"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
@@ -32,7 +32,7 @@ while true; do
 
   if [ "$MIN" -eq "00" ]; then
     executar_bot
-    sleep 60  # evita reexecução dentro do mesmo minuto
+    sleep 20  # evita reexecução dentro do mesmo minuto
   else
     sleep 20
   fi
