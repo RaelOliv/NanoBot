@@ -1545,8 +1545,7 @@ async function carregarCandlesHistoricos() {
     ema3m5p = calcularEMA(5, candles3m);
     ema3m10p = calcularEMA(10, candles3m);
 
-    sma3m400p = calcularSMA(9, candles5m);
-    ema3m400p = calcularEMA(9, candles5m);
+    
 
     const s20 = calcularSMA(20, candles3m);
     const e20 = calcularEMA(20, candles3m);
@@ -1596,6 +1595,11 @@ async function carregarCandlesHistoricos() {
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles5m carregado com sucesso.`);
 
+    
+
+sma3m400p = calcularSMA(9, candles5m);
+    ema3m400p = calcularEMA(9, candles5m);
+    
     const s100 = calcularSMA(100, candles5m);
     const s110 = calcularSMA(110, candles5m);
     const e100 = calcularEMA(100, candles5m);
@@ -2859,13 +2863,10 @@ ws.on('pong', () => {
 
       ema3m5p_2 = ema3m5p;
       ema3m10p_2 = ema3m10p;
-      sma3m400p_2 = sma3m400p;
-      ema3m400p_2 = ema3m400p;
-
+      
       ema3m5p = calcularEMA(5, candles3m);
       ema3m10p = calcularEMA(10, candles3m);
-      sma3m400p = calcularSMA(9, candles5m);
-      ema3m400p = calcularEMA(9, candles5m);
+      
 
       const s20 = calcularSMA(20, candles3m);
       const e20 = calcularEMA(20, candles3m);
@@ -2949,6 +2950,13 @@ ws.on('pong', () => {
     if (candle5m.isFinal) {
       candles5m.push(candle5m);
 
+      sma3m400p_2 = sma3m400p;
+      ema3m400p_2 = ema3m400p;
+      
+      sma3m400p = calcularSMA(9, candles5m);
+      ema3m400p = calcularEMA(9, candles5m);
+
+      
       //if (candles5m.length > 400) candles5m.shift();
       /*
       const s50 = calcularSMA(50, candles5m);  
