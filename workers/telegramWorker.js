@@ -225,7 +225,7 @@ async function verificarAlteracoes() {
       const texto = gerarMensagemAtiva(nova);
       //await enviarMensagemParaTodos(usuarios, texto);
     //}
-/*
+
     if (!antiga && nova.active) {
       const texto = gerarMensagemInicial(nova);
       await enviarMensagemParaTodos(usuarios, texto);
@@ -240,7 +240,7 @@ async function verificarAlteracoes() {
       const texto = gerarMensagemFinal(symbol, antiga);
       await enviarMensagemParaTodos(usuarios, texto);
     }
-    */
+    
   }
 
   ultimoCache = novoCache;

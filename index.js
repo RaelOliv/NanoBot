@@ -2929,7 +2929,7 @@ async function iniciarWorkerTelg() {
 
     worker.on('exit', (code) => {
         console.log(`[telg] Worker finalizou com código: ${code}.. Reiniciando em 30 seg..`);
-        setTimeout(() => iniciarWorkerMarg(), 30000);
+        setTimeout(() => iniciarWorkerTelg(), 30000);
     });
 }
 
