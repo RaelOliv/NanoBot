@@ -6126,7 +6126,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         &&
         parseFloat(preco_atual) >= parseFloat(sma3m400p)
         &&
-        parseFloat(candles1m.slice(-2)[0].low) <= parseFloat(ema3m400p) //5m9p
+        parseFloat(preco_anterior) <= parseFloat(ema3m400p) //5m9p
         &&
         parseFloat(preco_atual) >= parseFloat(ema3m400p) //5m9p
         &&
@@ -6628,7 +6628,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
         parseFloat(preco_atual) <
         parseFloat(candles1m.slice(-2)[0].close)
         &&
-        parseFloat(candles1m.slice(-2)[0].high) >= parseFloat(ema3m400p)
+        parseFloat(preco_anterior) >= parseFloat(ema3m400p)
         &&
         parseFloat(preco_atual) <= parseFloat(ema3m400p)
         &&
