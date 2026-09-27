@@ -583,8 +583,8 @@ function gerarMensagemAtiva(
   `━━━━━━━━━━━━━━━\n` +
   `🟢 <b>Operación en curso</b> 🟢\n` +
   `\n` +
-  `💵 Precio al entrar: \$ ${pos.entryPrice} USD\n` +
-  `💰 Precio actual: \$ ${pos.markPrice} USD\n` +
+  `💵 Precio al entrar: \$ ${pos.entryPrice.toFixed(6)} USDT\n` +
+  `💰 Precio actual: \$ ${pos.markPrice.toFixed(6)} USDT\n` +
   `\n` +
   `📊 Resultado actual: ${pnlFmt}\n` +
   `📉 Cambio actual: ${pctFmt}\n` +
