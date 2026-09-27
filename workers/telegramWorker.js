@@ -562,11 +562,14 @@ function gerarMensagemAtiva(
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `🟡 <b>Posição Ativa</b>\n` +
+    `🟢 <b>Posição Ativa</b> 🟢 \n` +
+    ` \n` +
     `💵 Entrada: ${pos.entryPrice}\n` +
     `💰 Preço atual: ${pos.markPrice}\n` +
+    ` \n` +
     `📊 Lucro atual: ${pnlFmt}\n` +
     `📉 Variação: ${pctFmt}\n` +
+    ` \n` +
     `🕒 Abertura: ` +
     `${new Date(
       pos.openedAt
@@ -648,8 +651,8 @@ function gerarMensagemFinal(
 
   const pctFmt =
     percent >= 0
-      ? `🟩 +${percent.toFixed(2)}%`
-      : `🟥 ${percent.toFixed(2)}%`;
+      ? `🟩 +${percent.toFixed(1)}%`
+      : `🟥 ${percent.toFixed(1)}%`;
 
   return (
     `━━━━━━━━━━━━━━━\n` +
