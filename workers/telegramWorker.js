@@ -550,13 +550,13 @@ function gerarMensagemAtiva(
 
   const pnlFmt =
     resultado.pnl >= 0
-      ? `🟩 +${resultado.pnl.toFixed(4)} USDT`
-      : `🟥 ${resultado.pnl.toFixed(4)} USDT`;
+      ? `🟩 +${resultado.pnl.toFixed(2)} USDT`
+      : `🟥 ${resultado.pnl.toFixed(2)} USDT`;
 
   const pctFmt =
     resultado.percent >= 0
-      ? `📈 +${resultado.percent.toFixed(2)}%`
-      : `📉 ${resultado.percent.toFixed(2)}%`;
+      ? `🟩 +${resultado.percent.toFixed(2)}%`
+      : `🟥 ${resultado.percent.toFixed(2)}%`;
 
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -642,14 +642,14 @@ function gerarMensagemFinal(
       : `${durationMin}min`;
 
   const pnlFmt =
-    pnl >= 0
-      ? `🟩 +${pnl.toFixed(4)} USDT`
-      : `🟥 ${pnl.toFixed(4)} USDT`;
+    pnl >= 0.01
+      ? `🟩 +${pnl.toFixed(2)} USDT`
+      : `🟥 ${pnl.toFixed(2)} USDT`;
 
   const pctFmt =
     percent >= 0
-      ? `📈 +${percent.toFixed(2)}%`
-      : `📉 ${percent.toFixed(2)}%`;
+      ? `🟩 +${percent.toFixed(2)}%`
+      : `🟥 ${percent.toFixed(2)}%`;
 
   return (
     `━━━━━━━━━━━━━━━\n` +
