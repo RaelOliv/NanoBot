@@ -557,7 +557,7 @@ function gerarMensagemAtiva(
     resultado.percent >= 0
       ? `🟩 +${resultado.percent.toFixed(1)}%`
       : `🟥 ${resultado.percent.toFixed(1)}%`;
-
+/*
   return (
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${pos.symbol}</b>\n` +
@@ -576,6 +576,26 @@ function gerarMensagemAtiva(
     ).toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━`
   );
+*/
+  return (
+  `━━━━━━━━━━━━━━━\n` +
+  `📊 <b>${pos.symbol}</b>\n` +
+  `━━━━━━━━━━━━━━━\n` +
+  `🟢 <b>Operación en curso</b> 🟢\n` +
+  `\n` +
+  `💵 Precio al entrar: ${pos.entryPrice}\n` +
+  `💰 Precio actual: ${pos.markPrice}\n` +
+  `\n` +
+  `📊 Resultado actual: ${pnlFmt}\n` +
+  `📉 Cambio actual: ${pctFmt}\n` +
+  `\n` +
+  `🕒 Hora de inicio: ` +
+  `${new Date(
+    pos.openedAt
+  ).toLocaleString()}\n` +
+  `━━━━━━━━━━━━━━━`
+);
+  
 }
 
 // ============================================================
@@ -653,7 +673,7 @@ function gerarMensagemFinal(
     percent >= 0
       ? `🟩 +${percent.toFixed(1)}%`
       : `🟥 ${percent.toFixed(1)}%`;
-
+/*
   return (
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${symbol}</b>\n` +
@@ -670,6 +690,23 @@ function gerarMensagemFinal(
     `${closedAt.toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━`
   );
+*/
+  return (
+  `━━━━━━━━━━━━━━━\n` +
+  `📊 <b>${symbol}</b>\n` +
+  `━━━━━━━━━━━━━━━\n` +
+  `⚫ <b>Operación finalizada</b>\n` +
+  `💵 Precio al entrar: ${entry}\n` +
+  `💸 Precio al salir: ${exitPrice.toFixed(4)}\n` +
+  `📊 Resultado: ${pnlFmt}\n` +
+  `📉 Cambio: ${pctFmt}\n` +
+  `⏱️ Tiempo de la operación: ${durationFmt}\n` +
+  `🕒 Hora de inicio: ` +
+  `${openedAt.toLocaleString()}\n` +
+  `🕒 Hora de finalización: ` +
+  `${closedAt.toLocaleString()}\n` +
+  `━━━━━━━━━━━━━━━`
+);
 }
 
 // ============================================================
