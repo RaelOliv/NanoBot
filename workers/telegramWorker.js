@@ -11,162 +11,268 @@ require("dotenv").config();
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 
-if (!TELEGRAM_TOKEN) {
-  console.error("❌ TELEGRAM_TOKEN não definido no .env");
-  process.exit(1);
-}
-
 const TELEGRAM_API =
-  `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+    `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
 const API_KEY = process.env.API_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const BINANCE_API =
-  process.env.BINANCE_FUTURES_URL || "https://fapi.binance.com";
+    process.env.BINANCE_FUTURES_URL ||
+    "https://fapi.binance.com";
 
-const CACHE_DIR = path.resolve(__dirname, "cache");
+const CACHE_DIR =
+    path.resolve(__dirname, "cache");
 
 const CACHE_PATH =
-  path.resolve(CACHE_DIR, "cachepos.json");
+    path.resolve(CACHE_DIR, "cachepos.json");
 
 const USERS_PATH =
-  path.resolve(CACHE_DIR, "users.json");
+    path.resolve(CACHE_DIR, "users.json");
 
-// Guarda os IDs das mensagens do Telegram.
-// Isso permite editar a mesma mensagem mesmo depois
-// que o worker seja reiniciado.
-const TELEGRAM_MESSAGES_PATH =
-  path.resolve(CACHE_DIR, "telegramMessages.json");
-
-// -----------------------------------------------------
-// Debounce de fechamento
-// -----------------------------------------------------
-
-// Aguarda alguns segundos antes de considerar definitivamente
-// que a posição foi encerrada.
-//
-// Isso evita o problema que tivemos anteriormente:
-// o positionWorker atualiza o cache por um instante,
-// o Telegram interpreta como fechamento e manda a mensagem
-// antes que a posição esteja realmente encerrada na Binance.
-const CLOSE_DEBOUNCE_MS = 5000;
-
-// Intervalo principal do worker.
-const CHECK_INTERVAL_MS = 4000;
-
-// Margem utilizada na consulta aos trades da Binance.
-const TRADE_TIME_BUFFER_MS = 5000;
+const MESSAGES_PATH =
+    path.resolve(
+        CACHE_DIR,
+        "telegramMessages.json"
+    );
 
 
 // =====================================================
-// PREPARAÇÃO DOS ARQUIVOS
+// CONFIGURAÇÃO DO LOOP
+// =====================================================
+
+// Intervalo de leitura do cache.
+const CHECK_INTERVAL_MS = 3000;
+
+// Debounce para confirmar fechamento.
+const CLOSE_DEBOUNCE_MS = 5000;
+
+// Margem utilizada na consulta dos trades.
+const TRADE_BUFFER_MS = 10000;
+
+
+// =====================================================
+// ESTADO
+// =====================================================
+
+let ultimoCache = {};
+
+let verificando = false;
+
+const fechamentosPendentes = new Map();
+
+let mensagens = {};
+
+
+// =====================================================
+// PREPARAR DIRETÓRIOS
 // =====================================================
 
 if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-}
-
-if (!fs.existsSync(USERS_PATH)) {
-  fs.writeFileSync(USERS_PATH, "{}");
-}
-
-if (!fs.existsSync(TELEGRAM_MESSAGES_PATH)) {
-  fs.writeFileSync(TELEGRAM_MESSAGES_PATH, "{}");
+    fs.mkdirSync(
+        CACHE_DIR,
+        {
+            recursive: true
+        }
+    );
 }
 
 
 // =====================================================
-// FUNÇÕES AUXILIARES
+// VALIDAR TELEGRAM
 // =====================================================
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+if (!TELEGRAM_TOKEN) {
+
+    console.error(
+        "❌ TELEGRAM_TOKEN não definido no .env"
+    );
+
+    process.exit(1);
 }
 
+
+// =====================================================
+// FUNÇÕES BÁSICAS
+// =====================================================
 
 function numero(valor, padrao = 0) {
-  const n = Number(valor);
 
-  return Number.isFinite(n) ? n : padrao;
+    const n = Number(valor);
+
+    return Number.isFinite(n)
+        ? n
+        : padrao;
 }
 
 
-function formatarNumero(valor, casas = 4) {
-  const n = numero(valor);
+function sleep(ms) {
 
-  return n.toFixed(casas);
+    return new Promise(
+        resolve => setTimeout(resolve, ms)
+    );
 }
 
 
-function formatarUSDT(valor) {
-  const n = numero(valor);
+function carregarJSON(
+    arquivo,
+    padrao
+) {
 
-  if (n >= 0) {
-    return `🟩 +${n.toFixed(4)} USDT`;
-  }
+    try {
 
-  return `🟥 ${n.toFixed(4)} USDT`;
+        if (!fs.existsSync(arquivo)) {
+            return padrao;
+        }
+
+        const conteudo =
+            fs.readFileSync(
+                arquivo,
+                "utf8"
+            );
+
+        if (!conteudo.trim()) {
+            return padrao;
+        }
+
+        return JSON.parse(conteudo);
+
+    } catch (erro) {
+
+        console.error(
+            `❌ Erro lendo ${arquivo}:`,
+            erro.message
+        );
+
+        return padrao;
+    }
 }
 
 
-function formatarPercentual(valor) {
-  const n = numero(valor);
+function salvarJSON(
+    arquivo,
+    dados
+) {
 
-  if (n >= 0) {
-    return `📈 +${n.toFixed(2)}%`;
-  }
+    try {
 
-  return `📉 ${n.toFixed(2)}%`;
-}
+        fs.writeFileSync(
+            arquivo,
+            JSON.stringify(
+                dados,
+                null,
+                2
+            )
+        );
 
+    } catch (erro) {
 
-function formatarDuracao(openedAt, closedAt) {
-  const inicio = new Date(openedAt);
-  const fim = new Date(closedAt);
-
-  const durMs = fim - inicio;
-
-  if (!Number.isFinite(durMs) || durMs < 0) {
-    return "0min";
-  }
-
-  const durMin = Math.floor(durMs / 60000);
-
-  const durHr = Math.floor(durMin / 60);
-
-  if (durHr > 0) {
-    return `${durHr}h ${durMin % 60}min`;
-  }
-
-  return `${durMin}min`;
+        console.error(
+            `❌ Erro salvando ${arquivo}:`,
+            erro.message
+        );
+    }
 }
 
 
 // =====================================================
-// CACHE
+// CACHE DE POSIÇÕES
 // =====================================================
 
 function carregarCache() {
-  try {
-    if (!fs.existsSync(CACHE_PATH)) {
-      return {};
+
+    const cache =
+        carregarJSON(
+            CACHE_PATH,
+            {}
+        );
+
+    return normalizarCache(cache);
+}
+
+
+// =====================================================
+// NORMALIZAR CACHE
+// =====================================================
+//
+// Aceita tanto:
+//
+// {
+//   BTCUSDT: {...},
+//   ETHUSDT: {...}
+// }
+//
+// quanto:
+//
+// [
+//   {...},
+//   {...}
+// ]
+//
+// Isso deixa o Telegram Worker mais resistente a
+// pequenas diferenças no formato do cache.
+// =====================================================
+
+function normalizarCache(cache) {
+
+    const resultado = {};
+
+    if (Array.isArray(cache)) {
+
+        for (const pos of cache) {
+
+            if (!pos) {
+                continue;
+            }
+
+            const symbol =
+                pos.symbol ||
+                pos.symbolName;
+
+            if (!symbol) {
+                continue;
+            }
+
+            resultado[symbol] =
+                pos;
+        }
+
+        return resultado;
     }
 
-    const data =
-      fs.readFileSync(CACHE_PATH, "utf8");
 
-    return JSON.parse(data || "{}");
+    if (
+        cache &&
+        typeof cache === "object"
+    ) {
 
-  } catch (err) {
+        for (
+            const [symbol, pos]
+            of Object.entries(cache)
+        ) {
 
-    console.error(
-      "[telegramWorker] Erro ao carregar cache:",
-      err.message
-    );
+            if (!pos) {
+                continue;
+            }
 
-    return {};
-  }
+            // Caso o próprio objeto tenha symbol.
+            if (
+                typeof pos === "object"
+            ) {
+
+                resultado[symbol] = {
+
+                    ...pos,
+
+                    symbol:
+                        pos.symbol ||
+                        symbol
+                };
+            }
+        }
+    }
+
+    return resultado;
 }
 
 
@@ -175,167 +281,212 @@ function carregarCache() {
 // =====================================================
 
 function carregarUsuarios() {
-  try {
 
-    const data =
-      fs.readFileSync(USERS_PATH, "utf8");
-
-    return JSON.parse(data || "{}");
-
-  } catch (err) {
-
-    console.error(
-      "[telegramWorker] Erro ao carregar usuários:",
-      err.message
-    );
-
-    return {};
-  }
-}
-
-
-function salvarUsuarios(users) {
-  try {
-
-    fs.writeFileSync(
-      USERS_PATH,
-      JSON.stringify(users, null, 2)
-    );
-
-  } catch (err) {
-
-    console.error(
-      "[telegramWorker] Erro ao salvar usuários:",
-      err.message
-    );
-  }
-}
-
-
-// =====================================================
-// MENSAGENS DO TELEGRAM
-// =====================================================
-
-function carregarMensagensTelegram() {
-  try {
-
-    if (!fs.existsSync(TELEGRAM_MESSAGES_PATH)) {
-      return {};
-    }
-
-    const data =
-      fs.readFileSync(
-        TELEGRAM_MESSAGES_PATH,
-        "utf8"
-      );
-
-    return JSON.parse(data || "{}");
-
-  } catch (err) {
-
-    console.error(
-      "[telegramWorker] Erro ao carregar mensagens:",
-      err.message
-    );
-
-    return {};
-  }
-}
-
-
-function salvarMensagensTelegram(messages) {
-  try {
-
-    fs.writeFileSync(
-      TELEGRAM_MESSAGES_PATH,
-      JSON.stringify(messages, null, 2)
-    );
-
-  } catch (err) {
-
-    console.error(
-      "[telegramWorker] Erro ao salvar mensagens:",
-      err.message
-    );
-  }
-}
-
-
-let mensagensTelegram =
-  carregarMensagensTelegram();
-
-
-// =====================================================
-// DETECTAR USUÁRIOS
-// =====================================================
-
-async function obterUsuarios() {
-
-  try {
-
-    const res =
-      await axios.get(
-        `${TELEGRAM_API}/getUpdates`,
-        {
-          timeout: 15000
-        }
-      );
-
-    const updates =
-      res.data?.result || [];
-
-    const users =
-      carregarUsuarios();
-
-    for (const up of updates) {
-
-      const msg = up.message;
-
-      if (
-        !msg ||
-        !msg.chat ||
-        !msg.chat.id
-      ) {
-        continue;
-      }
-
-      const id = msg.chat.id;
-
-      if (!users[id]) {
-
-        users[id] = {
-
-          first_name:
-            msg.chat.first_name ||
-            "Usuário",
-
-          username:
-            msg.chat.username ||
-            null,
-
-          active: true
-        };
-
-        console.log(
-          `👤 Novo usuário detectado: ` +
-          `${users[id].first_name} (${id})`
+    const dados =
+        carregarJSON(
+            USERS_PATH,
+            {}
         );
-      }
+
+    const usuarios = {};
+
+    // -----------------------------------------------
+    // users.json como array
+    // -----------------------------------------------
+
+    if (Array.isArray(dados)) {
+
+        for (const usuario of dados) {
+
+            if (!usuario) {
+                continue;
+            }
+
+            const id =
+                usuario.chat_id ||
+                usuario.chatId ||
+                usuario.id;
+
+            if (!id) {
+                continue;
+            }
+
+            usuarios[String(id)] =
+                usuario;
+        }
+
+        return usuarios;
     }
 
-    salvarUsuarios(users);
 
-    return users;
+    // -----------------------------------------------
+    // users.json como objeto
+    // -----------------------------------------------
 
-  } catch (err) {
+    if (
+        dados &&
+        typeof dados === "object"
+    ) {
 
-    console.error(
-      "[telegramWorker] Erro ao obter usuários:",
-      err.message
+        for (
+            const [chave, usuario]
+            of Object.entries(dados)
+        ) {
+
+            if (
+                usuario &&
+                typeof usuario === "object"
+            ) {
+
+                const id =
+                    usuario.chat_id ||
+                    usuario.chatId ||
+                    usuario.id ||
+                    chave;
+
+                usuarios[String(id)] =
+                    usuario;
+
+            } else {
+
+                usuarios[String(chave)] = {
+                    chat_id: chave,
+                    active: true
+                };
+            }
+        }
+    }
+
+    return usuarios;
+}
+
+
+// =====================================================
+// ATUALIZAR USUÁRIOS PELO TELEGRAM
+// =====================================================
+
+async function atualizarUsuarios() {
+
+    const usuarios =
+        carregarUsuarios();
+
+    try {
+
+        const resposta =
+            await axios.get(
+                `${TELEGRAM_API}/getUpdates`,
+                {
+                    timeout: 15000
+                }
+            );
+
+        const updates =
+            resposta.data?.result || [];
+
+
+        for (const update of updates) {
+
+            const mensagem =
+                update.message ||
+                update.edited_message;
+
+            if (!mensagem) {
+                continue;
+            }
+
+            const chat =
+                mensagem.chat;
+
+            if (
+                !chat ||
+                !chat.id
+            ) {
+                continue;
+            }
+
+            const id =
+                String(chat.id);
+
+
+            if (!usuarios[id]) {
+
+                usuarios[id] = {
+
+                    chat_id:
+                        chat.id,
+
+                    first_name:
+                        chat.first_name ||
+                        "",
+
+                    username:
+                        chat.username ||
+                        "",
+
+                    active: true
+                };
+
+                console.log(
+                    `👤 Novo usuário Telegram: ${id}`
+                );
+            }
+        }
+
+
+        salvarJSON(
+            USERS_PATH,
+            usuarios
+        );
+
+    } catch (erro) {
+
+        console.error(
+            "⚠️ Erro obtendo usuários Telegram:",
+            erro.response?.data ||
+            erro.message
+        );
+    }
+
+    return usuarios;
+}
+
+
+// =====================================================
+// MENSAGENS
+// =====================================================
+
+function carregarMensagens() {
+
+    return carregarJSON(
+        MESSAGES_PATH,
+        {}
     );
+}
 
-    return carregarUsuarios();
-  }
+
+function salvarMensagens() {
+
+    salvarJSON(
+        MESSAGES_PATH,
+        mensagens
+    );
+}
+
+
+mensagens =
+    carregarMensagens();
+
+
+// =====================================================
+// CHAVE DA MENSAGEM
+// =====================================================
+
+function chaveMensagem(
+    chatId,
+    symbol
+) {
+
+    return `${chatId}:${symbol}`;
 }
 
 
@@ -343,96 +494,42 @@ async function obterUsuarios() {
 // TELEGRAM - ENVIAR
 // =====================================================
 
-async function enviarMensagem(
-  uid,
-  texto
+async function enviarTelegram(
+    chatId,
+    texto
 ) {
 
-  try {
+    try {
 
-    const res =
-      await axios.post(
-        `${TELEGRAM_API}/sendMessage`,
-        {
-          chat_id: uid,
-          text: texto,
-          parse_mode: "HTML"
-        },
-        {
-          timeout: 15000
-        }
-      );
+        const resposta =
+            await axios.post(
+                `${TELEGRAM_API}/sendMessage`,
+                {
+                    chat_id: chatId,
+                    text: texto,
+                    parse_mode: "HTML"
+                },
+                {
+                    timeout: 15000
+                }
+            );
 
-    return res.data?.result || null;
+        return resposta.data?.result;
 
-  } catch (err) {
+    } catch (erro) {
 
-    const status =
-      err.response?.status;
-
-    if (
-      status === 429 ||
-      status === 418
-    ) {
-
-      const retryAfter =
-        Number(
-          err.response?.data
-            ?.parameters
-            ?.retry_after
-        ) ||
-        Number(
-          err.response?.headers
-            ?.["retry-after"]
-        ) ||
-        5;
-
-      console.error(
-        `[Telegram] Rate limit. ` +
-        `Aguardando ${retryAfter}s.`
-      );
-
-      await sleep(
-        (retryAfter + 1) * 1000
-      );
-
-      try {
-
-        const retry =
-          await axios.post(
-            `${TELEGRAM_API}/sendMessage`,
-            {
-              chat_id: uid,
-              text: texto,
-              parse_mode: "HTML"
-            },
-            {
-              timeout: 15000
-            }
-          );
-
-        return retry.data?.result || null;
-
-      } catch (retryErr) {
+        const dados =
+            erro.response?.data;
 
         console.error(
-          `[Telegram] Falha no retry ` +
-          `para ${uid}:`,
-          retryErr.message
+            `❌ Erro enviando Telegram ` +
+            `para ${chatId}:`,
+            dados ||
+            erro.message
         );
 
         return null;
-      }
     }
-
-    console.error(
-      `[Telegram] Falha ao enviar ` +
-      `mensagem para ${uid}:`,
-      err.message
-    );
-
-    return null;
-  }
 }
 
 
@@ -440,143 +537,113 @@ async function enviarMensagem(
 // TELEGRAM - EDITAR
 // =====================================================
 
-async function editarMensagem(
-  uid,
-  messageId,
-  texto
+async function editarTelegram(
+    chatId,
+    messageId,
+    texto
 ) {
 
-  try {
+    try {
 
-    const res =
-      await axios.post(
-        `${TELEGRAM_API}/editMessageText`,
-        {
-          chat_id: uid,
-          message_id: messageId,
-          text: texto,
-          parse_mode: "HTML"
-        },
-        {
-          timeout: 15000
+        const resposta =
+            await axios.post(
+                `${TELEGRAM_API}/editMessageText`,
+                {
+                    chat_id: chatId,
+                    message_id: messageId,
+                    text: texto,
+                    parse_mode: "HTML"
+                },
+                {
+                    timeout: 15000
+                }
+            );
+
+        return resposta.data?.result;
+
+    } catch (erro) {
+
+        const descricao =
+            erro.response?.data?.description ||
+            "";
+
+        // Telegram retorna isso quando o conteúdo
+        // não mudou. Não é erro para nosso worker.
+        if (
+            descricao
+                .toLowerCase()
+                .includes(
+                    "message is not modified"
+                )
+        ) {
+
+            return null;
         }
-      );
-
-    return res.data;
-
-  } catch (err) {
-
-    const status =
-      err.response?.status;
-
-    // Quando o conteúdo é exatamente igual,
-    // Telegram pode retornar "message is not modified".
-    if (
-      err.response?.data?.description
-        ?.toLowerCase()
-        ?.includes("message is not modified")
-    ) {
-      return null;
-    }
-
-    if (
-      status === 429 ||
-      status === 418
-    ) {
-
-      const retryAfter =
-        Number(
-          err.response?.data
-            ?.parameters
-            ?.retry_after
-        ) ||
-        Number(
-          err.response?.headers
-            ?.["retry-after"]
-        ) ||
-        5;
-
-      console.error(
-        `[Telegram] Rate limit ao editar. ` +
-        `Aguardando ${retryAfter}s.`
-      );
-
-      await sleep(
-        (retryAfter + 1) * 1000
-      );
-
-      try {
-
-        return await axios.post(
-          `${TELEGRAM_API}/editMessageText`,
-          {
-            chat_id: uid,
-            message_id: messageId,
-            text: texto,
-            parse_mode: "HTML"
-          },
-          {
-            timeout: 15000
-          }
-        );
-
-      } catch (retryErr) {
 
         console.error(
-          `[Telegram] Falha no retry ` +
-          `da edição para ${uid}:`,
-          retryErr.message
+            `❌ Erro editando mensagem ` +
+            `${messageId} para ${chatId}:`,
+            erro.response?.data ||
+            erro.message
         );
 
         return null;
-      }
     }
-
-    console.error(
-      `[Telegram] Falha ao editar ` +
-      `mensagem ${messageId} ` +
-      `para ${uid}:`,
-      err.message
-    );
-
-    return null;
-  }
 }
 
 
 // =====================================================
-// ENVIAR PARA TODOS
+// SALVAR REFERÊNCIA DA MENSAGEM
 // =====================================================
 
-async function enviarMensagemParaTodos(
-  usuarios,
-  texto
+function registrarMensagem(
+    chatId,
+    symbol,
+    messageId,
+    estado
 ) {
 
-  for (
-    const uid of Object.keys(usuarios)
-  ) {
+    const chave =
+        chaveMensagem(
+            chatId,
+            symbol
+        );
 
-    const usuario =
-      usuarios[uid];
+    mensagens[chave] = {
 
-    if (!usuario.active) {
-      continue;
-    }
+        chat_id:
+            chatId,
 
-    const mensagem =
-      await enviarMensagem(
-        uid,
-        texto
-      );
+        message_id:
+            messageId,
 
-    if (mensagem?.message_id) {
+        symbol,
 
-      return mensagem;
-    }
-  }
+        estado,
 
-  return null;
+        updatedAt:
+            Date.now()
+    };
+
+    salvarMensagens();
+}
+
+
+// =====================================================
+// OBTER REFERÊNCIA
+// =====================================================
+
+function obterMensagem(
+    chatId,
+    symbol
+) {
+
+    return mensagens[
+        chaveMensagem(
+            chatId,
+            symbol
+        )
+    ];
 }
 
 
@@ -584,22 +651,25 @@ async function enviarMensagemParaTodos(
 // BINANCE - ASSINATURA
 // =====================================================
 
-function criarQueryAssinada(params) {
+function assinaturaBinance(
+    parametros
+) {
 
-  const query =
-    new URLSearchParams(params)
-      .toString();
+    const query =
+        new URLSearchParams(
+            parametros
+        ).toString();
 
-  const signature =
-    crypto
-      .createHmac(
-        "sha256",
-        SECRET_KEY
-      )
-      .update(query)
-      .digest("hex");
+    const signature =
+        crypto
+            .createHmac(
+                "sha256",
+                SECRET_KEY
+            )
+            .update(query)
+            .digest("hex");
 
-  return `${query}&signature=${signature}`;
+    return `${query}&signature=${signature}`;
 }
 
 
@@ -608,822 +678,829 @@ function criarQueryAssinada(params) {
 // =====================================================
 
 async function buscarUserTrades(
-  symbol,
-  openedAt,
-  closedAt
+    symbol,
+    inicio,
+    fim
 ) {
 
-  if (!API_KEY || !SECRET_KEY) {
+    if (
+        !API_KEY ||
+        !SECRET_KEY
+    ) {
 
-    console.error(
-      "[telegramWorker] " +
-      "API_KEY/SECRET_KEY não definidos."
-    );
+        console.error(
+            "❌ API_KEY ou SECRET_KEY ausente."
+        );
 
-    return [];
-  }
+        return [];
+    }
 
-  try {
+
+    try {
+
+        const startTime =
+            Math.max(
+                0,
+                new Date(inicio).getTime() -
+                TRADE_BUFFER_MS
+            );
+
+        const endTime =
+            new Date(fim).getTime() +
+            TRADE_BUFFER_MS;
+
+
+        const parametros = {
+
+            symbol,
+
+            startTime:
+                Math.floor(
+                    startTime
+                ),
+
+            endTime:
+                Math.floor(
+                    endTime
+                ),
+
+            limit: 1000,
+
+            recvWindow: 10000,
+
+            timestamp:
+                Date.now()
+        };
+
+
+        const query =
+            assinaturaBinance(
+                parametros
+            );
+
+
+        const resposta =
+            await axios.get(
+                `${BINANCE_API}/fapi/v1/userTrades?${query}`,
+                {
+                    headers: {
+                        "X-MBX-APIKEY":
+                            API_KEY
+                    },
+
+                    timeout: 15000
+                }
+            );
+
+
+        return Array.isArray(
+            resposta.data
+        )
+            ? resposta.data
+            : [];
+
+    } catch (erro) {
+
+        console.error(
+            `❌ Erro Binance userTrades ` +
+            `${symbol}:`,
+            erro.response?.data ||
+            erro.message
+        );
+
+        return [];
+    }
+}
+
+
+// =====================================================
+// CALCULAR RESULTADO REAL
+// =====================================================
+
+async function calcularResultado(
+    symbol,
+    posicao
+) {
 
     const inicio =
-      Math.max(
-        0,
-        new Date(openedAt).getTime() -
-          TRADE_TIME_BUFFER_MS
-      );
+        posicao.openedAt ||
+        posicao.openTime ||
+        new Date(
+            Date.now() -
+            24 * 60 * 60 * 1000
+        );
 
     const fim =
-      new Date(closedAt).getTime() +
-      TRADE_TIME_BUFFER_MS;
+        posicao.closedAt ||
+        posicao.closeTime ||
+        new Date();
 
-    const timestamp =
-      Date.now();
 
-    const query =
-      criarQueryAssinada({
+    const trades =
+        await buscarUserTrades(
+            symbol,
+            inicio,
+            fim
+        );
 
-        symbol,
 
-        startTime:
-          Math.floor(inicio),
+    let realizedPnl = 0;
 
-        endTime:
-          Math.floor(fim),
+    let commissionUSDT = 0;
 
-        limit: 1000,
+    let quantidadeSaida = 0;
 
-        recvWindow: 10000,
+    let valorSaida = 0;
 
-        timestamp
-      });
+    let ultimoTradeTime = 0;
 
-    const url =
-      `${BINANCE_API}/fapi/v1/userTrades?${query}`;
 
-    const res =
-      await axios.get(
-        url,
-        {
-          headers: {
-            "X-MBX-APIKEY": API_KEY
-          },
-          timeout: 15000
+    for (const trade of trades) {
+
+        const pnl =
+            numero(
+                trade.realizedPnl
+            );
+
+        realizedPnl += pnl;
+
+
+        const commission =
+            numero(
+                trade.commission
+            );
+
+        const asset =
+            trade.commissionAsset;
+
+
+        if (
+            asset === "USDT"
+        ) {
+
+            commissionUSDT +=
+                commission;
         }
-      );
-
-    return Array.isArray(res.data)
-      ? res.data
-      : [];
-
-  } catch (err) {
-
-    console.error(
-      `[Binance] Erro ao buscar ` +
-      `userTrades de ${symbol}:`,
-      err.response?.data ||
-      err.message
-    );
-
-    return [];
-  }
-}
 
 
-// =====================================================
-// CALCULAR DADOS REAIS DA OPERAÇÃO
-// =====================================================
+        const tradeTime =
+            numero(
+                trade.time
+            );
 
-async function calcularResultadoReal(
-  symbol,
-  pos
-) {
 
-  const openedAt =
-    pos.openedAt
-      ? new Date(pos.openedAt)
-      : new Date();
+        if (
+            tradeTime >
+            ultimoTradeTime
+        ) {
 
-  const closedAt =
-    pos.closedAt
-      ? new Date(pos.closedAt)
-      : new Date();
+            ultimoTradeTime =
+                tradeTime;
+        }
 
-  const trades =
-    await buscarUserTrades(
-      symbol,
-      openedAt,
-      closedAt
-    );
 
-  if (!trades.length) {
+        // Fills que efetivamente realizaram PNL.
+        if (
+            Math.abs(pnl) >
+            0.00000001
+        ) {
 
-    console.warn(
-      `[Binance] Nenhum trade encontrado ` +
-      `para ${symbol} no período da operação.`
-    );
+            const qty =
+                Math.abs(
+                    numero(
+                        trade.qty
+                    )
+                );
+
+            const price =
+                numero(
+                    trade.price
+                );
+
+
+            if (
+                qty > 0 &&
+                price > 0
+            ) {
+
+                quantidadeSaida +=
+                    qty;
+
+                valorSaida +=
+                    qty * price;
+            }
+        }
+    }
+
+
+    // -----------------------------------------------
+    // Preço de saída
+    // -----------------------------------------------
+
+    let exitPrice =
+        numero(
+            posicao.exitPrice ||
+            posicao.markPrice ||
+            posicao.entryPrice
+        );
+
+
+    if (
+        quantidadeSaida > 0 &&
+        valorSaida > 0
+    ) {
+
+        exitPrice =
+            valorSaida /
+            quantidadeSaida;
+    }
+
+
+    // -----------------------------------------------
+    // Se a Binance não retornou trades,
+    // mantemos o PNL existente no cache.
+    // -----------------------------------------------
+
+    if (!trades.length) {
+
+        realizedPnl =
+            numero(
+                posicao.realizedPnl ||
+                posicao.pnl ||
+                posicao.profit ||
+                0
+            );
+
+        commissionUSDT =
+            numero(
+                posicao.commission ||
+                posicao.fee ||
+                0
+            );
+    }
+
+
+    const resultadoLiquido =
+        realizedPnl -
+        commissionUSDT;
+
+
+    const closedAt =
+        ultimoTradeTime > 0
+            ? new Date(
+                ultimoTradeTime
+            )
+            : new Date();
+
 
     return {
-      encontrado: false,
 
-      grossPnl:
-        numero(
-          pos.realizedPnl ||
-          pos.pnl ||
-          0
-        ),
+        realizedPnl,
 
-      commission: 0,
+        commission:
+            commissionUSDT,
 
-      netPnl:
-        numero(
-          pos.realizedPnl ||
-          pos.pnl ||
-          0
-        ),
+        netPnl:
+            resultadoLiquido,
 
-      exitPrice:
-        numero(
-          pos.markPrice ||
-          pos.exitPrice ||
-          pos.entryPrice
-        ),
+        exitPrice,
 
-      closedAt
+        closedAt,
+
+        trades
     };
-  }
+}
 
 
-  // ---------------------------------------------------
-  // P&L realizado
-  // ---------------------------------------------------
+// =====================================================
+// FORMATAÇÃO
+// =====================================================
 
-  let grossPnl = 0;
+function formatarData(data) {
 
-  // ---------------------------------------------------
-  // Comissão
-  // ---------------------------------------------------
+    if (!data) {
+        return "-";
+    }
 
-  let commissionUSDT = 0;
+    const d =
+        new Date(data);
 
-  // ---------------------------------------------------
-  // Preço de saída ponderado
-  // ---------------------------------------------------
+    if (
+        Number.isNaN(
+            d.getTime()
+        )
+    ) {
 
-  let exitQty = 0;
+        return "-";
+    }
 
-  let exitValue = 0;
-
-  let lastTradeTime =
-    closedAt.getTime();
-
-
-  for (const trade of trades) {
-
-    const realizedPnl =
-      numero(
-        trade.realizedPnl
-      );
-
-    grossPnl +=
-      realizedPnl;
+    return d.toLocaleString(
+        "pt-BR"
+    );
+}
 
 
-    // -----------------------------------------------
-    // Comissão
-    // -----------------------------------------------
+function formatarDuracao(
+    inicio,
+    fim
+) {
+
+    const a =
+        new Date(inicio).getTime();
+
+    const b =
+        new Date(fim).getTime();
+
+
+    if (
+        !Number.isFinite(a) ||
+        !Number.isFinite(b)
+    ) {
+
+        return "-";
+    }
+
+
+    const minutos =
+        Math.max(
+            0,
+            Math.floor(
+                (b - a) /
+                60000
+            )
+        );
+
+
+    const horas =
+        Math.floor(
+            minutos / 60
+        );
+
+
+    const mins =
+        minutos % 60;
+
+
+    if (horas > 0) {
+
+        return `${horas}h ${mins}min`;
+    }
+
+    return `${mins}min`;
+}
+
+
+function sinal(valor) {
+
+    return valor >= 0
+        ? `+${valor.toFixed(4)}`
+        : valor.toFixed(4);
+}
+
+
+// =====================================================
+// MENSAGEM DE POSIÇÃO ABERTA
+// =====================================================
+
+function mensagemAberta(
+    posicao
+) {
+
+    const symbol =
+        posicao.symbol;
+
+    const entry =
+        numero(
+            posicao.entryPrice
+        );
+
+    const quantidade =
+        numero(
+            posicao.positionAmt ||
+            posicao.qty
+        );
+
+    const leverage =
+        numero(
+            posicao.leverage,
+            1
+        );
+
+
+    return (
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `📊 <b>${symbol}</b>\n` +
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `🟢 <b>Posição Aberta</b>\n` +
+
+        `💵 Entrada: ${entry}\n` +
+
+        `📦 Quantidade: ${quantidade}\n` +
+
+        `⚙️ Alavancagem: ${leverage}x\n` +
+
+        `🕒 Abertura: ` +
+
+        `${formatarData(
+            posicao.openedAt ||
+            posicao.openTime ||
+            Date.now()
+        )}\n` +
+
+        `━━━━━━━━━━━━━━━`
+    );
+}
+
+
+// =====================================================
+// MENSAGEM DE POSIÇÃO ATIVA
+// =====================================================
+
+function mensagemAtiva(
+    posicao
+) {
+
+    const symbol =
+        posicao.symbol;
+
+    const entry =
+        numero(
+            posicao.entryPrice
+        );
+
+    const mark =
+        numero(
+            posicao.markPrice ||
+            posicao.currentPrice ||
+            posicao.price ||
+            entry
+        );
+
+    const quantidade =
+        numero(
+            posicao.positionAmt ||
+            posicao.qty
+        );
+
+    const leverage =
+        numero(
+            posicao.leverage,
+            1
+        );
+
+
+    let pnl = 0;
+
+    if (
+        entry > 0 &&
+        mark > 0
+    ) {
+
+        pnl =
+            (
+                mark -
+                entry
+            ) *
+            Math.abs(
+                quantidade
+            ) *
+            leverage;
+
+        if (
+            quantidade < 0
+        ) {
+
+            pnl *= -1;
+        }
+    }
+
+
+    let variacao = 0;
+
+    if (entry > 0) {
+
+        variacao =
+            (
+                (
+                    mark -
+                    entry
+                ) /
+                entry
+            ) *
+            100;
+
+        if (
+            quantidade < 0
+        ) {
+
+            variacao *= -1;
+        }
+    }
+
+
+    const pnlTexto =
+        pnl >= 0
+            ? `🟢 +${pnl.toFixed(4)} USDT`
+            : `🔴 ${pnl.toFixed(4)} USDT`;
+
+
+    const variacaoTexto =
+        variacao >= 0
+            ? `📈 +${variacao.toFixed(2)}%`
+            : `📉 ${variacao.toFixed(2)}%`;
+
+
+    return (
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `📊 <b>${symbol}</b>\n` +
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `🟢 <b>Posição Aberta</b>\n` +
+
+        `💵 Entrada: ${entry}\n` +
+
+        `💰 Atual: ${mark}\n` +
+
+        `📊 Resultado atual: ${pnlTexto}\n` +
+
+        `📈 Variação: ${variacaoTexto}\n` +
+
+        `⚙️ Alavancagem: ${leverage}x\n` +
+
+        `🕒 Abertura: ` +
+
+        `${formatarData(
+            posicao.openedAt ||
+            posicao.openTime
+        )}\n` +
+
+        `━━━━━━━━━━━━━━━`
+    );
+}
+
+
+// =====================================================
+// MENSAGEM DE POSIÇÃO ENCERRADA
+// =====================================================
+
+function mensagemEncerrada(
+    posicao,
+    resultado
+) {
+
+    const symbol =
+        posicao.symbol;
+
+    const entry =
+        numero(
+            posicao.entryPrice
+        );
+
+    const exit =
+        numero(
+            resultado.exitPrice
+        );
+
+
+    const gross =
+        numero(
+            resultado.realizedPnl
+        );
 
     const commission =
-      numero(
-        trade.commission
-      );
-
-    const commissionAsset =
-      trade.commissionAsset;
-
-    if (
-      commissionAsset === "USDT"
-    ) {
-
-      commissionUSDT +=
-        commission;
-    } else if (
-      commission !== 0
-    ) {
-
-      console.warn(
-        `[Binance] Comissão de ${symbol} ` +
-        `em ${commissionAsset}: ${commission}. ` +
-        `Não convertida para USDT.`
-      );
-    }
-
-
-    // -----------------------------------------------
-    // Horário
-    // -----------------------------------------------
-
-    const tradeTime =
-      numero(
-        trade.time
-      );
-
-    if (
-      tradeTime >
-      lastTradeTime
-    ) {
-
-      lastTradeTime =
-        tradeTime;
-    }
-
-
-    // -----------------------------------------------
-    // Identificação dos fills de fechamento
-    //
-    // realizedPnl diferente de zero indica que
-    // aquele fill realizou PNL.
-    // -----------------------------------------------
-
-    if (
-      Math.abs(realizedPnl) >
-      0.00000001
-    ) {
-
-      const qty =
-        Math.abs(
-          numero(
-            trade.qty
-          )
-        );
-
-      const price =
         numero(
-          trade.price
+            resultado.commission
         );
 
-      if (
-        qty > 0 &&
-        price > 0
-      ) {
+    const net =
+        numero(
+            resultado.netPnl
+        );
 
-        exitQty += qty;
 
-        exitValue +=
-          price * qty;
-      }
-    }
-  }
+    // -----------------------------------------------
+    // Percentual
+    // -----------------------------------------------
 
+    let variacao = 0;
 
-  let exitPrice =
-    numero(
-      pos.markPrice ||
-      pos.exitPrice ||
-      pos.entryPrice
-    );
+    if (entry > 0) {
 
+        variacao =
+            (
+                (
+                    exit -
+                    entry
+                ) /
+                entry
+            ) *
+            100;
 
-  if (
-    exitQty > 0 &&
-    exitValue > 0
-  ) {
 
-    exitPrice =
-      exitValue /
-      exitQty;
-  }
+        const quantidade =
+            numero(
+                posicao.positionAmt ||
+                posicao.qty
+            );
 
 
-  const netPnl =
-    grossPnl -
-    commissionUSDT;
+        if (
+            quantidade < 0
+        ) {
 
-
-  const realClosedAt =
-    new Date(lastTradeTime);
-
-
-  return {
-
-    encontrado: true,
-
-    trades,
-
-    grossPnl,
-
-    commission:
-      commissionUSDT,
-
-    netPnl,
-
-    exitPrice,
-
-    closedAt:
-      realClosedAt
-  };
-}
-
-
-// =====================================================
-// MENSAGEM - POSIÇÃO ABERTA
-// =====================================================
-
-function gerarMensagemInicial(pos) {
-
-  const entry =
-    numero(
-      pos.entryPrice
-    );
-
-  const qty =
-    numero(
-      pos.positionAmt
-    );
-
-  const leverage =
-    numero(
-      pos.leverage,
-      1
-    );
-
-  return (
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `📊 <b>${pos.symbol}</b>\n` +
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `🟢 <b>Posição Aberta</b>\n` +
-
-    `💵 Preço de entrada: ${entry}\n` +
-
-    `📈 Lado: ${pos.positionSide || "BOTH"}\n` +
-
-    `📊 Quantidade: ${qty}\n` +
-
-    `⚙️ Alavancagem: ${leverage}x\n` +
-
-    `🕒 Abertura: ` +
-
-    `${new Date(pos.openedAt).toLocaleString()}\n` +
-
-    `━━━━━━━━━━━━━━━`
-  );
-}
-
-
-// =====================================================
-// MENSAGEM - POSIÇÃO ATIVA
-// =====================================================
-
-function gerarMensagemAtiva(pos) {
-
-  const entry =
-    numero(
-      pos.entryPrice
-    );
-
-  const mark =
-    numero(
-      pos.markPrice
-    );
-
-  const qty =
-    numero(
-      pos.positionAmt
-    );
-
-  const leverage =
-    numero(
-      pos.leverage,
-      1
-    );
-
-
-  // ---------------------------------------------------
-  // Mantemos o cálculo visual da posição ativa.
-  // O resultado definitivo, no fechamento, vem da
-  // Binance através de realizedPnl + commission.
-  // ---------------------------------------------------
-
-  const pnl =
-    (
-      mark -
-      entry
-    ) *
-    qty *
-    leverage;
-
-
-  const pnlPct =
-    entry !== 0
-      ? (
-          (mark - entry) /
-          entry
-        ) *
-        100 *
-        (qty >= 0 ? 1 : -1)
-      : 0;
-
-
-  const pnlFmt =
-    formatarUSDT(
-      pnl
-    );
-
-  const pctFmt =
-    formatarPercentual(
-      pnlPct
-    );
-
-
-  return (
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `📊 <b>${pos.symbol}</b>\n` +
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `🟡 <b>Posição Ativa</b>\n` +
-
-    `💵 Entrada: ${entry}\n` +
-
-    `💰 Preço atual: ${mark}\n` +
-
-    `📊 Lucro atual: ${pnlFmt}\n` +
-
-    `📉 Variação: ${pctFmt}\n` +
-
-    `🕒 Abertura: ` +
-
-    `${new Date(pos.openedAt).toLocaleString()}\n` +
-
-    `━━━━━━━━━━━━━━━`
-  );
-}
-
-
-// =====================================================
-// MENSAGEM - POSIÇÃO ENCERRADA
-// =====================================================
-
-function gerarMensagemFinal(
-  symbol,
-  pos,
-  resultado
-) {
-
-  const entry =
-    numero(
-      pos.entryPrice
-    );
-
-  const close =
-    numero(
-      resultado.exitPrice ||
-      pos.markPrice ||
-      entry
-    );
-
-
-  // ---------------------------------------------------
-  // P&L bruto
-  // ---------------------------------------------------
-
-  const grossPnl =
-    numero(
-      resultado.grossPnl
-    );
-
-
-  // ---------------------------------------------------
-  // Comissão
-  // ---------------------------------------------------
-
-  const commission =
-    numero(
-      resultado.commission
-    );
-
-
-  // ---------------------------------------------------
-  // Resultado líquido
-  // ---------------------------------------------------
-
-  const netPnl =
-    numero(
-      resultado.netPnl
-    );
-
-
-  // ---------------------------------------------------
-  // Variação percentual
-  // ---------------------------------------------------
-
-  const qty =
-    numero(
-      pos.positionAmt
-    );
-
-
-  const leverage =
-    numero(
-      pos.leverage,
-      1
-    );
-
-
-  let pnlPct = 0;
-
-  if (entry !== 0) {
-
-    pnlPct =
-      (
-        (close - entry) /
-        entry
-      ) *
-      100 *
-      (qty >= 0 ? 1 : -1);
-  }
-
-
-  const openedAt =
-    pos.openedAt
-      ? new Date(pos.openedAt)
-      : new Date();
-
-
-  const closedAt =
-    resultado.closedAt
-      ? new Date(resultado.closedAt)
-      : new Date();
-
-
-  const durFmt =
-    formatarDuracao(
-      openedAt,
-      closedAt
-    );
-
-
-  const grossFmt =
-    formatarUSDT(
-      grossPnl
-    );
-
-
-  const feeFmt =
-    commission > 0
-      ? `🔴 -${commission.toFixed(4)} USDT`
-      : `🟢 0.0000 USDT`;
-
-
-  const netFmt =
-    formatarUSDT(
-      netPnl
-    );
-
-
-  const pctFmt =
-    formatarPercentual(
-      pnlPct
-    );
-
-
-  return (
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `📊 <b>${symbol}</b>\n` +
-
-    `━━━━━━━━━━━━━━━\n` +
-
-    `⚫ <b>Posição Encerrada</b>\n` +
-
-    `💵 Entrada: ${entry}\n` +
-
-    `💸 Saída: ${close.toFixed(4)}\n` +
-
-    `📊 P&L Bruto: ${grossFmt}\n` +
-
-    `💳 Taxa Trading: ${feeFmt}\n` +
-
-    `💰 <b>Resultado Líquido: ${netFmt}</b>\n` +
-
-    `📉 Variação: ${pctFmt}\n` +
-
-    `⏱️ Duração: ${durFmt}\n` +
-
-    `🕒 Abertura: ${openedAt.toLocaleString()}\n` +
-
-    `🕒 Fechamento: ${closedAt.toLocaleString()}\n` +
-
-    `━━━━━━━━━━━━━━━`
-  );
-}
-
-
-// =====================================================
-// ESTADO DO WORKER
-// =====================================================
-
-let ultimoCache =
-  carregarCache();
-
-let usuarios = {};
-
-
-// Evita que duas execuções de verificarAlteracoes()
-// rodem simultaneamente.
-
-let verificando = false;
-
-
-// Timers de debounce por símbolo.
-
-const timersFechamento =
-  new Map();
-
-
-// =====================================================
-// IDENTIFICAR POSIÇÃO
-// =====================================================
-
-function chaveMensagem(
-  uid,
-  symbol
-) {
-
-  return `${uid}:${symbol}`;
-}
-
-
-// =====================================================
-// SALVAR ID DA MENSAGEM
-// =====================================================
-
-function salvarMensagem(
-  uid,
-  symbol,
-  messageId,
-  estado
-) {
-
-  const chave =
-    chaveMensagem(
-      uid,
-      symbol
-    );
-
-  mensagensTelegram[chave] = {
-
-    message_id:
-      messageId,
-
-    state:
-      estado,
-
-    updatedAt:
-      Date.now()
-  };
-
-  salvarMensagensTelegram(
-    mensagensTelegram
-  );
-}
-
-
-// =====================================================
-// BUSCAR ID DA MENSAGEM
-// =====================================================
-
-function obterMensagem(
-  uid,
-  symbol
-) {
-
-  const chave =
-    chaveMensagem(
-      uid,
-      symbol
-    );
-
-  return mensagensTelegram[chave];
-}
-
-
-// =====================================================
-// REMOVER ID DA MENSAGEM
-// =====================================================
-
-function removerMensagem(
-  uid,
-  symbol
-) {
-
-  const chave =
-    chaveMensagem(
-      uid,
-      symbol
-    );
-
-  delete mensagensTelegram[chave];
-
-  salvarMensagensTelegram(
-    mensagensTelegram
-  );
-}
-
-
-// =====================================================
-// ABRIR / ATUALIZAR POSIÇÃO
-// =====================================================
-
-async function processarPosicaoAtiva(
-  symbol,
-  pos
-) {
-
-  const textoInicial =
-    gerarMensagemInicial(pos);
-
-  const textoAtiva =
-    gerarMensagemAtiva(pos);
-
-
-  for (
-    const uid of Object.keys(usuarios)
-  ) {
-
-    const usuario =
-      usuarios[uid];
-
-    if (!usuario.active) {
-      continue;
+            variacao *= -1;
+        }
     }
 
 
-    const existente =
-      obterMensagem(
-        uid,
-        symbol
-      );
+    const abertura =
+        posicao.openedAt ||
+        posicao.openTime;
 
 
-    // -------------------------------------------------
-    // Ainda não existe mensagem
-    // -------------------------------------------------
+    const fechamento =
+        resultado.closedAt ||
+        posicao.closedAt ||
+        Date.now();
 
-    if (!existente) {
 
-      const mensagem =
-        await enviarMensagem(
-          uid,
-          textoInicial
+    const duracao =
+        formatarDuracao(
+            abertura,
+            fechamento
         );
 
-      if (
-        mensagem &&
-        mensagem.message_id
-      ) {
 
-        salvarMensagem(
-          uid,
-          symbol,
-          mensagem.message_id,
-          "active"
+    const grossTexto =
+        gross >= 0
+            ? `🟢 +${gross.toFixed(4)} USDT`
+            : `🔴 ${gross.toFixed(4)} USDT`;
+
+
+    const taxaTexto =
+        commission > 0
+            ? `🔴 -${commission.toFixed(4)} USDT`
+            : `⚪ 0.0000 USDT`;
+
+
+    const netTexto =
+        net >= 0
+            ? `🟢 +${net.toFixed(4)} USDT`
+            : `🔴 ${net.toFixed(4)} USDT`;
+
+
+    const variacaoTexto =
+        variacao >= 0
+            ? `📈 +${variacao.toFixed(2)}%`
+            : `📉 ${variacao.toFixed(2)}%`;
+
+
+    return (
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `📊 <b>${symbol}</b>\n` +
+
+        `━━━━━━━━━━━━━━━\n` +
+
+        `⚫ <b>Posição Encerrada</b>\n` +
+
+        `💵 Entrada: ${entry}\n` +
+
+        `💸 Saída: ${exit}\n` +
+
+        `📊 P&L Bruto: ${grossTexto}\n` +
+
+        `💳 Taxa Trading: ${taxaTexto}\n` +
+
+        `💰 <b>Resultado Líquido: ${netTexto}</b>\n` +
+
+        `📈 Variação: ${variacaoTexto}\n` +
+
+        `⏱️ Duração: ${duracao}\n` +
+
+        `🕒 Abertura: ${formatarData(abertura)}\n` +
+
+        `🕒 Fechamento: ${formatarData(fechamento)}\n` +
+
+        `━━━━━━━━━━━━━━━`
+    );
+}
+
+
+// =====================================================
+// ENVIAR / ATUALIZAR POSIÇÃO ABERTA
+// =====================================================
+
+async function processarAberta(
+    symbol,
+    posicao,
+    usuarios
+) {
+
+    const texto =
+        mensagemAtiva(
+            posicao
         );
-      }
-
-      continue;
-    }
 
 
-    // -------------------------------------------------
-    // Já existe mensagem.
-    // Atualizamos a MESMA mensagem.
-    // -------------------------------------------------
-
-    if (
-      existente.state === "active"
+    for (
+        const [chatId, usuario]
+        of Object.entries(usuarios)
     ) {
 
-      await editarMensagem(
-        uid,
-        existente.message_id,
-        textoAtiva
-      );
+        if (
+            usuario &&
+            usuario.active === false
+        ) {
+            continue;
+        }
 
-      salvarMensagem(
-        uid,
-        symbol,
-        existente.message_id,
-        "active"
-      );
+
+        const existente =
+            obterMensagem(
+                chatId,
+                symbol
+            );
+
+
+        // -------------------------------------------
+        // Não existe mensagem:
+        // ENVIAR
+        // -------------------------------------------
+
+        if (
+            !existente ||
+            !existente.message_id
+        ) {
+
+            console.log(
+                `📤 Telegram: enviando ` +
+                `${symbol} para ${chatId}`
+            );
+
+
+            const enviada =
+                await enviarTelegram(
+                    chatId,
+                    texto
+                );
+
+
+            if (
+                enviada &&
+                enviada.message_id
+            ) {
+
+                registrarMensagem(
+                    chatId,
+                    symbol,
+                    enviada.message_id,
+                    "active"
+                );
+            }
+
+
+            continue;
+        }
+
+
+        // -------------------------------------------
+        // Já existe:
+        // EDITAR
+        // -------------------------------------------
+
+        if (
+            existente.estado === "active"
+        ) {
+
+            await editarTelegram(
+                chatId,
+                existente.message_id,
+                texto
+            );
+
+            existente.updatedAt =
+                Date.now();
+
+            mensagens[
+                chaveMensagem(
+                    chatId,
+                    symbol
+                )
+            ] =
+                existente;
+
+            salvarMensagens();
+        }
     }
-  }
 }
 
 
@@ -1432,483 +1509,571 @@ async function processarPosicaoAtiva(
 // =====================================================
 
 async function processarFechamento(
-  symbol,
-  pos
+    symbol,
+    posicao,
+    usuarios
 ) {
 
-  // ---------------------------------------------------
-  // Primeiro buscamos os dados reais da Binance.
-  // ---------------------------------------------------
-
-  const resultado =
-    await calcularResultadoReal(
-      symbol,
-      pos
+    console.log(
+        `🔎 Telegram: confirmando fechamento ` +
+        `${symbol}...`
     );
 
 
-  const textoFinal =
-    gerarMensagemFinal(
-      symbol,
-      pos,
-      resultado
-    );
+    // -----------------------------------------------
+    // Lê novamente o cache ANTES de confirmar.
+    // -----------------------------------------------
+
+    const cacheAtual =
+        carregarCache();
 
 
-  for (
-    const uid of Object.keys(usuarios)
-  ) {
+    const posAtual =
+        cacheAtual[symbol];
 
-    const usuario =
-      usuarios[uid];
-
-    if (!usuario.active) {
-      continue;
-    }
-
-
-    const existente =
-      obterMensagem(
-        uid,
-        symbol
-      );
-
-
-    // -------------------------------------------------
-    // Se a mensagem ativa existe,
-    // EDITAMOS ela.
-    // -------------------------------------------------
 
     if (
-      existente &&
-      existente.message_id
+        posAtual &&
+        posAtual.active
     ) {
 
-      await editarMensagem(
-        uid,
-        existente.message_id,
-        textoFinal
-      );
-
-      salvarMensagem(
-        uid,
-        symbol,
-        existente.message_id,
-        "closed"
-      );
-
-    } else {
-
-      // ------------------------------------------------
-      // Caso o worker tenha sido reiniciado e não tenha
-      // o ID salvo, cria uma mensagem nova.
-      // ------------------------------------------------
-
-      const mensagem =
-        await enviarMensagem(
-          uid,
-          textoFinal
+        console.log(
+            `↩️ ${symbol}: posição voltou ` +
+            `a ficar ativa. Cancelando fechamento.`
         );
 
-      if (
-        mensagem &&
-        mensagem.message_id
-      ) {
-
-        salvarMensagem(
-          uid,
-          symbol,
-          mensagem.message_id,
-          "closed"
-        );
-      }
+        return;
     }
-  }
 
 
-  console.log(
-    `🏁 ${symbol} encerrada | ` +
-    `Bruto: ${resultado.grossPnl.toFixed(4)} | ` +
-    `Taxa: ${resultado.commission.toFixed(4)} | ` +
-    `Líquido: ${resultado.netPnl.toFixed(4)}`
-  );
+    // -----------------------------------------------
+    // Consulta Binance
+    // -----------------------------------------------
+
+    const resultado =
+        await calcularResultado(
+            symbol,
+            posicao
+        );
+
+
+    const texto =
+        mensagemEncerrada(
+            posicao,
+            resultado
+        );
+
+
+    // -----------------------------------------------
+    // Atualiza a mensagem existente.
+    // -----------------------------------------------
+
+    for (
+        const [chatId, usuario]
+        of Object.entries(usuarios)
+    ) {
+
+        if (
+            usuario &&
+            usuario.active === false
+        ) {
+            continue;
+        }
+
+
+        const existente =
+            obterMensagem(
+                chatId,
+                symbol
+            );
+
+
+        if (
+            existente &&
+            existente.message_id
+        ) {
+
+            console.log(
+                `✏️ Telegram: encerrando ` +
+                `${symbol} na mensagem ` +
+                `${existente.message_id}`
+            );
+
+
+            await editarTelegram(
+                chatId,
+                existente.message_id,
+                texto
+            );
+
+
+            existente.estado =
+                "closed";
+
+            existente.updatedAt =
+                Date.now();
+
+
+            mensagens[
+                chaveMensagem(
+                    chatId,
+                    symbol
+                )
+            ] =
+                existente;
+
+
+            salvarMensagens();
+
+        } else {
+
+            // -----------------------------------------
+            // Se não existe mensagem, envia.
+            // Isso cobre reinício do bot e perda do
+            // arquivo de controle.
+            // -----------------------------------------
+
+            console.log(
+                `📤 Telegram: enviando fechamento ` +
+                `${symbol} para ${chatId}`
+            );
+
+
+            const enviada =
+                await enviarTelegram(
+                    chatId,
+                    texto
+                );
+
+
+            if (
+                enviada &&
+                enviada.message_id
+            ) {
+
+                registrarMensagem(
+                    chatId,
+                    symbol,
+                    enviada.message_id,
+                    "closed"
+                );
+            }
+        }
+    }
+
+
+    console.log(
+        `✅ ${symbol} encerrada | ` +
+        `Bruto: ${resultado.realizedPnl.toFixed(4)} | ` +
+        `Taxa: ${resultado.commission.toFixed(4)} | ` +
+        `Líquido: ${resultado.netPnl.toFixed(4)}`
+    );
 }
 
 
 // =====================================================
-// DEBOUNCE DE FECHAMENTO
+// AGENDAR FECHAMENTO
 // =====================================================
 
 function agendarFechamento(
-  symbol,
-  pos
+    symbol,
+    posicao,
+    usuarios
 ) {
 
-  // Se já existe timer para esse símbolo,
-  // não criamos outro.
-
-  if (
-    timersFechamento.has(symbol)
-  ) {
-
-    return;
-  }
+    if (
+        fechamentosPendentes.has(
+            symbol
+        )
+    ) {
+        return;
+    }
 
 
-  console.log(
-    `⏳ ${symbol}: possível fechamento detectado. ` +
-    `Aguardando ${CLOSE_DEBOUNCE_MS / 1000}s...`
-  );
-
-
-  const timer =
-    setTimeout(
-      async () => {
-
-        timersFechamento.delete(
-          symbol
-        );
-
-
-        // ------------------------------------------------
-        // Antes de confirmar o fechamento,
-        // verificamos novamente o cache.
-        // ------------------------------------------------
-
-        const cacheAtual =
-          carregarCache();
-
-
-        const posAtual =
-          cacheAtual[symbol];
-
-
-        // ------------------------------------------------
-        // Se voltou a ficar ativa, o fechamento era falso.
-        // ------------------------------------------------
-
-        if (
-          posAtual &&
-          posAtual.active
-        ) {
-
-          console.log(
-            `↩️ ${symbol}: posição voltou a ficar ativa. ` +
-            `Fechamento cancelado.`
-          );
-
-          return;
-        }
-
-
-        // ------------------------------------------------
-        // Continua fechada.
-        // ------------------------------------------------
-
-        try {
-
-          await processarFechamento(
-            symbol,
-            pos
-          );
-
-        } catch (err) {
-
-          console.error(
-            `[telegramWorker] Erro ao ` +
-            `processar fechamento de ${symbol}:`,
-            err.message
-          );
-        }
-
-      },
-      CLOSE_DEBOUNCE_MS
+    console.log(
+        `⏳ ${symbol}: possível fechamento. ` +
+        `Aguardando confirmação...`
     );
 
 
-  timersFechamento.set(
-    symbol,
-    timer
-  );
+    const timer =
+        setTimeout(
+            async () => {
+
+                fechamentosPendentes.delete(
+                    symbol
+                );
+
+
+                try {
+
+                    await processarFechamento(
+                        symbol,
+                        posicao,
+                        usuarios
+                    );
+
+                } catch (erro) {
+
+                    console.error(
+                        `❌ Erro fechando ${symbol}:`,
+                        erro.message
+                    );
+                }
+
+            },
+            CLOSE_DEBOUNCE_MS
+        );
+
+
+    fechamentosPendentes.set(
+        symbol,
+        timer
+    );
 }
 
 
 // =====================================================
-// CANCELAR DEBOUNCE
+// CANCELAR FECHAMENTO
 // =====================================================
 
 function cancelarFechamento(
-  symbol
+    symbol
 ) {
 
-  const timer =
-    timersFechamento.get(
-      symbol
+    const timer =
+        fechamentosPendentes.get(
+            symbol
+        );
+
+
+    if (!timer) {
+        return;
+    }
+
+
+    clearTimeout(timer);
+
+    fechamentosPendentes.delete(
+        symbol
     );
 
-  if (!timer) {
-    return;
-  }
 
-  clearTimeout(timer);
-
-  timersFechamento.delete(
-    symbol
-  );
-
-  console.log(
-    `↩️ ${symbol}: debounce de fechamento cancelado.`
-  );
+    console.log(
+        `↩️ ${symbol}: fechamento cancelado. ` +
+        `Posição continua ativa.`
+    );
 }
 
 
 // =====================================================
-// VERIFICAR ALTERAÇÕES
+// VERIFICAR POSIÇÕES
 // =====================================================
 
-async function verificarAlteracoes() {
+async function verificarPosicoes() {
 
-  if (verificando) {
-    return;
-  }
-
-  verificando = true;
-
-
-  try {
-
-    const novoCache =
-      carregarCache();
-
-
-    // =================================================
-    // 1. POSIÇÕES QUE ESTÃO NO CACHE ATUAL
-    // =================================================
-
-    for (
-      const symbol of Object.keys(novoCache)
-    ) {
-
-      const nova =
-        novoCache[symbol];
-
-      const antiga =
-        ultimoCache[symbol];
-
-
-      // -----------------------------------------------
-      // POSIÇÃO ATIVA
-      // -----------------------------------------------
-
-      if (
-        nova &&
-        nova.active
-      ) {
-
-        // Se existia um debounce de fechamento,
-        // cancelamos porque a posição está ativa.
-
-        cancelarFechamento(
-          symbol
-        );
-
-
-        // ---------------------------------------------
-        // Nova posição
-        // ---------------------------------------------
-
-        if (
-          !antiga ||
-          !antiga.active
-        ) {
-
-          await processarPosicaoAtiva(
-            symbol,
-            nova
-          );
-
-          continue;
-        }
-
-
-        // ---------------------------------------------
-        // Posição continua ativa.
-        // Atualizamos a mesma mensagem.
-        // ---------------------------------------------
-
-        if (
-          nova.markPrice !==
-          antiga.markPrice
-        ) {
-
-          await processarPosicaoAtiva(
-            symbol,
-            nova
-          );
-        }
-
-
-        continue;
-      }
-
-
-      // -----------------------------------------------
-      // POSIÇÃO NÃO ESTÁ ATIVA
-      // -----------------------------------------------
-
-      if (
-        antiga &&
-        antiga.active &&
-        (!nova || !nova.active)
-      ) {
-
-        agendarFechamento(
-          symbol,
-          antiga
-        );
-      }
+    if (verificando) {
+        return;
     }
 
 
-    // =================================================
-    // 2. POSIÇÕES QUE SUMIRAM COMPLETAMENTE DO CACHE
-    // =================================================
-
-    for (
-      const symbol of Object.keys(ultimoCache)
-    ) {
-
-      const antiga =
-        ultimoCache[symbol];
+    verificando = true;
 
 
-      if (
-        !antiga ||
-        !antiga.active
-      ) {
-        continue;
-      }
+    try {
+
+        const novoCache =
+            carregarCache();
 
 
-      if (
-        !Object.prototype.hasOwnProperty.call(
-          novoCache,
-          symbol
-        )
-      ) {
-
-        agendarFechamento(
-          symbol,
-          antiga
-        );
-      }
-    }
+        const usuarios =
+            carregarUsuarios();
 
 
-    ultimoCache =
-      novoCache;
+        // =================================================
+        // POSIÇÕES ATUAIS
+        // =================================================
 
-  } catch (err) {
+        for (
+            const [
+                symbol,
+                novaPosicao
+            ]
+            of Object.entries(novoCache)
+        ) {
 
-    console.error(
-      "[telegramWorker] Erro em verificarAlteracoes:",
-      err.message
-    );
-
-  } finally {
-
-    verificando = false;
-  }
-}
-
-
-// =====================================================
-// INICIALIZAÇÃO
-// =====================================================
-
-(async () => {
-
-  console.log(
-    "🤖 Iniciando Telegram Worker..."
-  );
+            if (!novaPosicao) {
+                continue;
+            }
 
 
-  if (!API_KEY) {
-
-    console.warn(
-      "⚠️ API_KEY não definida. " +
-      "O P&L/taxa reais da Binance não poderão ser consultados."
-    );
-  }
+            const ativa =
+                novaPosicao.active === true ||
+                novaPosicao.active === 1 ||
+                novaPosicao.active === "true";
 
 
-  if (!SECRET_KEY) {
-
-    console.warn(
-      "⚠️ SECRET_KEY não definida. " +
-      "O cálculo de comissão via userTrades não funcionará."
-    );
-  }
+            const antigaPosicao =
+                ultimoCache[symbol];
 
 
-  usuarios =
-    await obterUsuarios();
+            const antigaAtiva =
+                antigaPosicao &&
+                (
+                    antigaPosicao.active === true ||
+                    antigaPosicao.active === 1 ||
+                    antigaPosicao.active === "true"
+                );
 
 
-  if (
-    Object.keys(usuarios).length === 0
-  ) {
+            // -------------------------------------------
+            // POSIÇÃO ATIVA
+            // -------------------------------------------
 
-    console.log(
-      "⚠️ Nenhum usuário detectado."
-    );
+            if (ativa) {
 
-    console.log(
-      "Envie uma mensagem ao bot no Telegram."
-    );
-
-    // Não encerramos o worker.
-    // Ele continuará tentando encontrar usuários.
-  }
+                cancelarFechamento(
+                    symbol
+                );
 
 
-  console.log(
-    `✅ Telegram Worker iniciado ` +
-    `(${Object.keys(usuarios).length} usuários)`
-  );
+                // Nova posição
+                if (!antigaAtiva) {
+
+                    console.log(
+                        `🟢 Nova posição detectada: ${symbol}`
+                    );
+
+                    await processarAberta(
+                        symbol,
+                        novaPosicao,
+                        usuarios
+                    );
+
+                } else {
+
+                    // Posição continua ativa.
+                    // Atualiza a mesma mensagem.
+                    await processarAberta(
+                        symbol,
+                        novaPosicao,
+                        usuarios
+                    );
+                }
 
 
-  // ---------------------------------------------------
-  // Primeira verificação imediatamente.
-  // ---------------------------------------------------
-
-  await verificarAlteracoes();
+                continue;
+            }
 
 
-  // ---------------------------------------------------
-  // Loop principal
-  // ---------------------------------------------------
+            // -------------------------------------------
+            // Existe no cache, mas ficou inactive
+            // -------------------------------------------
 
-  setInterval(
-    async () => {
+            if (antigaAtiva) {
 
-      try {
+                agendarFechamento(
+                    symbol,
+                    antigaPosicao,
+                    usuarios
+                );
+            }
+        }
 
-        usuarios =
-          await obterUsuarios();
 
-        await verificarAlteracoes();
+        // =================================================
+        // POSIÇÕES QUE SUMIRAM DO CACHE
+        // =================================================
 
-      } catch (err) {
+        for (
+            const [
+                symbol,
+                antigaPosicao
+            ]
+            of Object.entries(ultimoCache)
+        ) {
+
+            const antigaAtiva =
+                antigaPosicao &&
+                (
+                    antigaPosicao.active === true ||
+                    antigaPosicao.active === 1 ||
+                    antigaPosicao.active === "true"
+                );
+
+
+            if (!antigaAtiva) {
+                continue;
+            }
+
+
+            if (
+                !Object.prototype.hasOwnProperty.call(
+                    novoCache,
+                    symbol
+                )
+            ) {
+
+                console.log(
+                    `⚠️ ${symbol}: posição ` +
+                    `desapareceu do cache.`
+                );
+
+
+                agendarFechamento(
+                    symbol,
+                    antigaPosicao,
+                    usuarios
+                );
+            }
+        }
+
+
+        // -----------------------------------------------
+        // Atualiza snapshot
+        // -----------------------------------------------
+
+        ultimoCache =
+            novoCache;
+
+    } catch (erro) {
 
         console.error(
-          "[telegramWorker] Erro no ciclo:",
-          err.message
+            "❌ Erro verificando posições:",
+            erro.message
         );
-      }
 
-    },
-    CHECK_INTERVAL_MS
-  );
+    } finally {
 
-})();
+        verificando = false;
+    }
+}
+
+
+// =====================================================
+// LOOP PRINCIPAL
+// =====================================================
+
+async function iniciar() {
+
+    console.log(
+        "🤖 Telegram Worker iniciado."
+    );
+
+
+    console.log(
+        `📁 Cache: ${CACHE_PATH}`
+    );
+
+    console.log(
+        `👥 Usuários: ${USERS_PATH}`
+    );
+
+    console.log(
+        `💬 Mensagens: ${MESSAGES_PATH}`
+    );
+
+
+    if (!API_KEY) {
+
+        console.warn(
+            "⚠️ API_KEY não encontrada."
+        );
+    }
+
+
+    if (!SECRET_KEY) {
+
+        console.warn(
+            "⚠️ SECRET_KEY não encontrada."
+        );
+    }
+
+
+    // =================================================
+    // IMPORTANTE:
+    //
+    // NÃO carregamos o cache atual em ultimoCache.
+    //
+    // Começamos vazio para que uma posição que já
+    // esteja aberta quando o worker iniciar também
+    // gere uma mensagem no Telegram.
+    // =================================================
+
+    ultimoCache = {};
+
+
+    // -----------------------------------------------
+    // Descobrir usuários
+    // -----------------------------------------------
+
+    await atualizarUsuarios();
+
+
+    // -----------------------------------------------
+    // Primeira execução
+    // -----------------------------------------------
+
+    await verificarPosicoes();
+
+
+    // -----------------------------------------------
+    // Loop
+    // -----------------------------------------------
+
+    setInterval(
+        async () => {
+
+            try {
+
+                await atualizarUsuarios();
+
+                await verificarPosicoes();
+
+            } catch (erro) {
+
+                console.error(
+                    "❌ Erro no loop Telegram:",
+                    erro.message
+                );
+            }
+
+        },
+        CHECK_INTERVAL_MS
+    );
+}
+
+
+// =====================================================
+// TRATAMENTO DE ERROS
+// =====================================================
+
+process.on(
+    "uncaughtException",
+    erro => {
+
+        console.error(
+            "❌ uncaughtException:",
+            erro
+        );
+    }
+);
+
+
+process.on(
+    "unhandledRejection",
+    erro => {
+
+        console.error(
+            "❌ unhandledRejection:",
+            erro
+        );
+    }
+);
+
+
+// =====================================================
+// START
+// =====================================================
+
+iniciar();
