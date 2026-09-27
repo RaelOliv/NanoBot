@@ -550,8 +550,8 @@ function gerarMensagemAtiva(
 
   const pnlFmt =
     resultado.pnl >= 0
-      ? `🟩 +${resultado.pnl.toFixed(2)} USDT`
-      : `🟥 ${resultado.pnl.toFixed(2)} USDT`;
+      ? `🟩 +${resultado.pnl.toFixed(2)} USD`
+      : `🟥 ${resultado.pnl.toFixed(2)} USD`;
 
   const pctFmt =
     resultado.percent >= 0
@@ -583,8 +583,8 @@ function gerarMensagemAtiva(
   `━━━━━━━━━━━━━━━\n` +
   `🟢 <b>Operación en curso</b> 🟢\n` +
   `\n` +
-  `💵 Precio al entrar: ${pos.entryPrice}\n` +
-  `💰 Precio actual: ${pos.markPrice}\n` +
+  `💵 Precio al entrar: \$ ${pos.entryPrice} USD\n` +
+  `💰 Precio actual: \$ ${pos.markPrice} USD\n` +
   `\n` +
   `📊 Resultado actual: ${pnlFmt}\n` +
   `📉 Cambio actual: ${pctFmt}\n` +
@@ -666,8 +666,8 @@ function gerarMensagemFinal(
 
   const pnlFmt =
     pnl >= 0.01
-      ? `🟩 +${pnl.toFixed(2)} USDT`
-      : `🟥 ${pnl.toFixed(2)} USDT`;
+      ? `🟩 +${pnl.toFixed(2)} USD`
+      : `🟥 ${pnl.toFixed(2)} USD`;
 
   const pctFmt =
     percent >= 0
@@ -696,8 +696,8 @@ function gerarMensagemFinal(
   `📊 <b>${symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
   `⚫ <b>Operación finalizada</b>\n` +
-  `💵 Precio al entrar: ${entry}\n` +
-  `💸 Precio al salir: ${exitPrice.toFixed(4)}\n` +
+  `💵 Precio al entrar: \$ ${entry} USD\n` +
+  `💸 Precio al salir: \$ ${exitPrice.toFixed(4)} USD\n` +
   `📊 Resultado: ${pnlFmt}\n` +
   `📉 Cambio: ${pctFmt}\n` +
   `⏱️ Tiempo de la operación: ${durationFmt}\n` +
