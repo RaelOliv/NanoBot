@@ -695,15 +695,19 @@ function gerarMensagemFinal(
   `━━━━━━━━━━━━━━━\n` +
   `📊 <b>${symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
-  `⚫ <b>Operación finalizada</b>\n` +
+  `⚫ <b>Operación Finalizada</b> ⚫ \n` +
+  ` \n`
   `💵 Precio al entrar: ${entry.toFixed(6)} USDT\n` +
-  `💸 Precio al salir: ${exitPrice.toFixed(6)} USDT\n` +
+  `💸 Precio al salir: ${
+    exitPrice.toFixed(6)} USDT\n` +
+  ` \n`
   `📊 Resultado: ${pnlFmt}\n` +
   `📉 Cambio: ${pctFmt}\n` +
+  ` \n`
   `⏱️ Tiempo de la operación: ${durationFmt}\n` +
-  `🕒 Hora de inicio: ` +
+  `🕒 Inicio: ` +
   `${openedAt.toLocaleString()}\n` +
-  `🕒 Hora de finalización: ` +
+  `🕒 Finalización: ` +
   `${closedAt.toLocaleString()}\n` +
   `━━━━━━━━━━━━━━━`
 );
