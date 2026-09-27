@@ -583,8 +583,8 @@ function gerarMensagemAtiva(
   `━━━━━━━━━━━━━━━\n` +
   `🟢 <b>Operación en curso</b> 🟢\n` +
   `\n` +
-  `💵 Precio al entrar: \$ ${pos.entryPrice.toFixed(6)} USDT\n` +
-  `💰 Precio actual: \$ ${pos.markPrice.toFixed(6)} USDT\n` +
+  `💵 Precio al entrar: ${pos.entryPrice.toFixed(6)} USDT\n` +
+  `💰 Precio actual: ${pos.markPrice.toFixed(6)} USDT\n` +
   `\n` +
   `📊 Resultado actual: ${pnlFmt}\n` +
   `📉 Cambio actual: ${pctFmt}\n` +
@@ -696,8 +696,8 @@ function gerarMensagemFinal(
   `📊 <b>${symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
   `⚫ <b>Operación finalizada</b>\n` +
-  `💵 Precio al entrar: \$ ${entry} USD\n` +
-  `💸 Precio al salir: \$ ${exitPrice.toFixed(4)} USD\n` +
+  `💵 Precio al entrar: ${entry.toFixed(6)} USDT\n` +
+  `💸 Precio al salir: ${exitPrice.toFixed(6)} USDT\n` +
   `📊 Resultado: ${pnlFmt}\n` +
   `📉 Cambio: ${pctFmt}\n` +
   `⏱️ Tiempo de la operación: ${durationFmt}\n` +
