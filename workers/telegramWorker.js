@@ -550,13 +550,13 @@ function gerarMensagemAtiva(
 
   const pnlFmt =
     resultado.pnl >= 0
-      ? `🟩 +${resultado.pnl.toFixed(2)} USDT`
-      : `🟥 ${resultado.pnl.toFixed(2)} USDT`;
+      ? `🟩 +${resultado.pnl.toFixed(4)} USDT`
+      : `🟥 ${resultado.pnl.toFixed(4)} USDT`;
 
   const pctFmt =
     resultado.percent >= 0
-      ? `🟩 +${resultado.percent.toFixed(2)}%`
-      : `🟥 ${resultado.percent.toFixed(2)}%`;
+      ? `🟩 +${resultado.pnl.toFixed(2)} USDT (${resultado.percent.toFixed(2)}%)`
+      : `🟥 ${resultado.pnl.toFixed(2)} USDT (${resultado.percent.toFixed(2)}%)`;
 
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -565,8 +565,7 @@ function gerarMensagemAtiva(
     `🟡 <b>Posição Ativa</b>\n` +
     `💵 Entrada: ${pos.entryPrice}\n` +
     `💰 Preço atual: ${pos.markPrice}\n` +
-    `📊 Lucro atual: ${pnlFmt}\n` +
-    `📉 Variação: ${pctFmt}\n` +
+    `📊 PnL: ${pnlFmt}\n` +
     `🕒 Abertura: ` +
     `${new Date(
       pos.openedAt
