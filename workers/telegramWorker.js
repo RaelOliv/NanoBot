@@ -505,7 +505,7 @@ function gerarMensagemInicial(
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
     `🟢 <b>Posición Abierta</b>\n` +
-    `💵 Precio al entrar (USDT): ${pos.entryPrice.toFixed(6)}\n` +
+    `💵 Precio al entrar (USDT): ${parseFloat(pos.entryPrice).toFixed(6)}\n` +
     `📈 Lado: ${pos.positionSide}\n` +
     `📊 Quantidade: ${pos.positionAmt}\n` +
     `⚙️ Alavancagem: ${pos.leverage}x\n` +
@@ -583,8 +583,8 @@ function gerarMensagemAtiva(
   `━━━━━━━━━━━━━━━\n` +
   `🟢 <b>Operación en curso</b> 🟢\n` +
   `\n` +
-  `💵 Precio al entrar (USDT): ${pos.entryPrice.toFixed(6)}\n` +
-  `💰 Precio actual (USDT): ${pos.markPrice.toFixed(6)}\n` +
+  `💵 Precio al entrar (USDT): ${parseFloat(pos.entryPrice).toFixed(6)}\n` +
+  `💰 Precio actual (USDT): ${parseFloat(pos.markPrice).toFixed(6)}\n` +
   `\n` +
   `📊 Resultado actual: ${pnlFmt}\n` +
   `📉 Cambio actual: ${pctFmt}\n` +
@@ -697,8 +697,8 @@ function gerarMensagemFinal(
   `━━━━━━━━━━━━━━━\n` +
   `⚫ <b>Operación finalizada</b>\n` +
       `\n` +
-  `💵 Precio al entrar (USDT): ${entry.toFixed(6)}\n` +
-  `💸 Precio al salir (USDT): ${exitPrice.toFixed(6)}\n` +
+  `💵 Precio al entrar (USDT): ${parseFloat(entry).toFixed(6)}\n` +
+  `💸 Precio al salir (USDT): ${parseFloat(exitPrice).toFixed(6)}\n` +
       `\n` +
   `📊 Resultado: ${pnlFmt}\n` +
   `📉 Cambio: ${pctFmt}\n` +
