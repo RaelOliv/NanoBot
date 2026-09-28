@@ -504,8 +504,8 @@ function gerarMensagemInicial(
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `🟢 <b>Posição Aberta</b>\n` +
-    `💵 Preço de entrada: ${pos.entryPrice}\n` +
+    `🟢 <b>Posición Abierta</b>\n` +
+    `💵 Precio al entrar: ${pos.entryPrice}\n` +
     `📈 Lado: ${pos.positionSide}\n` +
     `📊 Quantidade: ${pos.positionAmt}\n` +
     `⚙️ Alavancagem: ${pos.leverage}x\n` +
@@ -550,13 +550,13 @@ function gerarMensagemAtiva(
 
   const pnlFmt =
     resultado.pnl >= 0
-      ? `🟩 +${resultado.pnl.toFixed(2)} USDT`
-      : `🟥 ${resultado.pnl.toFixed(2)} USDT`;
+      ? ` +${resultado.pnl.toFixed(2)} USD`
+      : ` ${resultado.pnl.toFixed(2)} USD`;
 
   const pctFmt =
     resultado.percent >= 0
-      ? `🟩 +${resultado.percent.toFixed(1)}%`
-      : `🟥 ${resultado.percent.toFixed(1)}%`;
+      ? ` 🟩 +${resultado.percent.toFixed(1)} %`
+      : ` 🟥 ${resultado.percent.toFixed(1)} %`;
 /*
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -666,13 +666,13 @@ function gerarMensagemFinal(
 
   const pnlFmt =
     pnl >= 0.01
-      ? `🟩 +${pnl.toFixed(2)} USDT`
-      : `🟥 ${pnl.toFixed(2)} USDT`;
+      ? ` +${pnl.toFixed(2)} USD`
+      : ` ${pnl.toFixed(2)} USD`;
 
   const pctFmt =
     percent >= 0
-      ? `🟩 +${percent.toFixed(1)}%`
-      : `🟥 ${percent.toFixed(1)}%`;
+      ? ` 🟩 +${percent.toFixed(1)} %`
+      : ` 🟥 ${percent.toFixed(1)} %`;
 /*
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -696,14 +696,17 @@ function gerarMensagemFinal(
   `📊 <b>${symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
   `⚫ <b>Operación finalizada</b>\n` +
+      `\n` +
   `💵 Precio al entrar: ${entry}\n` +
   `💸 Precio al salir: ${exitPrice.toFixed(4)}\n` +
+      `\n` +
   `📊 Resultado: ${pnlFmt}\n` +
   `📉 Cambio: ${pctFmt}\n` +
+      `\n` +
   `⏱️ Tiempo de la operación: ${durationFmt}\n` +
-  `🕒 Hora de inicio: ` +
+  `🕒 Inicio: ` +
   `${openedAt.toLocaleString()}\n` +
-  `🕒 Hora de finalización: ` +
+  `🕒 Finalización: ` +
   `${closedAt.toLocaleString()}\n` +
   `━━━━━━━━━━━━━━━`
 );
