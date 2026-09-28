@@ -82,7 +82,7 @@ const RESET_HIST_FILE =
 // users.json:
 // workers/cache/users.json
 //
-// Exemplo real:
+// Formato:
 //
 // {
 //   "6133697652": {
@@ -92,10 +92,21 @@ const RESET_HIST_FILE =
 //   }
 // }
 //
-// O chat_id é a chave do objeto.
-//
 // telegramMarginMessages.json:
-// workers/cache/telegramMarginMessages.json
+//
+// {
+//   "6133697652": {
+//     "messageId": 120,
+//     "createdAt": 123456789,
+//     "updatedAt": 123456789
+//   }
+// }
+//
+// Também existe compatibilidade com o formato antigo:
+//
+// {
+//   "6133697652": 120
+// }
 //
 // ======================================================
 
@@ -396,20 +407,6 @@ function carregarUsuariosTelegram() {
 
   const usuarios = [];
 
-  // ====================================================
-  // FORMATO REAL DO users.json
-  //
-  // {
-  //   "6133697652": {
-  //     "first_name": ".",
-  //     "username": null,
-  //     "active": true
-  //   }
-  // }
-  //
-  // O chat_id é a chave.
-  // ====================================================
-
   for (
     const [chatId, usuario] of Object.entries(dados)
   ) {
@@ -422,7 +419,6 @@ function carregarUsuariosTelegram() {
       continue;
     }
 
-    // Usuário inativo não recebe mensagens
     if (
       usuario.active === false
     ) {
@@ -464,10 +460,6 @@ function obterChatId(
     return null;
   }
 
-  // ====================================================
-  // FORMATO GERADO POR carregarUsuariosTelegram()
-  // ====================================================
-
   if (
     usuario.chatId !== undefined &&
     usuario.chatId !== null &&
@@ -480,10 +472,6 @@ function obterChatId(
       usuario.chatId
     );
   }
-
-  // ====================================================
-  // COMPATIBILIDADE
-  // ====================================================
 
   if (
     usuario.chat_id !== undefined &&
@@ -548,6 +536,79 @@ function carregarMensagensTelegram() {
 
 // ======================================================
 // TELEGRAM
+// OBTER MESSAGE ID
+// ======================================================
+//
+// Aceita:
+//
+// "6133697652": 120
+//
+// ou:
+//
+// "6133697652": {
+//   "messageId": 120
+// }
+//
+// ======================================================
+
+function obterMessageId(
+  registro
+) {
+
+  if (
+    registro === undefined ||
+    registro === null
+  ) {
+
+    return null;
+  }
+
+  // Formato antigo
+  if (
+    typeof registro === "number" ||
+    typeof registro === "string"
+  ) {
+
+    const id =
+      Number(
+        registro
+      );
+
+    if (
+      Number.isFinite(id) &&
+      id > 0
+    ) {
+
+      return id;
+    }
+
+    return null;
+  }
+
+  // Formato atual
+  if (
+    typeof registro === "object"
+  ) {
+
+    const id =
+      Number(
+        registro.messageId
+      );
+
+    if (
+      Number.isFinite(id) &&
+      id > 0
+    ) {
+
+      return id;
+    }
+  }
+
+  return null;
+}
+
+// ======================================================
+// TELEGRAM
 // SALVAR MESSAGE IDS
 // ======================================================
 
@@ -563,7 +624,7 @@ function salvarMensagensTelegram(
 
 // ======================================================
 // TELEGRAM
-// VERIFICAR SE MENSAGEM NÃO EXISTE
+// IDENTIFICAR MENSAGEM NÃO EXISTENTE
 // ======================================================
 
 function mensagemNaoExisteMais(
@@ -583,6 +644,15 @@ function mensagemNaoExisteMais(
       descricao
     ).toLowerCase();
 
+  console.log(
+    `[Telegram] 🔎 Erro Telegram status=${status || "?"} ` +
+    `descricao="${descricao}"`
+  );
+
+  // ====================================================
+  // ERROS EXPLÍCITOS DE MESSAGE ID
+  // ====================================================
+
   if (
     texto.includes(
       "message to edit not found"
@@ -595,6 +665,15 @@ function mensagemNaoExisteMais(
   if (
     texto.includes(
       "message identifier is not valid"
+    )
+  ) {
+
+    return true;
+  }
+
+  if (
+    texto.includes(
+      "message identifier is not specified"
     )
   ) {
 
@@ -628,18 +707,19 @@ function mensagemNaoExisteMais(
     return true;
   }
 
+  // ====================================================
+  // ALGUNS ERROS 400 DO TELEGRAM
+  // ====================================================
+
   if (
     status === 400 &&
-    texto.includes(
-      "message"
-    ) &&
+    texto.includes("message") &&
     (
-      texto.includes(
-        "edit"
-      ) ||
-      texto.includes(
-        "identifier"
-      )
+      texto.includes("edit") ||
+      texto.includes("identifier") ||
+      texto.includes("not found") ||
+      texto.includes("can't be edited") ||
+      texto.includes("cannot be edited")
     )
   ) {
 
@@ -647,6 +727,30 @@ function mensagemNaoExisteMais(
   }
 
   return false;
+}
+
+// ======================================================
+// TELEGRAM
+// MENSAGEM NÃO MODIFICADA
+// ======================================================
+
+function mensagemNaoModificada(
+  erro
+) {
+
+  const descricao =
+    erro?.response?.data?.description ||
+    erro?.message ||
+    "";
+
+  const texto =
+    String(
+      descricao
+    ).toLowerCase();
+
+  return texto.includes(
+    "message is not modified"
+  );
 }
 
 // ======================================================
@@ -704,7 +808,7 @@ async function criarMensagemTelegram(
     ) {
 
       console.error(
-        `[Telegram] Falha no sendMessage para ${chatId}:`,
+        `[Telegram] ❌ Falha no sendMessage para ${chatId}:`,
         resposta.data
       );
 
@@ -719,7 +823,7 @@ async function criarMensagemTelegram(
     ) {
 
       console.error(
-        `[Telegram] Telegram não retornou message_id para ${chatId}.`
+        `[Telegram] ❌ Telegram não retornou message_id para ${chatId}.`
       );
 
       return null;
@@ -730,7 +834,9 @@ async function criarMensagemTelegram(
       `chat=${chatId} message_id=${messageId}`
     );
 
-    return messageId;
+    return Number(
+      messageId
+    );
 
   } catch (erro) {
 
@@ -764,6 +870,9 @@ async function editarMensagemTelegram(
       ok: false,
 
       mensagemNaoExiste:
+        false,
+
+      mensagemNaoModificada:
         false
     };
   }
@@ -800,19 +909,22 @@ async function editarMensagemTelegram(
         }
       );
 
-    // ==================================================
-    // SUCESSO
-    // ==================================================
-
     if (
       resposta.data?.ok
     ) {
+
+      console.log(
+        `[Telegram] ✅ Mensagem ${messageId} atualizada.`
+      );
 
       return {
 
         ok: true,
 
         mensagemNaoExiste:
+          false,
+
+        mensagemNaoModificada:
           false
       };
     }
@@ -822,6 +934,9 @@ async function editarMensagemTelegram(
       ok: false,
 
       mensagemNaoExiste:
+        false,
+
+      mensagemNaoModificada:
         false
     };
 
@@ -832,8 +947,42 @@ async function editarMensagemTelegram(
       erro?.message ||
       "";
 
+    // ==================================================
+    // MESMO TEXTO
+    // ==================================================
+
+    if (
+      mensagemNaoModificada(
+        erro
+      )
+    ) {
+
+      console.log(
+        `[Telegram] ℹ️ Mensagem ${messageId} ` +
+        `já possui o mesmo conteúdo.`
+      );
+
+      return {
+
+        ok: true,
+
+        mensagemNaoExiste:
+          false,
+
+        mensagemNaoModificada:
+          true,
+
+        erro
+      };
+    }
+
+    const inexistente =
+      mensagemNaoExisteMais(
+        erro
+      );
+
     console.warn(
-      `[Telegram] Erro editando ` +
+      `[Telegram] ⚠️ Erro editando ` +
       `chat=${chatId} message_id=${messageId}: ` +
       `${descricao}`
     );
@@ -843,9 +992,10 @@ async function editarMensagemTelegram(
       ok: false,
 
       mensagemNaoExiste:
-        mensagemNaoExisteMais(
-          erro
-        ),
+        inexistente,
+
+      mensagemNaoModificada:
+        false,
 
       erro
     };
@@ -878,7 +1028,7 @@ async function atualizarMensagemTelegram(
     Date.now();
 
   // ====================================================
-  // CARREGA OS IDS SALVOS
+  // CARREGA IDS
   // ====================================================
 
   let mensagens =
@@ -888,6 +1038,15 @@ async function atualizarMensagemTelegram(
     mensagens[
       chatKey
     ];
+
+  // ====================================================
+  // OBTÉM ID COMPATÍVEL COM OS DOIS FORMATOS
+  // ====================================================
+
+  let messageId =
+    obterMessageId(
+      registro
+    );
 
   // ====================================================
   // EVITA ATUALIZAÇÕES DESNECESSÁRIAS
@@ -913,16 +1072,17 @@ async function atualizarMensagemTelegram(
   }
 
   // ====================================================
-  // JÁ EXISTE MESSAGE_ID
+  // SE EXISTE MESSAGE ID
   // ====================================================
 
   if (
-    registro &&
-    registro.messageId
+    messageId
   ) {
 
-    const messageId =
-      registro.messageId;
+    console.log(
+      `[Telegram] 🔑 Message ID encontrado no cache: ` +
+      `chat=${chatId} message_id=${messageId}`
+    );
 
     const resultado =
       await editarMensagemTelegram(
@@ -932,7 +1092,7 @@ async function atualizarMensagemTelegram(
       );
 
     // ==================================================
-    // EDIÇÃO REALIZADA
+    // SUCESSO
     // ==================================================
 
     if (
@@ -946,8 +1106,13 @@ async function atualizarMensagemTelegram(
         messageId,
 
         createdAt:
-          registro.createdAt ||
-          agora,
+          registro &&
+          typeof registro === "object"
+            ? (
+                registro.createdAt ||
+                agora
+              )
+            : agora,
 
         updatedAt:
           agora
@@ -971,7 +1136,7 @@ async function atualizarMensagemTelegram(
     }
 
     // ==================================================
-    // MENSAGEM FOI APAGADA
+    // MENSAGEM NÃO EXISTE MAIS
     // ==================================================
 
     if (
@@ -979,34 +1144,54 @@ async function atualizarMensagemTelegram(
     ) {
 
       console.log(
-        `[Telegram] ❌ A mensagem ` +
-        `${messageId} do chat ${chatId} não existe mais.`
+        `[Telegram] ❌ A mensagem ${messageId} ` +
+        `do chat ${chatId} não existe mais.`
       );
 
-      console.log(
-        `[Telegram] ♻️ Removendo message_id inválido.`
-      );
+      // ================================================
+      // REMOVE IMEDIATAMENTE DO CACHE
+      // ================================================
 
       delete mensagens[
         chatKey
       ];
 
-      salvarMensagensTelegram(
-        mensagens
-      );
+      const removeu =
+        salvarMensagensTelegram(
+          mensagens
+        );
+
+      if (
+        removeu
+      ) {
+
+        console.log(
+          `[Telegram] ♻️ message_id=${messageId} ` +
+          `removido do cache.`
+        );
+
+      } else {
+
+        console.error(
+          `[Telegram] ❌ Não foi possível remover ` +
+          `message_id=${messageId} do cache.`
+        );
+      }
 
       registro = null;
+      messageId = null;
 
     } else {
 
       // =================================================
-      // ERRO TEMPORÁRIO
-      // NÃO APAGA O MESSAGE_ID
+      // OUTRO ERRO
+      // NÃO DEVE CRIAR OUTRA MENSAGEM
       // =================================================
 
       console.warn(
         `[Telegram] ⚠️ Não foi possível editar ` +
-        `message_id=${messageId}.`
+        `message_id=${messageId}. ` +
+        `O ID será mantido para nova tentativa.`
       );
 
       return;
@@ -1014,7 +1199,7 @@ async function atualizarMensagemTelegram(
   }
 
   // ====================================================
-  // NÃO EXISTE MESSAGE_ID
+  // NÃO EXISTE MESSAGE ID VÁLIDO
   // CRIA NOVA MENSAGEM
   // ====================================================
 
@@ -1041,7 +1226,7 @@ async function atualizarMensagemTelegram(
   }
 
   // ====================================================
-  // SALVA NOVO MESSAGE_ID
+  // SALVA NOVO MESSAGE ID
   // ====================================================
 
   mensagens[
@@ -1079,6 +1264,10 @@ async function atualizarMensagemTelegram(
       `mas o novo message_id não pôde ser salvo.`
     );
   }
+
+  // ====================================================
+  // ATUALIZA CONTROLE EM MEMÓRIA
+  // ====================================================
 
   telegramLastText.set(
     chatKey,
