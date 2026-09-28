@@ -40,28 +40,12 @@ const TPDIA =
   );
 
 // ======================================================
-// DIRETÓRIOS
+// DIRETÓRIO DE CACHE
 // ======================================================
-
-// margWorker.js está em:
-// NanoBot/workers/margWorker.js
-//
-// Cache deste worker:
-// NanoBot/workers/cache/
-//
-// Cache global do sistema:
-// NanoBot/cache/
 
 const WORKER_CACHE_DIR =
   path.resolve(
     __dirname,
-    "cache"
-  );
-
-const GLOBAL_CACHE_DIR =
-  path.resolve(
-    __dirname,
-    "..",
     "cache"
   );
 
@@ -102,21 +86,23 @@ const RESET_HIST_FILE =
 // ======================================================
 // TELEGRAM
 // ======================================================
-
-// IMPORTANTE:
-// users.json fica em:
 //
-// NanoBot/cache/users.json
+// IMPORTANTE:
+//
+// O users.json está em:
+//
+// workers/cache/users.json
+//
+// O arquivo que guarda os message_id também está em:
+//
+// workers/cache/telegramMarginMessages.json
+//
 
 const USERS_FILE =
   path.join(
-    GLOBAL_CACHE_DIR,
+    WORKER_CACHE_DIR,
     "users.json"
   );
-
-// Este arquivo fica em:
-//
-// NanoBot/workers/cache/telegramMarginMessages.json
 
 const TELEGRAM_MESSAGES_FILE =
   path.join(
@@ -125,14 +111,17 @@ const TELEGRAM_MESSAGES_FILE =
   );
 
 // ======================================================
-// CONTROLE
+// CONTROLE DO WORKER
 // ======================================================
 
 let workerRunning = false;
 
 let serverTimeOffset = 0;
 
-// Controle individual por chat.
+// ======================================================
+// CONTROLE TELEGRAM POR CHAT
+// ======================================================
+
 const telegramLastText =
   new Map();
 
@@ -147,10 +136,10 @@ const TELEGRAM_MIN_UPDATE_INTERVAL =
   );
 
 // ======================================================
-// GARANTE DIRETÓRIOS
+// GARANTE DIRETÓRIO
 // ======================================================
 
-function garantirDiretorios() {
+function garantirCacheDir() {
 
   try {
 
@@ -161,26 +150,19 @@ function garantirDiretorios() {
       }
     );
 
-    fs.mkdirSync(
-      GLOBAL_CACHE_DIR,
-      {
-        recursive: true
-      }
-    );
-
   } catch (erro) {
 
     console.error(
-      "[margWorker] Erro criando diretórios:",
+      "[margWorker] Erro criando diretório de cache:",
       erro.message
     );
   }
 }
 
-garantirDiretorios();
+garantirCacheDir();
 
 // ======================================================
-// JSON - SALVAR
+// SALVAR JSON
 // ======================================================
 
 function salvarJson(
@@ -190,7 +172,7 @@ function salvarJson(
 
   try {
 
-    garantirDiretorios();
+    garantirCacheDir();
 
     const temporario =
       `${arquivo}.tmp`;
@@ -224,7 +206,7 @@ function salvarJson(
 }
 
 // ======================================================
-// JSON - LER
+// LER JSON
 // ======================================================
 
 function lerJson(
@@ -239,6 +221,7 @@ function lerJson(
         arquivo
       )
     ) {
+
       return padrao;
     }
 
@@ -251,6 +234,7 @@ function lerJson(
     if (
       !conteudo
     ) {
+
       return padrao;
     }
 
@@ -270,7 +254,7 @@ function lerJson(
 }
 
 // ======================================================
-// CONVERTE NÚMERO
+// NÚMERO
 // ======================================================
 
 function numero(
@@ -284,6 +268,7 @@ function numero(
   if (
     !Number.isFinite(n)
   ) {
+
     return 0;
   }
 
@@ -312,6 +297,7 @@ function calcularPercentual(
     !Number.isFinite(a) ||
     i === 0
   ) {
+
     return 0;
   }
 
@@ -336,6 +322,7 @@ function formatarNumero(
   if (
     !Number.isFinite(n)
   ) {
+
     return "0.00";
   }
 
@@ -344,6 +331,7 @@ function formatarNumero(
     {
       minimumFractionDigits:
         casas,
+
       maximumFractionDigits:
         casas
     }
@@ -391,6 +379,10 @@ function carregarUsuariosTelegram() {
       []
     );
 
+  // ================================================
+  // users.json é um array
+  // ================================================
+
   if (
     Array.isArray(dados)
   ) {
@@ -401,6 +393,10 @@ function carregarUsuariosTelegram() {
 
     return dados;
   }
+
+  // ================================================
+  // { users: [] }
+  // ================================================
 
   if (
     dados &&
@@ -416,6 +412,10 @@ function carregarUsuariosTelegram() {
     return dados.users;
   }
 
+  // ================================================
+  // { usuarios: [] }
+  // ================================================
+
   if (
     dados &&
     Array.isArray(
@@ -429,6 +429,10 @@ function carregarUsuariosTelegram() {
 
     return dados.usuarios;
   }
+
+  // ================================================
+  // OBJETO
+  // ================================================
 
   if (
     dados &&
@@ -455,7 +459,7 @@ function carregarUsuariosTelegram() {
 }
 
 // ======================================================
-// TELEGRAM - CHAT ID
+// TELEGRAM - OBTER CHAT ID
 // ======================================================
 
 function obterChatId(
@@ -466,8 +470,15 @@ function obterChatId(
     usuario === null ||
     usuario === undefined
   ) {
+
     return null;
   }
+
+  // Caso users.json contenha diretamente:
+  //
+  // [
+  //   123456789
+  // ]
 
   if (
     typeof usuario === "string" ||
@@ -482,6 +493,7 @@ function obterChatId(
   if (
     typeof usuario !== "object"
   ) {
+
     return null;
   }
 
@@ -521,7 +533,7 @@ function obterChatId(
 }
 
 // ======================================================
-// TELEGRAM - CARREGA MESSAGE IDS
+// TELEGRAM - CARREGAR MESSAGE IDS
 // ======================================================
 
 function carregarMensagensTelegram() {
@@ -545,7 +557,7 @@ function carregarMensagensTelegram() {
 }
 
 // ======================================================
-// TELEGRAM - SALVA MESSAGE IDS
+// TELEGRAM - SALVAR MESSAGE IDS
 // ======================================================
 
 function salvarMensagensTelegram(
@@ -559,8 +571,7 @@ function salvarMensagensTelegram(
 }
 
 // ======================================================
-// TELEGRAM - VERIFICA SE ERRO SIGNIFICA
-// QUE A MENSAGEM NÃO EXISTE MAIS
+// TELEGRAM - VERIFICAR MENSAGEM INVÁLIDA
 // ======================================================
 
 function mensagemNaoExisteMais(
@@ -580,12 +591,12 @@ function mensagemNaoExisteMais(
       descricao
     ).toLowerCase();
 
-  // Erros conhecidos do Telegram.
   if (
     texto.includes(
       "message to edit not found"
     )
   ) {
+
     return true;
   }
 
@@ -594,6 +605,7 @@ function mensagemNaoExisteMais(
       "message identifier is not valid"
     )
   ) {
+
     return true;
   }
 
@@ -602,6 +614,7 @@ function mensagemNaoExisteMais(
       "message can't be edited"
     )
   ) {
+
     return true;
   }
 
@@ -610,6 +623,7 @@ function mensagemNaoExisteMais(
       "message not found"
     )
   ) {
+
     return true;
   }
 
@@ -618,24 +632,21 @@ function mensagemNaoExisteMais(
       "message_id_invalid"
     )
   ) {
+
     return true;
   }
 
-  // Alguns erros de Telegram relacionados
-  // a identificador inválido vêm como 400.
   if (
     status === 400 &&
+    texto.includes(
+      "message"
+    ) &&
     (
       texto.includes(
-        "message"
-      ) &&
-      (
-        texto.includes(
-          "edit"
-        ) ||
-        texto.includes(
-          "identifier"
-        )
+        "edit"
+      ) ||
+      texto.includes(
+        "identifier"
       )
     )
   ) {
@@ -647,7 +658,7 @@ function mensagemNaoExisteMais(
 }
 
 // ======================================================
-// TELEGRAM - CRIAR MENSAGEM
+// TELEGRAM - CRIAR NOVA MENSAGEM
 // ======================================================
 
 async function criarMensagemTelegram(
@@ -669,7 +680,7 @@ async function criarMensagemTelegram(
   try {
 
     console.log(
-      `[Telegram] Criando nova mensagem para ${chatId}...`
+      `[Telegram] 📤 Criando nova mensagem para ${chatId}...`
     );
 
     const resposta =
@@ -722,7 +733,7 @@ async function criarMensagemTelegram(
     }
 
     console.log(
-      `[Telegram] Nova mensagem criada. ` +
+      `[Telegram] ✅ Nova mensagem criada. ` +
       `chat=${chatId} message_id=${messageId}`
     );
 
@@ -731,7 +742,7 @@ async function criarMensagemTelegram(
   } catch (erro) {
 
     console.error(
-      `[Telegram] Erro no sendMessage para ${chatId}:`,
+      `[Telegram] ❌ Erro no sendMessage para ${chatId}:`,
       erro.response?.data ||
       erro.message
     );
@@ -763,7 +774,7 @@ async function editarMensagemTelegram(
   try {
 
     console.log(
-      `[Telegram] Editando mensagem ` +
+      `[Telegram] ✏️ Editando mensagem ` +
       `chat=${chatId} message_id=${messageId}`
     );
 
@@ -834,7 +845,7 @@ async function editarMensagemTelegram(
 }
 
 // ======================================================
-// TELEGRAM - ATUALIZA UMA MENSAGEM
+// TELEGRAM - ATUALIZAR MENSAGEM
 // ======================================================
 
 async function atualizarMensagemTelegram(
@@ -857,9 +868,9 @@ async function atualizarMensagemTelegram(
   const agora =
     Date.now();
 
-  // ====================================================
-  // CARREGA O ESTADO DO DISCO
-  // ====================================================
+  // ================================================
+  // CARREGA DO DISCO
+  // ================================================
 
   let mensagens =
     carregarMensagensTelegram();
@@ -869,9 +880,9 @@ async function atualizarMensagemTelegram(
       chatKey
     ];
 
-  // ====================================================
-  // NÃO CRIAR/EDITAR REPETIDAMENTE
-  // ====================================================
+  // ================================================
+  // EVITA UPDATE DESNECESSÁRIO
+  // ================================================
 
   const ultimoTexto =
     telegramLastText.get(
@@ -892,9 +903,9 @@ async function atualizarMensagemTelegram(
     return;
   }
 
-  // ====================================================
+  // ================================================
   // EXISTE MESSAGE ID
-  // ====================================================
+  // ================================================
 
   if (
     registro &&
@@ -911,9 +922,9 @@ async function atualizarMensagemTelegram(
         texto
       );
 
-    // ==================================================
-    // EDIÇÃO FUNCIONOU
-    // ==================================================
+    // ==============================================
+    // EDIÇÃO OK
+    // ==============================================
 
     if (
       resultado.ok
@@ -950,9 +961,9 @@ async function atualizarMensagemTelegram(
       return;
     }
 
-    // ==================================================
-    // A MENSAGEM FOI APAGADA
-    // ==================================================
+    // ==============================================
+    // MENSAGEM APAGADA
+    // ==============================================
 
     if (
       resultado.mensagemNaoExiste
@@ -964,7 +975,7 @@ async function atualizarMensagemTelegram(
       );
 
       console.log(
-        `[Telegram] ♻️ Removendo ID inválido do cache.`
+        `[Telegram] ♻️ Removendo message_id inválido.`
       );
 
       delete mensagens[
@@ -975,32 +986,27 @@ async function atualizarMensagemTelegram(
         mensagens
       );
 
-      // Atualiza a variável local.
       registro = null;
 
     } else {
 
-      // =================================================
-      // OUTRO ERRO
-      // =================================================
-
+      // Outro erro não deve destruir o ID.
       console.warn(
         `[Telegram] ⚠️ Não foi possível editar ` +
-        `a mensagem ${messageId}.`
+        `message_id=${messageId}.`
       );
 
       return;
     }
   }
 
-  // ====================================================
-  // NÃO EXISTE MESSAGE ID
-  //
-  // OU A MENSAGEM ANTIGA FOI APAGADA
-  // ====================================================
+  // ================================================
+  // CRIA NOVA MENSAGEM
+  // ================================================
 
   console.log(
-    `[Telegram] 📤 Criando mensagem para ${chatId}.`
+    `[Telegram] 📤 Nenhuma mensagem válida encontrada. ` +
+    `Criando nova mensagem para ${chatId}.`
   );
 
   const novoMessageId =
@@ -1014,16 +1020,15 @@ async function atualizarMensagemTelegram(
   ) {
 
     console.error(
-      `[Telegram] ❌ Não foi possível criar ` +
-      `nova mensagem para ${chatId}.`
+      `[Telegram] ❌ Falha ao criar nova mensagem para ${chatId}.`
     );
 
     return;
   }
 
-  // ====================================================
-  // SALVA IMEDIATAMENTE O NOVO ID
-  // ====================================================
+  // ================================================
+  // SALVA NOVO MESSAGE ID
+  // ================================================
 
   mensagens[
     chatKey
@@ -1045,19 +1050,19 @@ async function atualizarMensagemTelegram(
     );
 
   if (
-    !salvou
+    salvou
   ) {
 
-    console.error(
-      `[Telegram] ⚠️ A mensagem foi criada ` +
-      `mas não foi possível salvar o message_id.`
+    console.log(
+      `[Telegram] 💾 Novo message_id salvo: ` +
+      `${novoMessageId}`
     );
 
   } else {
 
-    console.log(
-      `[Telegram] ✅ Novo message_id salvo: ` +
-      `${novoMessageId}`
+    console.error(
+      `[Telegram] ⚠️ Mensagem criada, ` +
+      `mas o novo message_id não pôde ser salvo.`
     );
   }
 
@@ -1073,7 +1078,7 @@ async function atualizarMensagemTelegram(
 }
 
 // ======================================================
-// TELEGRAM - ATUALIZA TODOS OS USUÁRIOS
+// TELEGRAM - TODOS OS USUÁRIOS
 // ======================================================
 
 async function atualizarTelegram(
@@ -1085,7 +1090,7 @@ async function atualizarTelegram(
   ) {
 
     console.warn(
-      "[Telegram] Telegram desativado: token não encontrado."
+      "[Telegram] Telegram desativado."
     );
 
     return;
@@ -1128,7 +1133,7 @@ async function atualizarTelegram(
     ) {
 
       console.warn(
-        "[Telegram] Usuário ignorado: chat_id não encontrado."
+        "[Telegram] Usuário sem chat_id válido."
       );
 
       continue;
@@ -1144,7 +1149,7 @@ async function atualizarTelegram(
     } catch (erro) {
 
       console.error(
-        `[Telegram] Erro no chat ${chatId}:`,
+        `[Telegram] Erro processando chat ${chatId}:`,
         erro.message
       );
     }
@@ -1152,7 +1157,7 @@ async function atualizarTelegram(
 }
 
 // ======================================================
-// FORMATA MENSAGEM
+// FORMATA MENSAGEM DA MARGEM
 // ======================================================
 
 function formatarMensagemMargem(
@@ -1275,7 +1280,7 @@ function formatarMensagemMargem(
 }
 
 // ======================================================
-// GET BALANCE FUTURES
+// BALANCE FUTURES
 // ======================================================
 
 async function getBalance() {
@@ -1298,7 +1303,6 @@ async function getBalance() {
 
     let usdt = null;
 
-    // /fapi/v2/account
     if (
       Array.isArray(
         resposta.assets
@@ -1427,7 +1431,7 @@ function obterHistoricoBalance() {
 }
 
 // ======================================================
-// MONITORAMENTO DA MARGEM
+// MONITORAMENTO
 // ======================================================
 
 async function monitorarMargem() {
@@ -1472,7 +1476,6 @@ async function monitorarMargem() {
       balance.availableBalance
   });
 
-  // Limite para não crescer infinitamente.
   if (
     balanceHist.length > 5000
   ) {
@@ -1647,7 +1650,7 @@ async function monitorarMargem() {
   });
 
   // ====================================================
-  // ENVIA PARA PARENT
+  // PARENT PORT
   // ====================================================
 
   if (
@@ -1688,7 +1691,7 @@ async function monitorarMargem() {
     } catch (erro) {
 
       console.error(
-        "[margWorker] Erro no parentPort:",
+        "[margWorker] Erro enviando MARGIN_STATUS:",
         erro.message
       );
     }
@@ -1821,7 +1824,7 @@ async function monitorarMargem() {
   }
 
   // ====================================================
-  // TAKE
+  // TAKE PROFIT
   // ====================================================
 
   if (
@@ -1920,7 +1923,7 @@ async function monitorarMargem() {
   }
 
   // ====================================================
-  // STOP
+  // STOP LOSS
   // ====================================================
 
   if (
@@ -2159,10 +2162,6 @@ if (
   );
 
   console.log(
-    `[margWorker] GLOBAL_CACHE_DIR: ${GLOBAL_CACHE_DIR}`
-  );
-
-  console.log(
     `[margWorker] USERS_FILE: ${USERS_FILE}`
   );
 
@@ -2186,11 +2185,14 @@ if (
     `[margWorker] TPDIA: ${TPDIA}%`
   );
 
-  // Primeira execução.
+  // ====================================================
+  // PRIMEIRA EXECUÇÃO
+  // ====================================================
+
   await startWorker();
 
   // ====================================================
-  // CICLO
+  // CICLO DE 10 SEGUNDOS
   // ====================================================
 
   setInterval(
