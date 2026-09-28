@@ -132,8 +132,6 @@ let ema3m5p = undefined;
 let ema3m10p = undefined;
 let sma3m400p = undefined;
 let ema3m400p = undefined;
-let sma3m400p_2 = undefined;
-let ema3m400p_2 = undefined;
 let ema3m5p_2 = undefined;
 let ema3m10p_2 = undefined;
 let maiorM3m20p = undefined;
@@ -227,8 +225,6 @@ console.log("Posição aberta:", aberta);
 
 
 
-
-
 const fs = require('fs');
 const path = require('path');
 const e = require('express');
@@ -260,58 +256,6 @@ cacheRisk[symbol] = {
   
 };
 */
-
-const https = require('https');
-
-function possuiInternet(timeout = 5000) {
-    return new Promise((resolve) => {
-        const req = https.get('https://fapi.binance.com/fapi/v1/time', {
-            timeout
-        }, (res) => {
-            res.resume();
-
-            // Qualquer resposta HTTP significa que existe conexão
-            resolve(res.statusCode >= 200 && res.statusCode < 500);
-        });
-
-        req.on('error', () => resolve(false));
-
-        req.on('timeout', () => {
-            req.destroy();
-            resolve(false);
-        });
-    });
-}
-async function verificarInternet() {
-    const online = await possuiInternet();
-
-    if (!online) {
-        console.log(
-            `[${new Date().toISOString()}] Sem conexão com a internet. Encerrando worker...`
-        );
-
-        if (parentPort) {
-            parentPort.postMessage({
-                tipo: 'SEM_INTERNET',
-                reiniciarEm: 5 * 60 * 1000
-            });
-        }
-
-        // Dá um pequeno tempo para a mensagem chegar ao processo principal
-        setTimeout(() => {
-            process.exit(1);
-        }, 100);
-
-        return false;
-    }
-
-    //return true;
-    setTimeout(() => {
-            verificarInternet();
-        }, 30000);
-    
-  
-}
 // Configuração de axios com retries limitados
 const Bottleneck = require('bottleneck');
 const BINANCE_MIN_TIME_MS = parseInt(process.env.BINANCE_MIN_TIME_MS) || 50;
@@ -1599,7 +1543,8 @@ async function carregarCandlesHistoricos() {
     ema3m5p = calcularEMA(5, candles3m);
     ema3m10p = calcularEMA(10, candles3m);
 
-    
+    sma3m400p = calcularSMA(400, candles3m);
+    ema3m400p = calcularEMA(400, candles3m);
 
     const s20 = calcularSMA(20, candles3m);
     const e20 = calcularEMA(20, candles3m);
@@ -1649,11 +1594,6 @@ async function carregarCandlesHistoricos() {
 
     parentPort.postMessage(`✅ ${symbol} - Histórico de 400 candles5m carregado com sucesso.`);
 
-    
-
-sma3m400p = calcularSMA(9, candles5m);
-    ema3m400p = calcularEMA(9, candles5m);
-    
     const s100 = calcularSMA(100, candles5m);
     const s110 = calcularSMA(110, candles5m);
     const e100 = calcularEMA(100, candles5m);
@@ -2917,10 +2857,11 @@ ws.on('pong', () => {
 
       ema3m5p_2 = ema3m5p;
       ema3m10p_2 = ema3m10p;
-      
+
       ema3m5p = calcularEMA(5, candles3m);
       ema3m10p = calcularEMA(10, candles3m);
-      
+      sma3m400p = calcularSMA(400, candles3m);
+      ema3m400p = calcularEMA(400, candles3m);
 
       const s20 = calcularSMA(20, candles3m);
       const e20 = calcularEMA(20, candles3m);
@@ -3004,13 +2945,6 @@ ws.on('pong', () => {
     if (candle5m.isFinal) {
       candles5m.push(candle5m);
 
-      sma3m400p_2 = sma3m400p;
-      ema3m400p_2 = ema3m400p;
-      
-      sma3m400p = calcularSMA(9, candles5m);
-      ema3m400p = calcularEMA(9, candles5m);
-
-      
       //if (candles5m.length > 400) candles5m.shift();
       /*
       const s50 = calcularSMA(50, candles5m);  
@@ -5319,6 +5253,7 @@ function addTrade(symbol) {
 }
 
 async function iniciarWebSocketContinuo() {
+
   // if (monitoramentoAtivado == false) return;
 
   parentPort.postMessage(`✅ Worker iniciarWebSocketContinuo: ${workerData.symbol}`);
@@ -6090,7 +6025,7 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
       && parseFloat(preco_atual) >= parseFloat(ema1m250p)
       && parseFloat(preco_atual) <= parseFloat(ema1m100p)
 */
-    
+    /*
         parseFloat(sRsiLast15m.k) >= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) >= parseFloat(sRsiLast5m_2.d) &&
         parseFloat(sRsiLast15m.k) <= parseFloat(70.0) &&
@@ -6103,27 +6038,12 @@ parseFloat(candles1m.slice(-2)[0].close) >= parseFloat(maiorM3m20p)
         parseFloat(preco_atual) >= parseFloat(ema3m10p) && 
         parseFloat(preco_atual) <= parseFloat(ema3m5p)
 
-       
-        /*
+       */
 
-        parseFloat(ema1m250p) > parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p_2) <= parseFloat(ema1m400p) && 
-        parseFloat(ema3m10p) <= parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p) > parseFloat(ema3m5p_2) 
+        parseFloat(ema3m5p) > parseFloat(ema3m10p) && 
+        parseFloat(ema3m5p_2) < parseFloat(ema3m10p) 
 
-        */
-        /*
-        parseFloat(ema1m250p) > parseFloat(ema1m400p)
-        &&
-        parseFloat(ema3m5p_2) <= parseFloat(ema3m10p_2)
-        && 
-        parseFloat(ema3m5p) > parseFloat(ema3m10p)
-        && 
-        parseFloat(preco_atual) >= parseFloat(ema3m5p) 
-        */
-        
-        
-        
+
       ) {
 
         sideM = 'C';
@@ -6578,7 +6498,7 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
       && parseFloat(preco_atual) >= parseFloat(ema1m100p)
 */
 
-      
+      /*  
         //parseFloat(sRsiLast15m.k) <= parseFloat(sRsiLast15m_2.k) &&
         //parseFloat(sRsiLast5m.k) <= parseFloat(sRsiLast5m_2.d) &&
         parseFloat(sRsiLast15m.k) >= parseFloat(30.0) &&
@@ -6590,49 +6510,12 @@ parseFloat(candles1m.slice(-2)[0].close) <= parseFloat(menorM3m20p)
 
         parseFloat(preco_atual) <= parseFloat(ema3m10p) && 
         parseFloat(preco_atual) >= parseFloat(ema3m5p)
+*/
+
+        parseFloat(ema3m5p) <= parseFloat(ema3m10p) && 
+        parseFloat(ema3m5p_2) >= parseFloat(ema3m10p) 
 
 
-      /*
-        parseFloat(ema1m250p) < parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p_2) >= parseFloat(ema1m400p) && 
-        parseFloat(ema3m10p) >= parseFloat(ema1m400p) && 
-        parseFloat(ema3m5p) < parseFloat(ema3m5p_2) 
-
-
-      */
-      /*
-
-       (
-         //parseFloat(ema1m250p) < parseFloat(sma1m400p) 
-         //&&
-         parseFloat(ema3m400p) < parseFloat(sma1m400p)
-       )
-        && 
-        
-        //parseFloat(candles1m.slice(-1)[0].high) <= parseFloat(candles1m.slice(-2)[0].high)
-        //&&
-        parseFloat(preco_atual) <
-        parseFloat(candles1m.slice(-2)[0].close)
-        &&
-        parseFloat(preco_anterior) >= parseFloat(ema3m400p)
-        &&
-        parseFloat(preco_atual) <= parseFloat(ema3m400p)
-        &&
-        parseFloat(ema3m400p) <= parseFloat(sma3m400p) 
-        &&
-        parseFloat(ema3m400p) <= parseFloat(ema3m400p_2) 
-        &&
-        parseFloat(sma3m400p) <= parseFloat(sma3m400p_2) 
-        */
-        /*
-        parseFloat(ema1m250p) < parseFloat(ema1m400p)
-        &&
-        parseFloat(ema3m5p_2) >= parseFloat(ema3m10p_2)
-        && 
-        parseFloat(ema3m5p) < parseFloat(ema3m10p)
-        && 
-        parseFloat(preco_atual) <= parseFloat(ema3m5p) 
-        */
         
       ) {
 
@@ -7844,7 +7727,6 @@ async function startWorker() {
   offset = serverTime - localTime;
 
   try {
-    verificarInternet();
     await carregarCandlesHistoricos();
     iniciarWebSocketcandles1m();
     iniciarWebSocketcandles3m();
