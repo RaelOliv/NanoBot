@@ -558,11 +558,16 @@ function gerarMensagemAtiva(
       ? ` 🟩 +${resultado.percent.toFixed(1)} %`
       : ` 🟥 ${resultado.percent.toFixed(1)} %`;
 
-  if (parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0) ){
+if (parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0) ){
     side = 'VENTA';
-  } else {
+  }else if( parseFloat(pos.entryPrice) < parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0)) {
     side = 'COMPRA'
-  }
+  }else if( parseFloat(pos.entryPrice) < parseFloat(pos.markPrice) && parseFloat(resultado.percent) < parseFloat(0.0)) {
+    side = 'VENTA'
+  }else if( parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) < parseFloat(0.0)) {
+    side = 'COMPRA'
+}
+  
 /*
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -684,7 +689,11 @@ function gerarMensagemFinal(
 
   if (parseFloat(entry) > parseFloat(exitPrice) && parseFloat(percent) > parseFloat(0.0) ){
     side = 'VENTA';
-  } else {
+  }else if( parseFloat(entry) < parseFloat(exitPrice) && parseFloat(percent) > parseFloat(0.0)) {
+    side = 'COMPRA'
+  }else if( parseFloat(entry) < parseFloat(exitPrice) && parseFloat(percent) < parseFloat(0.0)) {
+    side = 'VENTA'
+  }else if( parseFloat(entry) > parseFloat(exitPrice) && parseFloat(percent) < parseFloat(0.0)) {
     side = 'COMPRA'
   }
   
