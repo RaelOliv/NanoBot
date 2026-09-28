@@ -557,12 +557,18 @@ function gerarMensagemAtiva(
     resultado.percent >= 0
       ? ` 🟩 +${resultado.percent.toFixed(1)} %`
       : ` 🟥 ${resultado.percent.toFixed(1)} %`;
+
+  if (parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0) ){
+    side = 'VENTA';
+  } else {
+    side = 'COMPRA'
+  }
 /*
   return (
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `🟢 <b>Posição Ativa</b> 🟢 \n` +
+    `🟢 <b>Posição Ativa - ${side}</b> 🟢 \n` +
     ` \n` +
     `💵 Entrada: ${pos.entryPrice}\n` +
     `💰 Preço atual: ${pos.markPrice}\n` +
@@ -581,7 +587,7 @@ function gerarMensagemAtiva(
   `━━━━━━━━━━━━━━━\n` +
   `📊 <b>${pos.symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
-  `🟢 <b>Operación en Curso</b> 🟢\n` +
+  `🟢 <b>Operación en Curso - ${side}</b> 🟢\n` +
   `\n` +
   `💵 Precio al entrar (USDT): ${parseFloat(pos.entryPrice).toFixed(6)}\n` +
   `💰 Precio actual (USDT): ${parseFloat(pos.markPrice).toFixed(6)}\n` +
@@ -673,6 +679,15 @@ function gerarMensagemFinal(
     percent >= 0
       ? ` 🟩 +${percent.toFixed(1)} %`
       : ` 🟥 ${percent.toFixed(1)} %`;
+
+  var side = '';
+
+  if (parseFloat(entry) > parseFloat(exitPrice) && parseFloat(percent) > parseFloat(0.0) ){
+    side = 'VENTA';
+  } else {
+    side = 'COMPRA'
+  }
+  
 /*
   return (
     `━━━━━━━━━━━━━━━\n` +
@@ -695,7 +710,7 @@ function gerarMensagemFinal(
   `━━━━━━━━━━━━━━━\n` +
   `📊 <b>${symbol}</b>\n` +
   `━━━━━━━━━━━━━━━\n` +
-  `⚫ <b>Operación Finalizada</b>\n` +
+  `⚫ <b>Operación Finalizada - ${side}</b>\n` +
       `\n` +
   `💵 Precio al entrar (USDT): ${parseFloat(entry).toFixed(6)}\n` +
   `💸 Precio al salir (USDT): ${parseFloat(exitPrice).toFixed(6)}\n` +
