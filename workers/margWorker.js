@@ -1,2783 +1,2302 @@
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
+// ============================================================
+// margWorker.js
+// ============================================================
 
-require("dotenv").config();
+const axios = require('axios');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
-const { parentPort } = require("worker_threads");
+const {
+    parentPort
+} = require('worker_threads');
 
-const api = require("../api");
-const { activatePause } = require("./pauseManager");
+require('dotenv').config();
 
-// ======================================================
+const api = require('../api');
+
+const {
+    activatePause
+} = require('./pauseManager');
+
+// ============================================================
 // CONFIGURAÇÕES
-// ======================================================
+// ============================================================
+
+const API_KEY = process.env.API_KEY;
+const API_SECRET = process.env.SECRET_KEY;
+
+const BASE_URL = 'https://fapi.binance.com';
 
 const TELEGRAM_TOKEN =
-  process.env.TELEGRAM_TOKEN;
+    process.env.TELEGRAM_TOKEN;
 
 const TELEGRAM_API =
-  TELEGRAM_TOKEN
-    ? `https://api.telegram.org/bot${TELEGRAM_TOKEN}`
-    : null;
+    TELEGRAM_TOKEN
+        ? `https://api.telegram.org/bot${TELEGRAM_TOKEN}`
+        : null;
 
-const SLDIA =
-  parseFloat(
-    process.env.SLDIA || "-10"
-  );
+// Intervalo do monitoramento
+const MONITOR_INTERVAL =
+    parseInt(
+        process.env.MARG_MONITOR_INTERVAL || '10000',
+        10
+    );
 
-const TPDIA =
-  parseFloat(
-    process.env.TPDIA || "10"
-  );
+// Timeout
+const GLOBAL_AXIOS_TIMEOUT =
+    parseInt(
+        process.env.GLOBAL_AXIOS_TIMEOUT || '1000',
+        10
+    );
 
-// ======================================================
-// DIRETÓRIO DE CACHE
-// ======================================================
+axios.defaults.timeout =
+    GLOBAL_AXIOS_TIMEOUT;
 
-const WORKER_CACHE_DIR =
-  path.resolve(
-    __dirname,
-    "cache"
-  );
+// ============================================================
+// CACHE
+// ============================================================
 
-// ======================================================
+const CACHE_DIR =
+    path.resolve(
+        __dirname,
+        'cache'
+    );
+
+if (!fs.existsSync(CACHE_DIR)) {
+
+    fs.mkdirSync(
+        CACHE_DIR,
+        {
+            recursive: true
+        }
+    );
+}
+
+// ============================================================
 // ARQUIVOS
-// ======================================================
-
-const BALANCE_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "Balance.json"
-  );
-
-const OLD_BALANCE_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "oldBalance.json"
-  );
-
-const BALANCE_HIST_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "BalanceHist.json"
-  );
-
-const RESET_COUNT_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "ResetCount.json"
-  );
-
-const RESET_HIST_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "ResetHist.json"
-  );
-
-// ======================================================
-// TELEGRAM
-// ======================================================
-//
-// users.json:
-//
-// {
-//   "6133697652": {
-//     "first_name": ".",
-//     "username": null,
-//     "active": true
-//   }
-// }
-//
-// telegramMarginMessages.json:
-//
-// {
-//   "6133697652": {
-//     "messageId": 120,
-//     "createdAt": 123456789,
-//     "updatedAt": 123456789
-//   }
-// }
-//
-// Também aceita o formato antigo:
-//
-// {
-//   "6133697652": 120
-// }
-//
-// ======================================================
+// ============================================================
 
 const USERS_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "users.json"
-  );
+    path.join(
+        CACHE_DIR,
+        'users.json'
+    );
 
-const TELEGRAM_MESSAGES_FILE =
-  path.join(
-    WORKER_CACHE_DIR,
-    "telegramMarginMessages.json"
-  );
+const TELEGRAM_MARGIN_MESSAGES_FILE =
+    path.join(
+        CACHE_DIR,
+        'telegramMarginMessages.json'
+    );
 
-// ======================================================
-// CONTROLE DO WORKER
-// ======================================================
+// ============================================================
+// ESTADO
+// ============================================================
+
+let offset = 0;
 
 let workerRunning = false;
 
-let serverTimeOffset = 0;
+let ultimoTextoTelegram = null;
 
-// ======================================================
-// CONTROLE TELEGRAM
-// ======================================================
+let ultimoEnvioTelegram = 0;
 
-const telegramLastText =
-  new Map();
+// ============================================================
+// LOG
+// ============================================================
 
-const telegramLastUpdate =
-  new Map();
-
-const TELEGRAM_MIN_UPDATE_INTERVAL =
-  parseInt(
-    process.env.TELEGRAM_MARGIN_UPDATE_INTERVAL ||
-    "5000",
-    10
-  );
-
-// ======================================================
-// GARANTE DIRETÓRIO
-// ======================================================
-
-function garantirCacheDir() {
-
-  try {
-
-    fs.mkdirSync(
-      WORKER_CACHE_DIR,
-      {
-        recursive: true
-      }
-    );
-
-  } catch (erro) {
-
-    console.error(
-      "[margWorker] Erro criando diretório de cache:",
-      erro.message
-    );
-  }
-}
-
-garantirCacheDir();
-
-// ======================================================
-// SALVAR JSON
-// ======================================================
-
-function salvarJson(
-  arquivo,
-  dados
-) {
-
-  try {
-
-    garantirCacheDir();
-
-    const temporario =
-      `${arquivo}.tmp`;
-
-    fs.writeFileSync(
-      temporario,
-      JSON.stringify(
-        dados,
-        null,
-        2
-      ),
-      "utf8"
-    );
-
-    fs.renameSync(
-      temporario,
-      arquivo
-    );
-
-    return true;
-
-  } catch (erro) {
-
-    console.error(
-      `[margWorker] Erro salvando ${arquivo}:`,
-      erro.message
-    );
-
-    return false;
-  }
-}
-
-// ======================================================
-// LER JSON
-// ======================================================
-
-function lerJson(
-  arquivo,
-  padrao = null
-) {
-
-  try {
-
-    if (
-      !fs.existsSync(
-        arquivo
-      )
-    ) {
-
-      return padrao;
-    }
-
-    const conteudo =
-      fs.readFileSync(
-        arquivo,
-        "utf8"
-      ).trim();
-
-    if (
-      !conteudo
-    ) {
-
-      return padrao;
-    }
-
-    return JSON.parse(
-      conteudo
-    );
-
-  } catch (erro) {
-
-    console.error(
-      `[margWorker] Erro lendo ${arquivo}:`,
-      erro.message
-    );
-
-    return padrao;
-  }
-}
-
-// ======================================================
-// NÚMERO
-// ======================================================
-
-function numero(
-  valor,
-  casas = 8
-) {
-
-  const n =
-    Number(valor);
-
-  if (
-    !Number.isFinite(n)
-  ) {
-
-    return 0;
-  }
-
-  return Number(
-    n.toFixed(casas)
-  );
-}
-
-// ======================================================
-// PERCENTUAL
-// ======================================================
-
-function calcularPercentual(
-  inicial,
-  atual
-) {
-
-  const i =
-    Number(inicial);
-
-  const a =
-    Number(atual);
-
-  if (
-    !Number.isFinite(i) ||
-    !Number.isFinite(a) ||
-    i === 0
-  ) {
-
-    return 0;
-  }
-
-  return (
-    ((a - i) / i) *
-    100
-  );
-}
-
-// ======================================================
-// FORMATA NÚMERO
-// ======================================================
-
-function formatarNumero(
-  valor,
-  casas = 2
-) {
-
-  const n =
-    Number(valor);
-
-  if (
-    !Number.isFinite(n)
-  ) {
-
-    return "0.00";
-  }
-
-  return n.toLocaleString(
-    "en-US",
-    {
-      minimumFractionDigits:
-        casas,
-
-      maximumFractionDigits:
-        casas
-    }
-  );
-}
-
-// ======================================================
-// ESCAPE HTML
-// ======================================================
-
-function escapeHtml(
-  valor
-) {
-
-  return String(
-    valor
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    );
-}
-
-// ======================================================
-// TELEGRAM
-// CARREGAR USUÁRIOS
-// ======================================================
-
-function carregarUsuariosTelegram() {
-
-  console.log(
-    `[Telegram] Arquivo de usuários: ${USERS_FILE}`
-  );
-
-  const dados =
-    lerJson(
-      USERS_FILE,
-      {}
-    );
-
-  if (
-    !dados ||
-    typeof dados !== "object" ||
-    Array.isArray(dados)
-  ) {
+function log(...args) {
 
     console.log(
-      "[Telegram] Nenhum usuário disponível."
+        '[margWorker]',
+        ...args
     );
 
-    return [];
-  }
-
-  const usuarios = [];
-
-  for (
-    const [chatId, usuario] of Object.entries(dados)
-  ) {
-
-    if (
-      !usuario ||
-      typeof usuario !== "object"
-    ) {
-
-      continue;
-    }
-
-    if (
-      usuario.active === false
-    ) {
-
-      continue;
-    }
-
-    usuarios.push({
-
-      chatId:
-        String(chatId),
-
-      ...usuario
-
-    });
-  }
-
-  console.log(
-    `[Telegram] Usuários encontrados: ${usuarios.length}`
-  );
-
-  return usuarios;
 }
 
-// ======================================================
-// TELEGRAM
-// OBTER CHAT ID
-// ======================================================
+// ============================================================
+// COMUNICAÇÃO COM PROCESSO PAI
+// ============================================================
 
-function obterChatId(
-  usuario
-) {
+function enviarPai(message) {
 
-  if (
-    !usuario ||
-    typeof usuario !== "object"
-  ) {
+    try {
 
-    return null;
-  }
+        if (parentPort) {
 
-  if (
-    usuario.chatId !== undefined &&
-    usuario.chatId !== null &&
-    String(
-      usuario.chatId
-    ).trim() !== ""
-  ) {
+            parentPort.postMessage(
+                message
+            );
 
-    return String(
-      usuario.chatId
-    );
-  }
-
-  if (
-    usuario.chat_id !== undefined &&
-    usuario.chat_id !== null &&
-    String(
-      usuario.chat_id
-    ).trim() !== ""
-  ) {
-
-    return String(
-      usuario.chat_id
-    );
-  }
-
-  if (
-    usuario.telegramChatId !== undefined &&
-    usuario.telegramChatId !== null
-  ) {
-
-    return String(
-      usuario.telegramChatId
-    );
-  }
-
-  if (
-    usuario.telegram_chat_id !== undefined &&
-    usuario.telegram_chat_id !== null
-  ) {
-
-    return String(
-      usuario.telegram_chat_id
-    );
-  }
-
-  return null;
-}
-
-// ======================================================
-// TELEGRAM
-// CARREGAR MESSAGE IDS
-// ======================================================
-
-function carregarMensagensTelegram() {
-
-  const dados =
-    lerJson(
-      TELEGRAM_MESSAGES_FILE,
-      {}
-    );
-
-  if (
-    !dados ||
-    typeof dados !== "object" ||
-    Array.isArray(dados)
-  ) {
-
-    return {};
-  }
-
-  return dados;
-}
-
-// ======================================================
-// TELEGRAM
-// OBTER MESSAGE ID
-// ======================================================
-
-function obterMessageId(
-  registro
-) {
-
-  if (
-    registro === undefined ||
-    registro === null
-  ) {
-
-    return null;
-  }
-
-  // Formato antigo
-  if (
-    typeof registro === "number" ||
-    typeof registro === "string"
-  ) {
-
-    const id =
-      Number(
-        registro
-      );
-
-    if (
-      Number.isFinite(id) &&
-      id > 0
-    ) {
-
-      return id;
-    }
-
-    return null;
-  }
-
-  // Formato atual
-  if (
-    typeof registro === "object"
-  ) {
-
-    const id =
-      Number(
-        registro.messageId
-      );
-
-    if (
-      Number.isFinite(id) &&
-      id > 0
-    ) {
-
-      return id;
-    }
-  }
-
-  return null;
-}
-
-// ======================================================
-// TELEGRAM
-// SALVAR MESSAGE IDS
-// ======================================================
-
-function salvarMensagensTelegram(
-  dados
-) {
-
-  return salvarJson(
-    TELEGRAM_MESSAGES_FILE,
-    dados
-  );
-}
-
-// ======================================================
-// TELEGRAM
-// IDENTIFICAR MENSAGEM NÃO EXISTENTE
-// ======================================================
-
-function mensagemNaoExisteMais(
-  erro
-) {
-
-  const status =
-    erro?.response?.status;
-
-  const descricao =
-    erro?.response?.data?.description ||
-    erro?.message ||
-    "";
-
-  const texto =
-    String(
-      descricao
-    ).toLowerCase();
-
-  console.log(
-    `[Telegram] 🔎 Erro Telegram status=${status || "?"} ` +
-    `descricao="${descricao}"`
-  );
-
-  // ====================================================
-  // ERROS EXPLÍCITOS
-  // ====================================================
-
-  if (
-    texto.includes(
-      "message to edit not found"
-    )
-  ) {
-
-    return true;
-  }
-
-  if (
-    texto.includes(
-      "message identifier is not valid"
-    )
-  ) {
-
-    return true;
-  }
-
-  if (
-    texto.includes(
-      "message identifier is not specified"
-    )
-  ) {
-
-    return true;
-  }
-
-  if (
-    texto.includes(
-      "message can't be edited"
-    )
-  ) {
-
-    return true;
-  }
-
-  if (
-    texto.includes(
-      "message not found"
-    )
-  ) {
-
-    return true;
-  }
-
-  if (
-    texto.includes(
-      "message_id_invalid"
-    )
-  ) {
-
-    return true;
-  }
-
-  // ====================================================
-  // ERROS 400 RELACIONADOS À MENSAGEM
-  // ====================================================
-
-  if (
-    status === 400 &&
-    texto.includes("message") &&
-    (
-      texto.includes("edit") ||
-      texto.includes("identifier") ||
-      texto.includes("not found") ||
-      texto.includes("can't be edited") ||
-      texto.includes("cannot be edited")
-    )
-  ) {
-
-    return true;
-  }
-
-  return false;
-}
-
-// ======================================================
-// TELEGRAM
-// MENSAGEM NÃO MODIFICADA
-// ======================================================
-
-function mensagemNaoModificada(
-  erro
-) {
-
-  const descricao =
-    erro?.response?.data?.description ||
-    erro?.message ||
-    "";
-
-  const texto =
-    String(
-      descricao
-    ).toLowerCase();
-
-  return texto.includes(
-    "message is not modified"
-  );
-}
-
-// ======================================================
-// TELEGRAM
-// VERIFICAR BOT
-// ======================================================
-
-async function verificarBotTelegram() {
-
-  if (
-    !TELEGRAM_API
-  ) {
-
-    return;
-  }
-
-  try {
-
-    const resposta =
-      await axios.get(
-        `${TELEGRAM_API}/getMe`,
-        {
-          timeout: 15000
         }
-      );
 
-    if (
-      resposta.data?.ok
-    ) {
-
-      const bot =
-        resposta.data.result;
-
-      console.log(
-        "[Telegram] 🤖 Bot conectado:"
-      );
-
-      console.log(
-        JSON.stringify(
-          {
-            id:
-              bot?.id,
-
-            is_bot:
-              bot?.is_bot,
-
-            first_name:
-              bot?.first_name,
-
-            username:
-              bot?.username
-          },
-          null,
-          2
-        )
-      );
-
-    } else {
-
-      console.error(
-        "[Telegram] ❌ getMe retornou resposta inválida:",
-        resposta.data
-      );
-    }
-
-  } catch (erro) {
-
-    console.error(
-      "[Telegram] ❌ Erro verificando bot:",
-      erro.response?.data ||
-      erro.message
-    );
-  }
-}
-
-// ======================================================
-// TELEGRAM
-// VERIFICAR CHAT
-// ======================================================
-
-async function verificarChatTelegram(
-  chatId
-) {
-
-  if (
-    !TELEGRAM_API ||
-    !chatId
-  ) {
-
-    return;
-  }
-
-  try {
-
-    const resposta =
-      await axios.get(
-        `${TELEGRAM_API}/getChat`,
-        {
-          params: {
-            chat_id:
-              chatId
-          },
-
-          timeout:
-            15000
-        }
-      );
-
-    if (
-      resposta.data?.ok
-    ) {
-
-      const chat =
-        resposta.data.result;
-
-      console.log(
-        `[Telegram] 💬 Chat confirmado: ` +
-        `id=${chat?.id} ` +
-        `type=${chat?.type} ` +
-        `username=${chat?.username || "-"}` 
-      );
-
-    } else {
-
-      console.warn(
-        `[Telegram] ⚠️ Não foi possível confirmar chat ${chatId}:`,
-        resposta.data
-      );
-    }
-
-  } catch (erro) {
-
-    console.error(
-      `[Telegram] ❌ Erro verificando chat ${chatId}:`,
-      erro.response?.data ||
-      erro.message
-    );
-  }
-}
-
-// ======================================================
-// TELEGRAM
-// CRIAR NOVA MENSAGEM
-// ======================================================
-
-async function criarMensagemTelegram(
-  chatId,
-  texto
-) {
-
-  if (
-    !TELEGRAM_API
-  ) {
-
-    console.error(
-      "[Telegram] TELEGRAM_TOKEN não configurado."
-    );
-
-    return {
-
-      ok:
-        false,
-
-      messageId:
-        null
-    };
-  }
-
-  try {
-
-    console.log(
-      `[Telegram] 📤 Criando nova mensagem para ${chatId}...`
-    );
-
-    const resposta =
-      await axios.post(
-        `${TELEGRAM_API}/sendMessage`,
-        {
-          chat_id:
-            chatId,
-
-          text:
-            texto,
-
-          parse_mode:
-            "HTML",
-
-          disable_web_page_preview:
-            true
-        },
-        {
-          timeout:
-            15000
-        }
-      );
-
-    console.log(
-      "[Telegram] 📩 Retorno sendMessage:",
-      JSON.stringify(
-        resposta.data,
-        null,
-        2
-      )
-    );
-
-    if (
-      !resposta.data ||
-      !resposta.data.ok
-    ) {
-
-      console.error(
-        `[Telegram] ❌ Falha no sendMessage para ${chatId}:`,
-        resposta.data
-      );
-
-      return {
-
-        ok:
-          false,
-
-        messageId:
-          null
-      };
-    }
-
-    const message =
-      resposta.data?.result;
-
-    const messageId =
-      Number(
-        message?.message_id
-      );
-
-    if (
-      !Number.isFinite(
-        messageId
-      ) ||
-      messageId <= 0
-    ) {
-
-      console.error(
-        `[Telegram] ❌ Telegram não retornou message_id válido para ${chatId}.`
-      );
-
-      return {
-
-        ok:
-          false,
-
-        messageId:
-          null
-      };
-    }
-
-    const chatRetornado =
-      String(
-        message?.chat?.id
-      );
-
-    console.log(
-      `[Telegram] ✅ Nova mensagem criada. ` +
-      `chat=${chatId} message_id=${messageId}`
-    );
-
-    console.log(
-      `[Telegram] 📌 Chat retornado pelo Telegram: ${chatRetornado}`
-    );
-
-    return {
-
-      ok:
-        true,
-
-      messageId
-    };
-
-  } catch (erro) {
-
-    console.error(
-      `[Telegram] ❌ Erro no sendMessage para ${chatId}:`,
-      erro.response?.data ||
-      erro.message
-    );
-
-    return {
-
-      ok:
-        false,
-
-      messageId:
-        null
-    };
-  }
-}
-
-// ======================================================
-// TELEGRAM
-// EDITAR MENSAGEM
-// ======================================================
-
-async function editarMensagemTelegram(
-  chatId,
-  messageId,
-  texto
-) {
-
-  if (
-    !TELEGRAM_API
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      mensagemNaoExiste:
-        false,
-
-      mensagemNaoModificada:
-        false
-    };
-  }
-
-  try {
-
-    console.log(
-      `[Telegram] ✏️ Editando mensagem ` +
-      `chat=${chatId} message_id=${messageId}`
-    );
-
-    const resposta =
-      await axios.post(
-        `${TELEGRAM_API}/editMessageText`,
-        {
-          chat_id:
-            chatId,
-
-          message_id:
-            messageId,
-
-          text:
-            texto,
-
-          parse_mode:
-            "HTML",
-
-          disable_web_page_preview:
-            true
-        },
-        {
-          timeout:
-            15000
-        }
-      );
-
-    // ==================================================
-    // MOSTRA RESPOSTA COMPLETA
-    // ==================================================
-
-    console.log(
-      "[Telegram] 📩 Retorno editMessageText:",
-      JSON.stringify(
-        resposta.data,
-        null,
-        2
-      )
-    );
-
-    // ==================================================
-    // TELEGRAM NÃO RETORNOU OK
-    // ==================================================
-
-    if (
-      !resposta.data?.ok
-    ) {
-
-      console.warn(
-        `[Telegram] ⚠️ editMessageText retornou ok=false para ${messageId}.`
-      );
-
-      return {
-
-        ok:
-          false,
-
-        mensagemNaoExiste:
-          false,
-
-        mensagemNaoModificada:
-          false
-      };
-    }
-
-    // ==================================================
-    // RESULTADO DA MENSAGEM
-    // ==================================================
-
-    const mensagem =
-      resposta.data?.result;
-
-    /*
-     * Para uma mensagem normal enviada pelo bot,
-     * esperamos receber o objeto Message.
-     */
-
-    if (
-      !mensagem
-    ) {
-
-      console.warn(
-        `[Telegram] ⚠️ Telegram respondeu OK para ${messageId}, ` +
-        `mas não retornou result.`
-      );
-
-      return {
-
-        ok:
-          false,
-
-        mensagemNaoExiste:
-          true,
-
-        mensagemNaoModificada:
-          false
-      };
-    }
-
-    const idRetornado =
-      Number(
-        mensagem.message_id
-      );
-
-    const chatRetornado =
-      String(
-        mensagem.chat?.id
-      );
-
-    console.log(
-      "[Telegram] 📌 Mensagem retornada:",
-      JSON.stringify(
-        {
-          message_id:
-            mensagem.message_id,
-
-          chat_id:
-            mensagem.chat?.id,
-
-          chat_type:
-            mensagem.chat?.type,
-
-          text:
-            mensagem.text
-        },
-        null,
-        2
-      )
-    );
-
-    // ==================================================
-    // VALIDA ID
-    // ==================================================
-
-    if (
-      idRetornado !==
-      Number(messageId)
-    ) {
-
-      console.warn(
-        `[Telegram] ⚠️ ID retornado pelo Telegram ` +
-        `(${idRetornado}) é diferente do esperado (${messageId}).`
-      );
-
-      return {
-
-        ok:
-          false,
-
-        mensagemNaoExiste:
-          true,
-
-        mensagemNaoModificada:
-          false
-      };
-    }
-
-    // ==================================================
-    // VALIDA CHAT
-    // ==================================================
-
-    if (
-      chatRetornado !==
-      String(chatId)
-    ) {
-
-      console.warn(
-        `[Telegram] ⚠️ Chat retornado pelo Telegram ` +
-        `(${chatRetornado}) é diferente do esperado (${chatId}).`
-      );
-
-      return {
-
-        ok:
-          false,
-
-        mensagemNaoExiste:
-          true,
-
-        mensagemNaoModificada:
-          false
-      };
-    }
-
-    // ==================================================
-    // SUCESSO REAL
-    // ==================================================
-
-    console.log(
-      `[Telegram] ✅ Mensagem ${messageId} atualizada e validada.`
-    );
-
-    return {
-
-      ok:
-        true,
-
-      mensagemNaoExiste:
-        false,
-
-      mensagemNaoModificada:
-        false
-    };
-
-  } catch (erro) {
-
-    const descricao =
-      erro?.response?.data?.description ||
-      erro?.message ||
-      "";
-
-    // ==================================================
-    // MESMO TEXTO
-    // ==================================================
-
-    if (
-      mensagemNaoModificada(
-        erro
-      )
-    ) {
-
-      console.log(
-        `[Telegram] ℹ️ Mensagem ${messageId} ` +
-        `já possui o mesmo conteúdo.`
-      );
-
-      return {
-
-        ok:
-          true,
-
-        mensagemNaoExiste:
-          false,
-
-        mensagemNaoModificada:
-          true,
-
-        erro
-      };
-    }
-
-    // ==================================================
-    // MENSAGEM INEXISTENTE
-    // ==================================================
-
-    const inexistente =
-      mensagemNaoExisteMais(
-        erro
-      );
-
-    console.warn(
-      `[Telegram] ⚠️ Erro editando ` +
-      `chat=${chatId} message_id=${messageId}: ` +
-      `${descricao}`
-    );
-
-    return {
-
-      ok:
-        false,
-
-      mensagemNaoExiste:
-        inexistente,
-
-      mensagemNaoModificada:
-        false,
-
-      erro
-    };
-  }
-}
-
-// ======================================================
-// TELEGRAM
-// ATUALIZAR MENSAGEM
-// ======================================================
-
-async function atualizarMensagemTelegram(
-  chatId,
-  texto
-) {
-
-  if (
-    !TELEGRAM_API
-  ) {
-
-    return;
-  }
-
-  const chatKey =
-    String(
-      chatId
-    );
-
-  const agora =
-    Date.now();
-
-  // ====================================================
-  // CARREGA IDS
-  // ====================================================
-
-  let mensagens =
-    carregarMensagensTelegram();
-
-  let registro =
-    mensagens[
-      chatKey
-    ];
-
-  // ====================================================
-  // OBTÉM ID
-  // ====================================================
-
-  let messageId =
-    obterMessageId(
-      registro
-    );
-
-  // ====================================================
-  // EVITA ATUALIZAÇÕES DESNECESSÁRIAS
-  // ====================================================
-
-  const ultimoTexto =
-    telegramLastText.get(
-      chatKey
-    );
-
-  const ultimoUpdate =
-    telegramLastUpdate.get(
-      chatKey
-    ) || 0;
-
-  if (
-    ultimoTexto === texto &&
-    agora - ultimoUpdate <
-      TELEGRAM_MIN_UPDATE_INTERVAL
-  ) {
-
-    return;
-  }
-
-  // ====================================================
-  // EXISTE MESSAGE ID
-  // ====================================================
-
-  if (
-    messageId
-  ) {
-
-    console.log(
-      `[Telegram] 🔑 Message ID encontrado no cache: ` +
-      `chat=${chatId} message_id=${messageId}`
-    );
-
-    const resultado =
-      await editarMensagemTelegram(
-        chatId,
-        messageId,
-        texto
-      );
-
-    // ==================================================
-    // EDIÇÃO VALIDADA
-    // ==================================================
-
-    if (
-      resultado.ok
-    ) {
-
-      mensagens[
-        chatKey
-      ] = {
-
-        messageId,
-
-        createdAt:
-          registro &&
-          typeof registro === "object"
-            ? (
-                registro.createdAt ||
-                agora
-              )
-            : agora,
-
-        updatedAt:
-          agora
-      };
-
-      salvarMensagensTelegram(
-        mensagens
-      );
-
-      telegramLastText.set(
-        chatKey,
-        texto
-      );
-
-      telegramLastUpdate.set(
-        chatKey,
-        agora
-      );
-
-      return;
-    }
-
-    // ==================================================
-    // MENSAGEM NÃO EXISTE
-    // ==================================================
-
-    if (
-      resultado.mensagemNaoExiste
-    ) {
-
-      console.log(
-        `[Telegram] ❌ A mensagem ${messageId} ` +
-        `do chat ${chatId} não existe mais.`
-      );
-
-      // ================================================
-      // REMOVE DO CACHE
-      // ================================================
-
-      delete mensagens[
-        chatKey
-      ];
-
-      const removeu =
-        salvarMensagensTelegram(
-          mensagens
-        );
-
-      if (
-        removeu
-      ) {
-
-        console.log(
-          `[Telegram] ♻️ message_id=${messageId} ` +
-          `removido do cache.`
-        );
-
-      } else {
+    } catch (error) {
 
         console.error(
-          `[Telegram] ❌ Não foi possível remover ` +
-          `message_id=${messageId} do cache.`
+            '[margWorker] Erro parentPort:',
+            error.message
         );
-      }
 
-      registro = null;
-      messageId = null;
-
-    } else {
-
-      // =================================================
-      // OUTRO ERRO
-      // =================================================
-
-      console.warn(
-        `[Telegram] ⚠️ Não foi possível editar ` +
-        `message_id=${messageId}. ` +
-        `O ID será mantido para nova tentativa.`
-      );
-
-      return;
     }
-  }
 
-  // ====================================================
-  // CRIA NOVA MENSAGEM
-  // ====================================================
-
-  console.log(
-    `[Telegram] 📤 Nenhuma mensagem válida encontrada. ` +
-    `Criando nova mensagem para ${chatId}.`
-  );
-
-  const nova =
-    await criarMensagemTelegram(
-      chatId,
-      texto
-    );
-
-  if (
-    !nova?.ok ||
-    !nova?.messageId
-  ) {
-
-    console.error(
-      `[Telegram] ❌ Falha ao criar nova mensagem para ${chatId}.`
-    );
-
-    return;
-  }
-
-  const novoMessageId =
-    Number(
-      nova.messageId
-    );
-
-  // ====================================================
-  // SALVA NOVO MESSAGE ID
-  // ====================================================
-
-  mensagens[
-    chatKey
-  ] = {
-
-    messageId:
-      novoMessageId,
-
-    createdAt:
-      agora,
-
-    updatedAt:
-      agora
-  };
-
-  const salvou =
-    salvarMensagensTelegram(
-      mensagens
-    );
-
-  if (
-    salvou
-  ) {
-
-    console.log(
-      `[Telegram] 💾 Novo message_id salvo: ` +
-      `${novoMessageId}`
-    );
-
-  } else {
-
-    console.error(
-      `[Telegram] ⚠️ Mensagem criada, ` +
-      `mas o novo message_id não pôde ser salvo.`
-    );
-  }
-
-  // ====================================================
-  // CONTROLE EM MEMÓRIA
-  // ====================================================
-
-  telegramLastText.set(
-    chatKey,
-    texto
-  );
-
-  telegramLastUpdate.set(
-    chatKey,
-    agora
-  );
 }
 
-// ======================================================
-// TELEGRAM
-// ATUALIZAR TODOS OS USUÁRIOS
-// ======================================================
+// ============================================================
+// CACHE - SALVAR
+// ============================================================
 
-async function atualizarTelegram(
-  dados
+async function salvarCache(
+    cache,
+    nomeArquivo
 ) {
 
-  if (
-    !TELEGRAM_API
-  ) {
+    try {
 
-    console.warn(
-      "[Telegram] Telegram desativado."
+        const filePath =
+            path.join(
+                CACHE_DIR,
+                `${nomeArquivo}.json`
+            );
+
+        await fs.promises.writeFile(
+            filePath,
+            JSON.stringify(
+                cache,
+                null,
+                2
+            ),
+            'utf8'
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            `[margWorker] Erro ao salvar ${nomeArquivo}:`,
+            error.message
+        );
+
+        return false;
+
+    }
+
+}
+
+// ============================================================
+// CACHE - CARREGAR
+// ============================================================
+
+async function carregarCache(
+    nomeArquivo
+) {
+
+    try {
+
+        const filePath =
+            path.join(
+                CACHE_DIR,
+                `${nomeArquivo}.json`
+            );
+
+        if (
+            !fs.existsSync(
+                filePath
+            )
+        ) {
+
+            return {};
+
+        }
+
+        const content =
+            await fs.promises.readFile(
+                filePath,
+                'utf8'
+            );
+
+        if (
+            !content.trim()
+        ) {
+
+            return {};
+
+        }
+
+        return JSON.parse(
+            content
+        );
+
+    } catch (error) {
+
+        console.error(
+            `[margWorker] Erro ao carregar ${nomeArquivo}:`,
+            error.message
+        );
+
+        return {};
+
+    }
+
+}
+
+// ============================================================
+// NÚMERO
+// ============================================================
+
+function numero(
+    valor,
+    padrao = 0
+) {
+
+    const n =
+        Number(valor);
+
+    return Number.isFinite(n)
+        ? n
+        : padrao;
+
+}
+
+// ============================================================
+// NÚMERO VÁLIDO
+// ============================================================
+
+function numeroValido(
+    valor
+) {
+
+    return Number.isFinite(
+        Number(valor)
     );
 
-    return;
-  }
+}
 
-  const usuarios =
-    carregarUsuariosTelegram();
+// ============================================================
+// ARREDONDAMENTO
+// ============================================================
 
-  if (
-    usuarios.length === 0
-  ) {
+function arredondar(
+    valor,
+    casas = 2
+) {
 
-    console.warn(
-      "[Telegram] Nenhum usuário disponível."
-    );
-
-    return;
-  }
-
-  const texto =
-    formatarMensagemMargem(
-      dados
-    );
-
-  console.log(
-    `[Telegram] Atualizando ${usuarios.length} usuário(s).`
-  );
-
-  for (
-    const usuario of usuarios
-  ) {
-
-    const chatId =
-      obterChatId(
-        usuario
-      );
+    const n =
+        Number(valor);
 
     if (
-      !chatId
+        !Number.isFinite(n)
     ) {
 
-      console.warn(
-        "[Telegram] Usuário sem chat_id válido."
-      );
+        return 0;
 
-      continue;
+    }
+
+    return Number(
+        n.toFixed(casas)
+    );
+
+}
+
+// ============================================================
+// PERCENTUAL
+// ============================================================
+
+function percentage(
+    valorAntigo,
+    valorNovo
+) {
+
+    const antigo =
+        Number(valorAntigo);
+
+    const novo =
+        Number(valorNovo);
+
+    if (
+        !Number.isFinite(antigo) ||
+        !Number.isFinite(novo) ||
+        antigo === 0
+    ) {
+
+        return 0;
+
+    }
+
+    return (
+        (
+            (novo - antigo) /
+            antigo
+        ) * 100
+    );
+
+}
+
+// ============================================================
+// DATA / HORA
+// ============================================================
+
+function formatTime(
+    timestamp
+) {
+
+    const date =
+        new Date(timestamp);
+
+    const dia =
+        String(
+            date.getDate()
+        ).padStart(2, '0');
+
+    const mes =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, '0');
+
+    const ano =
+        date.getFullYear();
+
+    const hora =
+        String(
+            date.getHours()
+        ).padStart(2, '0');
+
+    const minuto =
+        String(
+            date.getMinutes()
+        ).padStart(2, '0');
+
+    const segundo =
+        String(
+            date.getSeconds()
+        ).padStart(2, '0');
+
+    return (
+        `${dia}/${mes}/${ano} ` +
+        `${hora}:${minuto}:${segundo}`
+    );
+
+}
+
+// ============================================================
+// DIA ATUAL
+// ============================================================
+
+function getCurrentDay() {
+
+    const date =
+        new Date();
+
+    const dia =
+        String(
+            date.getDate()
+        ).padStart(2, '0');
+
+    const mes =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, '0');
+
+    const ano =
+        date.getFullYear();
+
+    return (
+        `${ano}-${mes}-${dia}`
+    );
+
+}
+
+// ============================================================
+// TELEGRAM
+// ============================================================
+
+async function telegramRequest(
+    method,
+    payload = {}
+) {
+
+    if (!TELEGRAM_API) {
+
+        console.error(
+            '[margWorker] TELEGRAM_TOKEN não configurado.'
+        );
+
+        return null;
+
     }
 
     try {
 
-      await atualizarMensagemTelegram(
-        chatId,
-        texto
-      );
+        const response =
+            await axios({
+                method: 'POST',
 
-    } catch (erro) {
+                url:
+                    `${TELEGRAM_API}/${method}`,
 
-      console.error(
-        `[Telegram] Erro processando chat ${chatId}:`,
-        erro.message
-      );
+                data: payload,
+
+                timeout: 5000
+            });
+
+        if (
+            response.data &&
+            response.data.ok
+        ) {
+
+            return response.data.result;
+
+        }
+
+        console.error(
+            '[margWorker] Erro Telegram:',
+            response.data
+        );
+
+        return null;
+
+    } catch (error) {
+
+        console.error(
+            `[margWorker] Telegram ${method}:`,
+            error.response?.data ||
+            error.message
+        );
+
+        return null;
+
     }
-  }
+
 }
 
-// ======================================================
-// FORMATA MENSAGEM DA MARGEM
-// ======================================================
+// ============================================================
+// USUÁRIOS TELEGRAM
+// ============================================================
 
-function formatarMensagemMargem(
-  dados
+async function carregarUsuariosTelegram() {
+
+    try {
+
+        if (
+            !fs.existsSync(
+                USERS_FILE
+            )
+        ) {
+
+            console.log(
+                '[margWorker] users.json não encontrado.'
+            );
+
+            return [];
+
+        }
+
+        const content =
+            await fs.promises.readFile(
+                USERS_FILE,
+                'utf8'
+            );
+
+        if (
+            !content.trim()
+        ) {
+
+            return [];
+
+        }
+
+        const data =
+            JSON.parse(
+                content
+            );
+
+        // ----------------------------------------------------
+        // ARRAY
+        // ----------------------------------------------------
+
+        if (
+            Array.isArray(data)
+        ) {
+
+            return data
+                .map(user => {
+
+                    if (
+                        typeof user ===
+                        'string' ||
+                        typeof user ===
+                        'number'
+                    ) {
+
+                        return {
+                            chatId:
+                                String(user)
+                        };
+
+                    }
+
+                    if (
+                        !user ||
+                        typeof user !==
+                        'object'
+                    ) {
+
+                        return null;
+
+                    }
+
+                    const chatId =
+                        user.chatId ??
+                        user.chat_id ??
+                        user.telegramId ??
+                        user.id;
+
+                    if (
+                        chatId === undefined ||
+                        chatId === null
+                    ) {
+
+                        return null;
+
+                    }
+
+                    return {
+                        ...user,
+                        chatId:
+                            String(chatId)
+                    };
+
+                })
+                .filter(Boolean);
+
+        }
+
+        // ----------------------------------------------------
+        // OBJETO
+        // ----------------------------------------------------
+
+        if (
+            data &&
+            typeof data ===
+            'object'
+        ) {
+
+            return Object.entries(
+                data
+            )
+                .map(
+                    ([key, user]) => {
+
+                        if (
+                            user &&
+                            typeof user ===
+                            'object'
+                        ) {
+
+                            const chatId =
+                                user.chatId ??
+                                user.chat_id ??
+                                user.telegramId ??
+                                user.id ??
+                                key;
+
+                            return {
+                                ...user,
+                                chatId:
+                                    String(chatId)
+                            };
+
+                        }
+
+                        return {
+                            chatId:
+                                String(key)
+                        };
+
+                    }
+                );
+
+        }
+
+        return [];
+
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro users.json:',
+            error.message
+        );
+
+        return [];
+
+    }
+
+}
+
+// ============================================================
+// MESSAGE IDS DO TELEGRAM
+// ============================================================
+
+async function carregarTelegramMarginMessages() {
+
+    try {
+
+        if (
+            !fs.existsSync(
+                TELEGRAM_MARGIN_MESSAGES_FILE
+            )
+        ) {
+
+            return {};
+
+        }
+
+        const content =
+            await fs.promises.readFile(
+                TELEGRAM_MARGIN_MESSAGES_FILE,
+                'utf8'
+            );
+
+        if (
+            !content.trim()
+        ) {
+
+            return {};
+
+        }
+
+        const data =
+            JSON.parse(
+                content
+            );
+
+        if (
+            !data ||
+            typeof data !==
+            'object' ||
+            Array.isArray(data)
+        ) {
+
+            return {};
+
+        }
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro message IDs:',
+            error.message
+        );
+
+        return {};
+
+    }
+
+}
+
+// ============================================================
+
+async function salvarTelegramMarginMessages(
+    data
 ) {
 
-  const wallet =
-    numero(
-      dados.walletBalance
-    );
+    try {
 
-  const margin =
-    numero(
-      dados.marginBalance
-    );
+        await fs.promises.writeFile(
+            TELEGRAM_MARGIN_MESSAGES_FILE,
 
-  const available =
-    numero(
-      dados.availableBalance
-    );
+            JSON.stringify(
+                data,
+                null,
+                2
+            ),
 
-  const percentual =
-    numero(
-      dados.percentual,
-      4
-    );
+            'utf8'
+        );
 
-  const percentualReal =
-    numero(
-      dados.percentualReal,
-      4
-    );
+        return true;
 
-  const max =
-    numero(
-      dados.maxPercentual,
-      4
-    );
+    } catch (error) {
 
-  const min =
-    numero(
-      dados.minPercentual,
-      4
-    );
+        console.error(
+            '[margWorker] Erro ao salvar message IDs:',
+            error.message
+        );
 
-  let sinal =
-    "⚪";
+        return false;
 
-  if (
-    percentual > 0
-  ) {
+    }
 
-    sinal =
-      "🟢";
-
-  } else if (
-    percentual < 0
-  ) {
-
-    sinal =
-      "🔴";
-  }
-
-  const atualizado =
-    new Date()
-      .toLocaleString(
-        "pt-BR",
-        {
-          timeZone:
-            "America/Sao_Paulo"
-        }
-      );
-
-  return (
-    `━━━━━━━━━━━━━━━\n` +
-    `📊 <b>MARGEM DA CONTA</b>\n` +
-    `━━━━━━━━━━━━━━━\n\n` +
-
-    `💰 <b>Wallet Balance:</b> ` +
-    `${formatarNumero(
-      wallet,
-      2
-    )} USDT\n` +
-
-    `💵 <b>Margin Balance:</b> ` +
-    `${formatarNumero(
-      margin,
-      2
-    )} USDT\n` +
-
-    `💳 <b>Disponível:</b> ` +
-    `${formatarNumero(
-      available,
-      2
-    )} USDT\n\n` +
-
-    `${sinal} <b>Variação:</b> ` +
-    `${percentual >= 0 ? "+" : ""}` +
-    `${percentual.toFixed(4)}%\n` +
-
-    `📈 <b>Variação Real:</b> ` +
-    `${percentualReal >= 0 ? "+" : ""}` +
-    `${percentualReal.toFixed(4)}%\n\n` +
-
-    `🔺 <b>Máxima:</b> ` +
-    `${max >= 0 ? "+" : ""}` +
-    `${max.toFixed(4)}%\n` +
-
-    `🔻 <b>Mínima:</b> ` +
-    `${min >= 0 ? "+" : ""}` +
-    `${min.toFixed(4)}%\n\n` +
-
-    `🕐 <b>Atualizado:</b> ` +
-    `${escapeHtml(
-      atualizado
-    )}\n` +
-
-    `━━━━━━━━━━━━━━━`
-  );
 }
 
-// ======================================================
-// OBTER BALANCE FUTURES
-// ======================================================
+// ============================================================
+// FORMATAÇÃO TELEGRAM
+// ============================================================
+
+function formatarPercentual(
+    valor
+) {
+
+    const n =
+        Number(valor);
+
+    if (
+        !Number.isFinite(n)
+    ) {
+
+        return '0.00%';
+
+    }
+
+    if (
+        n > 0
+    ) {
+
+        return (
+            `+${n.toFixed(2)}%`
+        );
+
+    }
+
+    return (
+        `${n.toFixed(2)}%`
+    );
+
+}
+
+// ============================================================
+
+function formatarDinheiro(
+    valor
+) {
+
+    const n =
+        Number(valor);
+
+    if (
+        !Number.isFinite(n)
+    ) {
+
+        return '$ 0.00';
+
+    }
+
+    return (
+        `$ ${n.toFixed(2)}`
+    );
+
+}
+
+// ============================================================
+
+function emojiResultado(
+    resultado
+) {
+
+    if (
+        !resultado
+    ) {
+
+        return '⚪';
+
+    }
+
+    const texto =
+        String(
+            resultado
+        ).toLowerCase();
+
+    if (
+        texto.includes('positivo') ||
+        texto.includes('positive') ||
+        texto.includes('profit') ||
+        texto.includes('lucro')
+    ) {
+
+        return '🟢';
+
+    }
+
+    if (
+        texto.includes('negativo') ||
+        texto.includes('negative') ||
+        texto.includes('loss') ||
+        texto.includes('preju')
+    ) {
+
+        return '🔴';
+
+    }
+
+    return '⚪';
+
+}
+
+// ============================================================
+// MENSAGEM DE STATUS
+// ============================================================
+
+function montarMensagemMargem(
+    data
+) {
+
+    const variation =
+        formatarPercentual(
+            data.variation
+        );
+
+    const variationReal =
+        formatarPercentual(
+            data.variationReal
+        );
+
+    const maxPercent =
+        formatarPercentual(
+            data.maxPercent
+        );
+
+    const minPercent =
+        formatarPercentual(
+            data.minPercent
+        );
+
+    const resultado =
+        data.lastResult ||
+        'Nenhum';
+
+    const emoji =
+        emojiResultado(
+            resultado
+        );
+
+    return (
+        `━━━━━━━━━━━━━━━\n` +
+        `💰 <b>STATUS DA MARGEM</b>\n` +
+        `━━━━━━━━━━━━━━━\n\n` +
+
+        `💵 <b>Margem:</b> ` +
+        `${formatarDinheiro(data.marginBalance)}\n` +
+
+        `💰 <b>Carteira:</b> ` +
+        `${formatarDinheiro(data.walletBalance)}\n` +
+
+        `💳 <b>Disponível:</b> ` +
+        `${formatarDinheiro(data.availableBalance)}\n\n` +
+
+        `📊 <b>Variação:</b> ` +
+        `${variation}\n` +
+
+        `📈 <b>Variação real:</b> ` +
+        `${variationReal}\n\n` +
+
+        `🔺 <b>Máximo:</b> ` +
+        `${maxPercent}\n` +
+
+        `🔻 <b>Mínimo:</b> ` +
+        `${minPercent}\n\n` +
+
+        `🔄 <b>Reinícios:</b> ` +
+        `${data.resetCount}\n` +
+
+        `🟢 <b>Positivos:</b> ` +
+        `${data.positiveCount}\n` +
+
+        `🔴 <b>Negativos:</b> ` +
+        `${data.negativeCount}\n` +
+
+        `${emoji} <b>Último resultado:</b> ` +
+        `${resultado}\n\n` +
+
+        `⏱ <b>Atualizado:</b>\n` +
+        `${data.updatedAtFormatted}\n` +
+
+        `━━━━━━━━━━━━━━━`
+    );
+
+}
+
+// ============================================================
+// VALIDAÇÃO DO STATUS
+// ============================================================
+
+function statusMargemValido(
+    data
+) {
+
+    if (!data) {
+
+        return false;
+
+    }
+
+    if (
+        !numeroValido(
+            data.marginBalance
+        )
+    ) {
+
+        return false;
+
+    }
+
+    if (
+        !numeroValido(
+            data.walletBalance
+        )
+    ) {
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+// ============================================================
+// ATUALIZAR TELEGRAM
+// ============================================================
+
+async function atualizarMensagemMargemTelegram(
+    data
+) {
+
+    if (
+        !TELEGRAM_TOKEN
+    ) {
+
+        return;
+
+    }
+
+    if (
+        !statusMargemValido(
+            data
+        )
+    ) {
+
+        console.log(
+            '[margWorker] Dados inválidos. Telegram não atualizado.'
+        );
+
+        return;
+
+    }
+
+    const agora =
+        Date.now();
+
+    const texto =
+        montarMensagemMargem(
+            data
+        );
+
+    // --------------------------------------------------------
+    // Evita chamadas desnecessárias
+    // --------------------------------------------------------
+
+    if (
+        texto ===
+        ultimoTextoTelegram &&
+        agora -
+        ultimoEnvioTelegram <
+        9000
+    ) {
+
+        return;
+
+    }
+
+    const usuarios =
+        await carregarUsuariosTelegram();
+
+    if (
+        !usuarios.length
+    ) {
+
+        return;
+
+    }
+
+    const messages =
+        await carregarTelegramMarginMessages();
+
+    let alterou =
+        false;
+
+    for (
+        const user of usuarios
+    ) {
+
+        const chatId =
+            String(
+                user.chatId
+            );
+
+        if (
+            !chatId ||
+            chatId === 'undefined' ||
+            chatId === 'null'
+        ) {
+
+            continue;
+
+        }
+
+        const registro =
+            messages[chatId];
+
+        // ====================================================
+        // TENTAR EDITAR
+        // ====================================================
+
+        if (
+            registro &&
+            registro.messageId
+        ) {
+
+            const resultado =
+                await telegramRequest(
+                    'editMessageText',
+                    {
+                        chat_id:
+                            chatId,
+
+                        message_id:
+                            registro.messageId,
+
+                        text:
+                            texto,
+
+                        parse_mode:
+                            'HTML',
+
+                        disable_web_page_preview:
+                            true
+                    }
+                );
+
+            if (
+                resultado
+            ) {
+
+                messages[chatId] = {
+
+                    messageId:
+                        registro.messageId,
+
+                    updatedAt:
+                        Date.now()
+
+                };
+
+                alterou =
+                    true;
+
+                continue;
+
+            }
+
+            // ------------------------------------------------
+            // Mensagem provavelmente apagada
+            // ------------------------------------------------
+
+            delete messages[chatId];
+
+            alterou =
+                true;
+
+        }
+
+        // ====================================================
+        // CRIAR NOVA MENSAGEM
+        // ====================================================
+
+        const novaMensagem =
+            await telegramRequest(
+                'sendMessage',
+                {
+                    chat_id:
+                        chatId,
+
+                    text:
+                        texto,
+
+                    parse_mode:
+                        'HTML',
+
+                    disable_web_page_preview:
+                        true
+                }
+            );
+
+        if (
+            novaMensagem &&
+            novaMensagem.message_id
+        ) {
+
+            messages[chatId] = {
+
+                messageId:
+                    novaMensagem.message_id,
+
+                updatedAt:
+                    Date.now()
+
+            };
+
+            alterou =
+                true;
+
+            console.log(
+                `[margWorker] Mensagem de margem criada para ${chatId}. ` +
+                `ID=${novaMensagem.message_id}`
+            );
+
+        }
+
+    }
+
+    if (
+        alterou
+    ) {
+
+        await salvarTelegramMarginMessages(
+            messages
+        );
+
+    }
+
+    ultimoTextoTelegram =
+        texto;
+
+    ultimoEnvioTelegram =
+        agora;
+
+}
+
+// ============================================================
+// BALANCE FUTURES
+// ============================================================
 
 async function getBalance() {
 
-  try {
+    try {
 
-    const resposta =
-      await api.accountFutures(
-        Date.now()
-      );
+        const resposta =
+            await api.accountFutures(
+                Date.now()
+            );
 
-    if (
-      !resposta
-    ) {
+        if (
+            !resposta
+        ) {
 
-      throw new Error(
-        "accountFutures retornou vazio"
-      );
-    }
+            console.log(
+                '[margWorker] accountFutures retornou vazio.'
+            );
 
-    let usdt = null;
+            return null;
 
-    if (
-      Array.isArray(
-        resposta.assets
-      )
-    ) {
+        }
 
-      usdt =
-        resposta.assets.find(
-          item =>
-            item.asset === "USDT"
+        // ====================================================
+        // Binance /fapi/v2/account normalmente retorna:
+        //
+        // {
+        //   totalWalletBalance,
+        //   totalMarginBalance,
+        //   availableBalance,
+        //   assets: [...]
+        // }
+        // ====================================================
+
+        let usdt = null;
+
+        if (
+            Array.isArray(
+                resposta
+            )
+        ) {
+
+            usdt =
+                resposta.find(
+                    item =>
+                        item.asset ===
+                        'USDT'
+                );
+
+        } else if (
+            Array.isArray(
+                resposta.assets
+            )
+        ) {
+
+            usdt =
+                resposta.assets.find(
+                    item =>
+                        item.asset ===
+                        'USDT'
+                );
+
+        }
+
+        // ====================================================
+        // Se encontrou USDT
+        // ====================================================
+
+        if (
+            usdt
+        ) {
+
+            return {
+
+                asset:
+                    'USDT',
+
+                walletBalance:
+                    numero(
+                        usdt.walletBalance
+                    ),
+
+                marginBalance:
+                    numero(
+                        usdt.marginBalance
+                    ),
+
+                availableBalance:
+                    numero(
+                        usdt.availableBalance
+                    ),
+
+                crossWalletBalance:
+                    numero(
+                        usdt.crossWalletBalance
+                    ),
+
+                unrealizedProfit:
+                    numero(
+                        usdt.unrealizedProfit
+                    ),
+
+                maxWithdrawAmount:
+                    numero(
+                        usdt.maxWithdrawAmount
+                    )
+
+            };
+
+        }
+
+        // ====================================================
+        // Fallback para os campos totais da conta
+        // ====================================================
+
+        if (
+            !Array.isArray(
+                resposta
+            ) &&
+            (
+                resposta.totalWalletBalance !==
+                undefined ||
+                resposta.totalMarginBalance !==
+                undefined
+            )
+        ) {
+
+            return {
+
+                asset:
+                    'USDT',
+
+                walletBalance:
+                    numero(
+                        resposta.totalWalletBalance
+                    ),
+
+                marginBalance:
+                    numero(
+                        resposta.totalMarginBalance
+                    ),
+
+                availableBalance:
+                    numero(
+                        resposta.availableBalance
+                    ),
+
+                crossWalletBalance:
+                    numero(
+                        resposta.totalCrossWalletBalance
+                    ),
+
+                unrealizedProfit:
+                    numero(
+                        resposta.totalUnrealizedProfit
+                    ),
+
+                maxWithdrawAmount:
+                    numero(
+                        resposta.maxWithdrawAmount
+                    )
+
+            };
+
+        }
+
+        console.log(
+            '[margWorker] USDT não encontrado.'
         );
+
+        return null;
+
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro getBalance:',
+            error.response?.data ||
+            error.message
+        );
+
+        return null;
+
     }
 
+}
+
+// ============================================================
+// RESET DATA
+// ============================================================
+
+function normalizarResetData(
+    data
+) {
+
     if (
-      !usdt
+        !data ||
+        typeof data !== 'object' ||
+        Array.isArray(data)
     ) {
 
-      throw new Error(
-        "USDT não encontrado em accountFutures"
-      );
+        return {
+
+            lastResetDay:
+                getCurrentDay(),
+
+            resetCount:
+                0,
+
+            positiveCount:
+                0,
+
+            negativeCount:
+                0,
+
+            lastResult:
+                null
+
+        };
+
     }
 
     return {
 
-      asset:
-        "USDT",
+        lastResetDay:
+            data.lastResetDay ||
+            getCurrentDay(),
 
-      walletBalance:
-        numero(
-          usdt.walletBalance
-        ),
+        resetCount:
+            numero(
+                data.resetCount
+            ),
 
-      marginBalance:
-        numero(
-          usdt.marginBalance
-        ),
+        positiveCount:
+            numero(
+                data.positiveCount
+            ),
 
-      availableBalance:
-        numero(
-          usdt.availableBalance ??
-          resposta.availableBalance
-        ),
+        negativeCount:
+            numero(
+                data.negativeCount
+            ),
 
-      initialMargin:
-        numero(
-          usdt.initialMargin
-        ),
+        lastResult:
+            data.lastResult ||
+            null
 
-      maintMargin:
-        numero(
-          usdt.maintMargin
-        ),
-
-      raw:
-        usdt
     };
 
-  } catch (erro) {
-
-    console.error(
-      "[margWorker] Erro obtendo saldo Futures:",
-      erro.message
-    );
-
-    return null;
-  }
 }
 
-// ======================================================
-// SINCRONIZAR HORÁRIO
-// ======================================================
-
-async function sincronizarHorario() {
-
-  try {
-
-    const resposta =
-      await api.time();
-
-    if (
-      resposta?.data?.serverTime
-    ) {
-
-      serverTimeOffset =
-        resposta.data.serverTime -
-        Date.now();
-
-      return;
-    }
-
-    if (
-      resposta?.serverTime
-    ) {
-
-      serverTimeOffset =
-        resposta.serverTime -
-        Date.now();
-    }
-
-  } catch (erro) {
-
-    console.warn(
-      "[margWorker] Erro sincronizando horário:",
-      erro.message
-    );
-  }
-}
-
-// ======================================================
-// HISTÓRICO DO BALANCE
-// ======================================================
-
-function obterHistoricoBalance() {
-
-  const dados =
-    lerJson(
-      BALANCE_HIST_FILE,
-      []
-    );
-
-  return Array.isArray(
-    dados
-  )
-    ? dados
-    : [];
-}
-
-// ======================================================
+// ============================================================
 // MONITORAR MARGEM
-// ======================================================
+// ============================================================
 
 async function monitorarMargem() {
 
-  const balance =
-    await getBalance();
-
-  if (
-    !balance
-  ) {
-
-    return;
-  }
-
-  const agora =
-    Date.now();
-
-  // ====================================================
-  // HISTÓRICO
-  // ====================================================
-
-  let balanceHist =
-    obterHistoricoBalance();
-
-  balanceHist.push({
-
-    timestamp:
-      agora,
-
-    date:
-      new Date(
-        agora
-      ).toISOString(),
-
-    walletBalance:
-      balance.walletBalance,
-
-    marginBalance:
-      balance.marginBalance,
-
-    availableBalance:
-      balance.availableBalance
-  });
-
-  if (
-    balanceHist.length > 5000
-  ) {
-
-    balanceHist =
-      balanceHist.slice(
-        -5000
-      );
-  }
-
-  salvarJson(
-    BALANCE_HIST_FILE,
-    balanceHist
-  );
-
-  // ====================================================
-  // OLD BALANCE
-  // ====================================================
-
-  let oldBalance =
-    lerJson(
-      OLD_BALANCE_FILE,
-      null
-    );
-
-  if (
-    !oldBalance ||
-    !Number.isFinite(
-      Number(
-        oldBalance.walletBalance
-      )
-    )
-  ) {
-
-    oldBalance = {
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance,
-
-      availableBalance:
-        balance.availableBalance,
-
-      maxPercentual:
-        0,
-
-      minPercentual:
-        0,
-
-      timestamp:
-        agora
-    };
-
-    salvarJson(
-      OLD_BALANCE_FILE,
-      oldBalance
-    );
-  }
-
-  // ====================================================
-  // PERCENTUAIS
-  // ====================================================
-
-  const percentual =
-    calcularPercentual(
-      oldBalance.walletBalance,
-      balance.marginBalance
-    );
-
-  const percentualReal =
-    calcularPercentual(
-      oldBalance.walletBalance,
-      balance.walletBalance
-    );
-
-  // ====================================================
-  // MAX / MIN
-  // ====================================================
-
-  let maxPercentual =
-    Number(
-      oldBalance.maxPercentual
-    );
-
-  let minPercentual =
-    Number(
-      oldBalance.minPercentual
-    );
-
-  if (
-    !Number.isFinite(
-      maxPercentual
-    )
-  ) {
-
-    maxPercentual =
-      percentual;
-  }
-
-  if (
-    !Number.isFinite(
-      minPercentual
-    )
-  ) {
-
-    minPercentual =
-      percentual;
-  }
-
-  maxPercentual =
-    Math.max(
-      maxPercentual,
-      percentual
-    );
-
-  minPercentual =
-    Math.min(
-      minPercentual,
-      percentual
-    );
-
-  // ====================================================
-  // SALVAR BALANCE
-  // ====================================================
-
-  salvarJson(
-    BALANCE_FILE,
-    {
-
-      ...balance,
-
-      percentual,
-
-      percentualReal,
-
-      maxPercentual,
-
-      minPercentual,
-
-      timestamp:
-        agora
-    }
-  );
-
-  // ====================================================
-  // TELEGRAM
-  // ====================================================
-
-  await atualizarTelegram({
-
-    walletBalance:
-      balance.walletBalance,
-
-    marginBalance:
-      balance.marginBalance,
-
-    availableBalance:
-      balance.availableBalance,
-
-    percentual,
-
-    percentualReal,
-
-    maxPercentual,
-
-    minPercentual,
-
-    timestamp:
-      agora
-  });
-
-  // ====================================================
-  // ENVIAR STATUS PARA O PARENT
-  // ====================================================
-
-  if (
-    parentPort
-  ) {
-
     try {
 
-      parentPort.postMessage({
+        // ====================================================
+        // HISTÓRICO
+        // ====================================================
 
-        type:
-          "MARGIN_STATUS",
+        let balanceHist =
+            await carregarCache(
+                'BalanceHist'
+            );
 
-        data: {
+        if (
+            !Array.isArray(
+                balanceHist
+            )
+        ) {
 
-          walletBalance:
-            balance.walletBalance,
+            balanceHist = [];
 
-          marginBalance:
-            balance.marginBalance,
-
-          availableBalance:
-            balance.availableBalance,
-
-          percentual,
-
-          percentualReal,
-
-          maxPercentual,
-
-          minPercentual,
-
-          timestamp:
-            agora
         }
-      });
 
-    } catch (erro) {
+        // ====================================================
+        // SALDO ATUAL
+        // ====================================================
 
-      console.error(
-        "[margWorker] Erro enviando MARGIN_STATUS:",
-        erro.message
-      );
+        const balance =
+            await getBalance();
+
+        if (
+            !balance
+        ) {
+
+            console.log(
+                '[margWorker] Saldo indisponível.'
+            );
+
+            return;
+
+        }
+
+        // ====================================================
+        // VALIDAR DADOS CRÍTICOS
+        // ====================================================
+
+        if (
+            !numeroValido(
+                balance.walletBalance
+            ) ||
+            !numeroValido(
+                balance.marginBalance
+            )
+        ) {
+
+            console.log(
+                '[margWorker] Saldo inválido. Ciclo ignorado.'
+            );
+
+            return;
+
+        }
+
+        // ====================================================
+        // OLD BALANCE
+        // ====================================================
+
+        let oldBalance =
+            await carregarCache(
+                'oldBalance'
+            );
+
+        if (
+            !oldBalance ||
+            typeof oldBalance !== 'object' ||
+            Array.isArray(oldBalance) ||
+            !numeroValido(
+                oldBalance.walletBalance
+            )
+        ) {
+
+            oldBalance = {
+
+                walletBalance:
+                    balance.walletBalance,
+
+                marginBalance:
+                    balance.marginBalance,
+
+                availableBalance:
+                    balance.availableBalance,
+
+                percent:
+                    0,
+
+                maxPercent:
+                    0,
+
+                minPercent:
+                    0,
+
+                lastUpdate:
+                    formatTime(
+                        Date.now()
+                    )
+
+            };
+
+            await salvarCache(
+                oldBalance,
+                'oldBalance'
+            );
+
+            console.log(
+                '[margWorker] oldBalance inicializado.'
+            );
+
+        }
+
+        // ====================================================
+        // VARIAÇÕES
+        // ====================================================
+
+        const perc =
+            percentage(
+                oldBalance.walletBalance,
+                balance.marginBalance
+            );
+
+        const percReal =
+            percentage(
+                oldBalance.walletBalance,
+                balance.walletBalance
+            );
+
+        // ====================================================
+        // MÁXIMO
+        // ====================================================
+
+        if (
+            !numeroValido(
+                oldBalance.maxPercent
+            )
+        ) {
+
+            oldBalance.maxPercent =
+                perc;
+
+        }
+
+        if (
+            perc >
+            Number(
+                oldBalance.maxPercent
+            )
+        ) {
+
+            oldBalance.maxPercent =
+                perc;
+
+        }
+
+        // ====================================================
+        // MÍNIMO
+        // ====================================================
+
+        if (
+            !numeroValido(
+                oldBalance.minPercent
+            )
+        ) {
+
+            oldBalance.minPercent =
+                perc;
+
+        }
+
+        if (
+            perc <
+            Number(
+                oldBalance.minPercent
+            )
+        ) {
+
+            oldBalance.minPercent =
+                perc;
+
+        }
+
+        // ====================================================
+        // ATUALIZAR OLD BALANCE
+        // ====================================================
+
+        oldBalance.percent =
+            perc;
+
+        oldBalance.walletBalance =
+            balance.walletBalance;
+
+        oldBalance.marginBalance =
+            balance.marginBalance;
+
+        oldBalance.availableBalance =
+            balance.availableBalance;
+
+        oldBalance.lastUpdate =
+            formatTime(
+                Date.now()
+            );
+
+        // ====================================================
+        // SALVAR BALANCE
+        // ====================================================
+
+        await salvarCache(
+            balance,
+            'Balance'
+        );
+
+        await salvarCache(
+            oldBalance,
+            'oldBalance'
+        );
+
+        // ====================================================
+        // HISTÓRICO
+        // ====================================================
+
+        balanceHist.push({
+
+            timestamp:
+                Date.now(),
+
+            date:
+                formatTime(
+                    Date.now()
+                ),
+
+            walletBalance:
+                balance.walletBalance,
+
+            marginBalance:
+                balance.marginBalance,
+
+            availableBalance:
+                balance.availableBalance,
+
+            variation:
+                perc,
+
+            variationReal:
+                percReal
+
+        });
+
+        if (
+            balanceHist.length >
+            5000
+        ) {
+
+            balanceHist =
+                balanceHist.slice(
+                    -5000
+                );
+
+        }
+
+        await salvarCache(
+            balanceHist,
+            'BalanceHist'
+        );
+
+        // ====================================================
+        // RESET COUNT
+        // ====================================================
+
+        let resetData =
+            normalizarResetData(
+                await carregarCache(
+                    'ResetCount'
+                )
+            );
+
+        const currentDay =
+            getCurrentDay();
+
+        if (
+            resetData.lastResetDay !==
+            currentDay
+        ) {
+
+            resetData = {
+
+                lastResetDay:
+                    currentDay,
+
+                resetCount:
+                    0,
+
+                positiveCount:
+                    0,
+
+                negativeCount:
+                    0,
+
+                lastResult:
+                    resetData.lastResult ||
+                    null
+
+            };
+
+            await salvarCache(
+                resetData,
+                'ResetCount'
+            );
+
+        }
+
+        // ====================================================
+        // DADOS TELEGRAM
+        // ====================================================
+
+        const telegramData = {
+
+            walletBalance:
+                arredondar(
+                    balance.walletBalance,
+                    2
+                ),
+
+            marginBalance:
+                arredondar(
+                    balance.marginBalance,
+                    2
+                ),
+
+            availableBalance:
+                arredondar(
+                    balance.availableBalance,
+                    2
+                ),
+
+            variation:
+                arredondar(
+                    perc,
+                    2
+                ),
+
+            variationReal:
+                arredondar(
+                    percReal,
+                    2
+                ),
+
+            maxPercent:
+                arredondar(
+                    oldBalance.maxPercent,
+                    2
+                ),
+
+            minPercent:
+                arredondar(
+                    oldBalance.minPercent,
+                    2
+                ),
+
+            resetCount:
+                Number(
+                    resetData.resetCount
+                ),
+
+            positiveCount:
+                Number(
+                    resetData.positiveCount
+                ),
+
+            negativeCount:
+                Number(
+                    resetData.negativeCount
+                ),
+
+            lastResult:
+                resetData.lastResult,
+
+            updatedAt:
+                Date.now(),
+
+            updatedAtFormatted:
+                formatTime(
+                    Date.now()
+                )
+
+        };
+
+        // ====================================================
+        // TELEGRAM
+        // ====================================================
+
+        await atualizarMensagemMargemTelegram(
+            telegramData
+        );
+
+        // ====================================================
+        // PROCESSO PAI
+        // ====================================================
+
+        enviarPai({
+
+            type:
+                'MARGIN_STATUS',
+
+            data:
+                telegramData
+
+        });
+
+        // ====================================================
+        // LOG
+        // ====================================================
+
+        console.log(
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        );
+
+        console.log(
+            `[margWorker] 💰 Margem: ` +
+            `${balance.marginBalance}`
+        );
+
+        console.log(
+            `[margWorker] 💵 Carteira: ` +
+            `${balance.walletBalance}`
+        );
+
+        console.log(
+            `[margWorker] 💳 Disponível: ` +
+            `${balance.availableBalance}`
+        );
+
+        console.log(
+            `[margWorker] 📊 Variação: ` +
+            `${perc.toFixed(2)}%`
+        );
+
+        console.log(
+            `[margWorker] 📈 Variação real: ` +
+            `${percReal.toFixed(2)}%`
+        );
+
+        console.log(
+            `[margWorker] 🔺 Máximo: ` +
+            `${Number(oldBalance.maxPercent).toFixed(2)}%`
+        );
+
+        console.log(
+            `[margWorker] 🔻 Mínimo: ` +
+            `${Number(oldBalance.minPercent).toFixed(2)}%`
+        );
+
+        console.log(
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        );
+
+        // ====================================================
+        // LIMITES
+        // ====================================================
+
+        const SLDIA =
+            Number(
+                process.env.SLDIA ||
+                -100
+            );
+
+        const TPDIA =
+            Number(
+                process.env.TPDIA ||
+                100
+            );
+
+        // ====================================================
+        // VERIFICAR DISPARO
+        // ====================================================
+
+        const atingiuLimite =
+            perc <= SLDIA ||
+            perc >= TPDIA ||
+            perc >= 90;
+
+        if (
+            !atingiuLimite
+        ) {
+
+            return;
+
+        }
+
+        // ====================================================
+        // REGISTRAR RESET
+        // ====================================================
+
+        resetData.resetCount++;
+
+        let resultado =
+            'neutro';
+
+        if (
+            perc > 0
+        ) {
+
+            resetData.positiveCount++;
+
+            resultado =
+                'positivo';
+
+        } else if (
+            perc < 0
+        ) {
+
+            resetData.negativeCount++;
+
+            resultado =
+                'negativo';
+
+        }
+
+        resetData.lastResult =
+            resultado;
+
+        resetData.lastResetDay =
+            currentDay;
+
+        await salvarCache(
+            resetData,
+            'ResetCount'
+        );
+
+        // ====================================================
+        // RESET HISTORY
+        // ====================================================
+
+        let resetHist =
+            await carregarCache(
+                'ResetHist'
+            );
+
+        if (
+            !Array.isArray(
+                resetHist
+            )
+        ) {
+
+            resetHist = [];
+
+        }
+
+        resetHist.push({
+
+            date:
+                formatTime(
+                    Date.now()
+                ),
+
+            initialMargin:
+                oldBalance.walletBalance,
+
+            finalMargin:
+                balance.marginBalance,
+
+            percentChange:
+                perc,
+
+            result:
+                resultado,
+
+            dailyCounters: {
+
+                resetCount:
+                    resetData.resetCount,
+
+                positiveCount:
+                    resetData.positiveCount,
+
+                negativeCount:
+                    resetData.negativeCount
+
+            }
+
+        });
+
+        if (
+            resetHist.length >
+            1000
+        ) {
+
+            resetHist =
+                resetHist.slice(
+                    -1000
+                );
+
+        }
+
+        await salvarCache(
+            resetHist,
+            'ResetHist'
+        );
+
+        // ====================================================
+        // TAKE PROFIT >= 90%
+        // ====================================================
+
+        if (
+            perc >= 90
+        ) {
+
+            console.log(
+                '[margWorker] 🔥 Margem >= 90%.'
+            );
+
+            oldBalance = {
+
+                walletBalance:
+                    balance.walletBalance,
+
+                marginBalance:
+                    balance.marginBalance,
+
+                availableBalance:
+                    balance.availableBalance,
+
+                percent:
+                    0,
+
+                maxPercent:
+                    0,
+
+                minPercent:
+                    0,
+
+                lastUpdate:
+                    formatTime(
+                        Date.now()
+                    )
+
+            };
+
+            await salvarCache(
+                oldBalance,
+                'oldBalance'
+            );
+
+            return;
+
+        }
+
+        // ====================================================
+        // TAKE PROFIT
+        // ====================================================
+
+        if (
+            perc >= TPDIA &&
+            perc < 90
+        ) {
+
+            console.log(
+                `[margWorker] 🟢 Take Profit: ` +
+                `${perc.toFixed(2)}%`
+            );
+
+            try {
+
+                await activatePause(
+                    30
+                );
+
+            } catch (error) {
+
+                console.error(
+                    '[margWorker] Erro activatePause:',
+                    error.message
+                );
+
+            }
+
+            /*
+             * IMPORTANTE:
+             *
+             * Seu api.js atual não possui uma função
+             * closeAllPositions().
+             *
+             * Portanto NÃO chamamos uma função inexistente.
+             *
+             * A rotina de fechamento global deverá ser
+             * executada pelo seu mecanismo existente de
+             * positionWorker/monitorWorker.
+             */
+
+            return;
+
+        }
+
+        // ====================================================
+        // STOP LOSS
+        // ====================================================
+
+        if (
+            perc <= SLDIA &&
+            perc >= -90
+        ) {
+
+            console.log(
+                `[margWorker] 🔴 Stop Loss: ` +
+                `${perc.toFixed(2)}%`
+            );
+
+            try {
+
+                await activatePause(
+                    30
+                );
+
+            } catch (error) {
+
+                console.error(
+                    '[margWorker] Erro activatePause:',
+                    error.message
+                );
+
+            }
+
+            /*
+             * Não chamamos closeAllPositions()
+             * porque essa função não existe no api.js.
+             */
+
+            return;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro monitorarMargem:',
+            error.stack ||
+            error.message
+        );
+
     }
-  }
 
-  // ====================================================
-  // RESET COUNT
-  // ====================================================
-
-  let resetCount =
-    lerJson(
-      RESET_COUNT_FILE,
-      {
-        count: 0
-      }
-    );
-
-  if (
-    !resetCount ||
-    typeof resetCount !== "object"
-  ) {
-
-    resetCount = {
-      count: 0
-    };
-  }
-
-  let resetHist =
-    lerJson(
-      RESET_HIST_FILE,
-      []
-    );
-
-  if (
-    !Array.isArray(
-      resetHist
-    )
-  ) {
-
-    resetHist = [];
-  }
-
-  // ====================================================
-  // LIMITES
-  // ====================================================
-
-  const limiteStop =
-    percentual <= SLDIA;
-
-  const limiteTake =
-    percentual >= TPDIA;
-
-  const limiteEmergencia =
-    percentual >= 90;
-
-  // ====================================================
-  // EMERGÊNCIA
-  // ====================================================
-
-  if (
-    limiteEmergencia
-  ) {
-
-    console.log(
-      `[margWorker] ⚠️ Margem em ` +
-      `${percentual.toFixed(4)}%`
-    );
-
-    resetCount.count++;
-
-    resetHist.push({
-
-      timestamp:
-        agora,
-
-      date:
-        new Date(
-          agora
-        ).toISOString(),
-
-      motivo:
-        "LIMITE_EMERGENCIA",
-
-      percentual,
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance
-    });
-
-    salvarJson(
-      RESET_COUNT_FILE,
-      resetCount
-    );
-
-    salvarJson(
-      RESET_HIST_FILE,
-      resetHist
-    );
-
-    oldBalance = {
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance,
-
-      availableBalance:
-        balance.availableBalance,
-
-      maxPercentual:
-        percentual,
-
-      minPercentual:
-        percentual,
-
-      timestamp:
-        agora
-    };
-
-    salvarJson(
-      OLD_BALANCE_FILE,
-      oldBalance
-    );
-
-    return;
-  }
-
-  // ====================================================
-  // TAKE PROFIT
-  // ====================================================
-
-  if (
-    limiteTake
-  ) {
-
-    console.log(
-      `[margWorker] 🟢 Take de margem: ` +
-      `${percentual.toFixed(4)}%`
-    );
-
-    resetCount.count++;
-
-    resetHist.push({
-
-      timestamp:
-        agora,
-
-      date:
-        new Date(
-          agora
-        ).toISOString(),
-
-      motivo:
-        "TAKE_PROFIT_MARGEM",
-
-      percentual,
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance
-    });
-
-    salvarJson(
-      RESET_COUNT_FILE,
-      resetCount
-    );
-
-    salvarJson(
-      RESET_HIST_FILE,
-      resetHist
-    );
-
-    try {
-
-      activatePause(
-        30
-      );
-
-      console.log(
-        "[margWorker] ⏸️ Pausa de 30 minutos ativada."
-      );
-
-    } catch (erro) {
-
-      console.error(
-        "[margWorker] Erro ativando pausa:",
-        erro.message
-      );
-    }
-
-    console.log(
-      "[margWorker] Fechamento global não executado: " +
-      "api.js atual não possui função para listar/fechar todas as posições."
-    );
-
-    oldBalance = {
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance,
-
-      availableBalance:
-        balance.availableBalance,
-
-      maxPercentual:
-        percentual,
-
-      minPercentual:
-        percentual,
-
-      timestamp:
-        agora
-    };
-
-    salvarJson(
-      OLD_BALANCE_FILE,
-      oldBalance
-    );
-
-    return;
-  }
-
-  // ====================================================
-  // STOP LOSS
-  // ====================================================
-
-  if (
-    limiteStop
-  ) {
-
-    console.log(
-      `[margWorker] 🔴 Stop de margem: ` +
-      `${percentual.toFixed(4)}%`
-    );
-
-    resetCount.count++;
-
-    resetHist.push({
-
-      timestamp:
-        agora,
-
-      date:
-        new Date(
-          agora
-        ).toISOString(),
-
-      motivo:
-        "STOP_LOSS_MARGEM",
-
-      percentual,
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance
-    });
-
-    salvarJson(
-      RESET_COUNT_FILE,
-      resetCount
-    );
-
-    salvarJson(
-      RESET_HIST_FILE,
-      resetHist
-    );
-
-    try {
-
-      activatePause(
-        30
-      );
-
-      console.log(
-        "[margWorker] ⏸️ Pausa de 30 minutos ativada."
-      );
-
-    } catch (erro) {
-
-      console.error(
-        "[margWorker] Erro ativando pausa:",
-        erro.message
-      );
-    }
-
-    console.log(
-      "[margWorker] Fechamento global não executado: " +
-      "api.js atual não possui função para listar/fechar todas as posições."
-    );
-
-    oldBalance = {
-
-      walletBalance:
-        balance.walletBalance,
-
-      marginBalance:
-        balance.marginBalance,
-
-      availableBalance:
-        balance.availableBalance,
-
-      maxPercentual:
-        percentual,
-
-      minPercentual:
-        percentual,
-
-      timestamp:
-        agora
-    };
-
-    salvarJson(
-      OLD_BALANCE_FILE,
-      oldBalance
-    );
-
-    return;
-  }
-
-  // ====================================================
-  // ATUALIZA REFERÊNCIA
-  // ====================================================
-
-  oldBalance = {
-
-    walletBalance:
-      balance.walletBalance,
-
-    marginBalance:
-      balance.marginBalance,
-
-    availableBalance:
-      balance.availableBalance,
-
-    maxPercentual,
-
-    minPercentual,
-
-    timestamp:
-      agora
-  };
-
-  salvarJson(
-    OLD_BALANCE_FILE,
-    oldBalance
-  );
 }
 
-// ======================================================
+// ============================================================
+// SINCRONIZAR HORÁRIO
+// ============================================================
+
+async function sincronizarHorario() {
+
+    try {
+
+        const response =
+            await axios.get(
+                `${BASE_URL}/api/v3/time`,
+                {
+                    timeout:
+                        GLOBAL_AXIOS_TIMEOUT
+                }
+            );
+
+        if (
+            response.data &&
+            response.data.serverTime
+        ) {
+
+            offset =
+                response.data.serverTime -
+                Date.now();
+
+            console.log(
+                `[margWorker] ⏱ Offset Binance: ${offset}ms`
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro horário Binance:',
+            error.message
+        );
+
+    }
+
+}
+
+// ============================================================
 // START WORKER
-// ======================================================
+// ============================================================
 
 async function startWorker() {
 
-  if (
-    workerRunning
-  ) {
-
-    console.log(
-      "[margWorker] Ciclo anterior ainda está executando."
-    );
-
-    return;
-  }
-
-  workerRunning = true;
-
-  try {
-
-    await sincronizarHorario();
-
-    await monitorarMargem();
-
-  } catch (erro) {
-
-    console.error(
-      "[margWorker] Erro no ciclo:",
-      erro
-    );
-
-  } finally {
-
-    workerRunning = false;
-  }
-}
-
-// ======================================================
-// PARENT PORT
-// ======================================================
-
-if (
-  parentPort
-) {
-
-  parentPort.on(
-    "message",
-    async (
-      mensagem
-    ) => {
-
-      try {
-
-        if (
-          mensagem === "start" ||
-          mensagem?.type === "start"
-        ) {
-
-          await startWorker();
-        }
-
-        if (
-          mensagem === "check" ||
-          mensagem?.type === "check"
-        ) {
-
-          await startWorker();
-        }
-
-      } catch (erro) {
-
-        console.error(
-          "[margWorker] Erro recebendo mensagem:",
-          erro.message
-        );
-      }
-    }
-  );
-}
-
-// ======================================================
-// INICIALIZAÇÃO
-// ======================================================
-
-(async () => {
-
-  console.log(
-    "================================================="
-  );
-
-  console.log(
-    "💰 margWorker iniciado"
-  );
-
-  console.log(
-    "📊 Monitoramento da margem Futures"
-  );
-
-  console.log(
-    "📱 Telegram integrado diretamente ao margWorker"
-  );
-
-  console.log(
-    "================================================="
-  );
-
-  console.log(
-    `[margWorker] WORKER_CACHE_DIR: ${WORKER_CACHE_DIR}`
-  );
-
-  console.log(
-    `[margWorker] USERS_FILE: ${USERS_FILE}`
-  );
-
-  console.log(
-    `[margWorker] TELEGRAM_MESSAGES_FILE: ${TELEGRAM_MESSAGES_FILE}`
-  );
-
-  console.log(
-    `[margWorker] Telegram: ${
-      TELEGRAM_API
-        ? "ATIVO"
-        : "DESATIVADO"
-    }`
-  );
-
-  console.log(
-    `[margWorker] SLDIA: ${SLDIA}%`
-  );
-
-  console.log(
-    `[margWorker] TPDIA: ${TPDIA}%`
-  );
-
-  // ====================================================
-  // DIAGNÓSTICO TELEGRAM
-  // ====================================================
-
-  if (
-    TELEGRAM_API
-  ) {
-
-    await verificarBotTelegram();
-
-    const usuarios =
-      carregarUsuariosTelegram();
-
-    for (
-      const usuario of usuarios
+    if (
+        workerRunning
     ) {
 
-      const chatId =
-        obterChatId(
-          usuario
+        console.log(
+            '[margWorker] Ciclo anterior ainda executando.'
         );
 
-      if (
-        chatId
-      ) {
+        return;
 
-        await verificarChatTelegram(
-          chatId
-        );
-
-      }
     }
-  }
 
-  // ====================================================
-  // PRIMEIRA EXECUÇÃO
-  // ====================================================
+    workerRunning =
+        true;
 
-  await startWorker();
+    try {
 
-  // ====================================================
-  // CICLO
-  // ====================================================
+        await sincronizarHorario();
 
-  setInterval(
-    async () => {
+        await monitorarMargem();
 
-      await startWorker();
+    } catch (error) {
+
+        console.error(
+            '[margWorker] Erro startWorker:',
+            error.stack ||
+            error.message
+        );
+
+    } finally {
+
+        workerRunning =
+            false;
+
+    }
+
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+console.log(
+    '[margWorker] 🚀 MargWorker iniciado.'
+);
+
+enviarPai(
+    '✅ MargWorker iniciado.'
+);
+
+// ============================================================
+// PRIMEIRO CICLO
+// ============================================================
+
+startWorker();
+
+// ============================================================
+// LOOP
+// ============================================================
+
+setInterval(
+    () => {
+
+        startWorker();
 
     },
-    10000
-  );
-
-})();
+    MONITOR_INTERVAL
+);
