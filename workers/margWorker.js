@@ -4,14 +4,10 @@ const axios = require("axios");
 
 require("dotenv").config();
 
-const {
-  parentPort
-} = require("worker_threads");
+const { parentPort } = require("worker_threads");
 
 const api = require("../api");
-const {
-  activatePause
-} = require("./pauseManager");
+const { activatePause } = require("./pauseManager");
 
 // ======================================================
 // CONFIGURAÇÕES
@@ -24,10 +20,6 @@ const TELEGRAM_API =
   TELEGRAM_TOKEN
     ? `https://api.telegram.org/bot${TELEGRAM_TOKEN}`
     : null;
-
-const BASE_URL =
-  process.env.BASE_URL ||
-  "https://fapi.binance.com";
 
 const SLDIA =
   parseFloat(
@@ -87,16 +79,25 @@ const RESET_HIST_FILE =
 // TELEGRAM
 // ======================================================
 //
-// IMPORTANTE:
-//
-// O users.json está em:
-//
+// users.json:
 // workers/cache/users.json
 //
-// O arquivo que guarda os message_id também está em:
+// Exemplo real:
 //
+// {
+//   "6133697652": {
+//     "first_name": ".",
+//     "username": null,
+//     "active": true
+//   }
+// }
+//
+// O chat_id é a chave do objeto.
+//
+// telegramMarginMessages.json:
 // workers/cache/telegramMarginMessages.json
 //
+// ======================================================
 
 const USERS_FILE =
   path.join(
@@ -119,7 +120,7 @@ let workerRunning = false;
 let serverTimeOffset = 0;
 
 // ======================================================
-// CONTROLE TELEGRAM POR CHAT
+// CONTROLE TELEGRAM
 // ======================================================
 
 const telegramLastText =
@@ -364,7 +365,8 @@ function escapeHtml(
 }
 
 // ======================================================
-// TELEGRAM - CARREGAR USUÁRIOS
+// TELEGRAM
+// CARREGAR USUÁRIOS
 // ======================================================
 
 function carregarUsuariosTelegram() {
@@ -376,90 +378,78 @@ function carregarUsuariosTelegram() {
   const dados =
     lerJson(
       USERS_FILE,
-      []
+      {}
     );
 
-  // ================================================
-  // users.json é um array
-  // ================================================
-
   if (
+    !dados ||
+    typeof dados !== "object" ||
     Array.isArray(dados)
   ) {
 
     console.log(
-      `[Telegram] Usuários encontrados: ${dados.length}`
+      "[Telegram] Nenhum usuário disponível."
     );
 
-    return dados;
+    return [];
   }
 
-  // ================================================
-  // { users: [] }
-  // ================================================
+  const usuarios = [];
 
-  if (
-    dados &&
-    Array.isArray(
-      dados.users
-    )
+  // ====================================================
+  // FORMATO REAL DO users.json
+  //
+  // {
+  //   "6133697652": {
+  //     "first_name": ".",
+  //     "username": null,
+  //     "active": true
+  //   }
+  // }
+  //
+  // O chat_id é a chave.
+  // ====================================================
+
+  for (
+    const [chatId, usuario] of Object.entries(dados)
   ) {
 
-    console.log(
-      `[Telegram] Usuários encontrados: ${dados.users.length}`
-    );
+    if (
+      !usuario ||
+      typeof usuario !== "object"
+    ) {
 
-    return dados.users;
-  }
+      continue;
+    }
 
-  // ================================================
-  // { usuarios: [] }
-  // ================================================
+    // Usuário inativo não recebe mensagens
+    if (
+      usuario.active === false
+    ) {
 
-  if (
-    dados &&
-    Array.isArray(
-      dados.usuarios
-    )
-  ) {
+      continue;
+    }
 
-    console.log(
-      `[Telegram] Usuários encontrados: ${dados.usuarios.length}`
-    );
+    usuarios.push({
 
-    return dados.usuarios;
-  }
+      chatId:
+        String(chatId),
 
-  // ================================================
-  // OBJETO
-  // ================================================
+      ...usuario
 
-  if (
-    dados &&
-    typeof dados === "object"
-  ) {
-
-    const usuarios =
-      Object.values(
-        dados
-      );
-
-    console.log(
-      `[Telegram] Usuários encontrados: ${usuarios.length}`
-    );
-
-    return usuarios;
+    });
   }
 
   console.log(
-    "[Telegram] Nenhum usuário encontrado."
+    `[Telegram] Usuários encontrados: ${usuarios.length}`
   );
 
-  return [];
+  return usuarios;
 }
 
 // ======================================================
-// TELEGRAM - OBTER CHAT ID
+// TELEGRAM
+// OBTER CHAT ID
 // ======================================================
 
 function obterChatId(
@@ -467,73 +457,73 @@ function obterChatId(
 ) {
 
   if (
-    usuario === null ||
-    usuario === undefined
-  ) {
-
-    return null;
-  }
-
-  // Caso users.json contenha diretamente:
-  //
-  // [
-  //   123456789
-  // ]
-
-  if (
-    typeof usuario === "string" ||
-    typeof usuario === "number"
-  ) {
-
-    return String(
-      usuario
-    );
-  }
-
-  if (
+    !usuario ||
     typeof usuario !== "object"
   ) {
 
     return null;
   }
 
-  const campos = [
+  // ====================================================
+  // FORMATO GERADO POR carregarUsuariosTelegram()
+  // ====================================================
 
-    usuario.chatId,
-
-    usuario.chat_id,
-
-    usuario.telegramChatId,
-
-    usuario.telegram_chat_id,
-
-    usuario.id
-
-  ];
-
-  for (
-    const valor of campos
+  if (
+    usuario.chatId !== undefined &&
+    usuario.chatId !== null &&
+    String(
+      usuario.chatId
+    ).trim() !== ""
   ) {
 
-    if (
-      valor !== undefined &&
-      valor !== null &&
-      String(
-        valor
-      ).trim() !== ""
-    ) {
+    return String(
+      usuario.chatId
+    );
+  }
 
-      return String(
-        valor
-      );
-    }
+  // ====================================================
+  // COMPATIBILIDADE
+  // ====================================================
+
+  if (
+    usuario.chat_id !== undefined &&
+    usuario.chat_id !== null &&
+    String(
+      usuario.chat_id
+    ).trim() !== ""
+  ) {
+
+    return String(
+      usuario.chat_id
+    );
+  }
+
+  if (
+    usuario.telegramChatId !== undefined &&
+    usuario.telegramChatId !== null
+  ) {
+
+    return String(
+      usuario.telegramChatId
+    );
+  }
+
+  if (
+    usuario.telegram_chat_id !== undefined &&
+    usuario.telegram_chat_id !== null
+  ) {
+
+    return String(
+      usuario.telegram_chat_id
+    );
   }
 
   return null;
 }
 
 // ======================================================
-// TELEGRAM - CARREGAR MESSAGE IDS
+// TELEGRAM
+// CARREGAR MESSAGE IDS
 // ======================================================
 
 function carregarMensagensTelegram() {
@@ -557,7 +547,8 @@ function carregarMensagensTelegram() {
 }
 
 // ======================================================
-// TELEGRAM - SALVAR MESSAGE IDS
+// TELEGRAM
+// SALVAR MESSAGE IDS
 // ======================================================
 
 function salvarMensagensTelegram(
@@ -571,7 +562,8 @@ function salvarMensagensTelegram(
 }
 
 // ======================================================
-// TELEGRAM - VERIFICAR MENSAGEM INVÁLIDA
+// TELEGRAM
+// VERIFICAR SE MENSAGEM NÃO EXISTE
 // ======================================================
 
 function mensagemNaoExisteMais(
@@ -658,7 +650,8 @@ function mensagemNaoExisteMais(
 }
 
 // ======================================================
-// TELEGRAM - CRIAR NOVA MENSAGEM
+// TELEGRAM
+// CRIAR NOVA MENSAGEM
 // ======================================================
 
 async function criarMensagemTelegram(
@@ -752,7 +745,8 @@ async function criarMensagemTelegram(
 }
 
 // ======================================================
-// TELEGRAM - EDITAR MENSAGEM
+// TELEGRAM
+// EDITAR MENSAGEM
 // ======================================================
 
 async function editarMensagemTelegram(
@@ -766,8 +760,11 @@ async function editarMensagemTelegram(
   ) {
 
     return {
+
       ok: false,
-      mensagemNaoExiste: false
+
+      mensagemNaoExiste:
+        false
     };
   }
 
@@ -803,19 +800,29 @@ async function editarMensagemTelegram(
         }
       );
 
+    // ==================================================
+    // SUCESSO
+    // ==================================================
+
     if (
       resposta.data?.ok
     ) {
 
       return {
+
         ok: true,
-        mensagemNaoExiste: false
+
+        mensagemNaoExiste:
+          false
       };
     }
 
     return {
+
       ok: false,
-      mensagemNaoExiste: false
+
+      mensagemNaoExiste:
+        false
     };
 
   } catch (erro) {
@@ -832,6 +839,7 @@ async function editarMensagemTelegram(
     );
 
     return {
+
       ok: false,
 
       mensagemNaoExiste:
@@ -845,7 +853,8 @@ async function editarMensagemTelegram(
 }
 
 // ======================================================
-// TELEGRAM - ATUALIZAR MENSAGEM
+// TELEGRAM
+// ATUALIZAR MENSAGEM
 // ======================================================
 
 async function atualizarMensagemTelegram(
@@ -868,9 +877,9 @@ async function atualizarMensagemTelegram(
   const agora =
     Date.now();
 
-  // ================================================
-  // CARREGA DO DISCO
-  // ================================================
+  // ====================================================
+  // CARREGA OS IDS SALVOS
+  // ====================================================
 
   let mensagens =
     carregarMensagensTelegram();
@@ -880,9 +889,9 @@ async function atualizarMensagemTelegram(
       chatKey
     ];
 
-  // ================================================
-  // EVITA UPDATE DESNECESSÁRIO
-  // ================================================
+  // ====================================================
+  // EVITA ATUALIZAÇÕES DESNECESSÁRIAS
+  // ====================================================
 
   const ultimoTexto =
     telegramLastText.get(
@@ -903,9 +912,9 @@ async function atualizarMensagemTelegram(
     return;
   }
 
-  // ================================================
-  // EXISTE MESSAGE ID
-  // ================================================
+  // ====================================================
+  // JÁ EXISTE MESSAGE_ID
+  // ====================================================
 
   if (
     registro &&
@@ -922,9 +931,9 @@ async function atualizarMensagemTelegram(
         texto
       );
 
-    // ==============================================
-    // EDIÇÃO OK
-    // ==============================================
+    // ==================================================
+    // EDIÇÃO REALIZADA
+    // ==================================================
 
     if (
       resultado.ok
@@ -961,9 +970,9 @@ async function atualizarMensagemTelegram(
       return;
     }
 
-    // ==============================================
-    // MENSAGEM APAGADA
-    // ==============================================
+    // ==================================================
+    // MENSAGEM FOI APAGADA
+    // ==================================================
 
     if (
       resultado.mensagemNaoExiste
@@ -990,7 +999,11 @@ async function atualizarMensagemTelegram(
 
     } else {
 
-      // Outro erro não deve destruir o ID.
+      // =================================================
+      // ERRO TEMPORÁRIO
+      // NÃO APAGA O MESSAGE_ID
+      // =================================================
+
       console.warn(
         `[Telegram] ⚠️ Não foi possível editar ` +
         `message_id=${messageId}.`
@@ -1000,9 +1013,10 @@ async function atualizarMensagemTelegram(
     }
   }
 
-  // ================================================
+  // ====================================================
+  // NÃO EXISTE MESSAGE_ID
   // CRIA NOVA MENSAGEM
-  // ================================================
+  // ====================================================
 
   console.log(
     `[Telegram] 📤 Nenhuma mensagem válida encontrada. ` +
@@ -1026,9 +1040,9 @@ async function atualizarMensagemTelegram(
     return;
   }
 
-  // ================================================
-  // SALVA NOVO MESSAGE ID
-  // ================================================
+  // ====================================================
+  // SALVA NOVO MESSAGE_ID
+  // ====================================================
 
   mensagens[
     chatKey
@@ -1078,7 +1092,8 @@ async function atualizarMensagemTelegram(
 }
 
 // ======================================================
-// TELEGRAM - TODOS OS USUÁRIOS
+// TELEGRAM
+// ATUALIZAR TODOS OS USUÁRIOS
 // ======================================================
 
 async function atualizarTelegram(
@@ -1280,7 +1295,7 @@ function formatarMensagemMargem(
 }
 
 // ======================================================
-// BALANCE FUTURES
+// OBTER BALANCE FUTURES
 // ======================================================
 
 async function getBalance() {
@@ -1372,7 +1387,7 @@ async function getBalance() {
 }
 
 // ======================================================
-// SINCRONIZA HORÁRIO
+// SINCRONIZAR HORÁRIO
 // ======================================================
 
 async function sincronizarHorario() {
@@ -1412,7 +1427,7 @@ async function sincronizarHorario() {
 }
 
 // ======================================================
-// HISTÓRICO
+// HISTÓRICO DO BALANCE
 // ======================================================
 
 function obterHistoricoBalance() {
@@ -1431,7 +1446,7 @@ function obterHistoricoBalance() {
 }
 
 // ======================================================
-// MONITORAMENTO
+// MONITORAR MARGEM
 // ======================================================
 
 async function monitorarMargem() {
@@ -1600,7 +1615,7 @@ async function monitorarMargem() {
     );
 
   // ====================================================
-  // SALVA BALANCE
+  // SALVAR BALANCE
   // ====================================================
 
   salvarJson(
@@ -1650,7 +1665,7 @@ async function monitorarMargem() {
   });
 
   // ====================================================
-  // PARENT PORT
+  // ENVIAR STATUS PARA O PARENT
   // ====================================================
 
   if (
@@ -2192,7 +2207,7 @@ if (
   await startWorker();
 
   // ====================================================
-  // CICLO DE 10 SEGUNDOS
+  // CICLO
   // ====================================================
 
   setInterval(
