@@ -53,6 +53,60 @@ const GLOBAL_AXIOS_TIMEOUT =
 axios.defaults.timeout =
     GLOBAL_AXIOS_TIMEOUT;
 
+const https = require('https');
+
+function possuiInternet(timeout = 5000) {
+    return new Promise((resolve) => {
+        const req = https.get(
+            'https://fapi.binance.com/fapi/v1/time',
+            {
+                timeout
+            },
+            (res) => {
+                res.resume();
+
+                // Qualquer resposta HTTP significa que existe conexão
+                resolve(res.statusCode >= 200 && res.statusCode < 500);
+            }
+        );
+
+        req.on('error', () => resolve(false));
+
+        req.on('timeout', () => {
+            req.destroy();
+            resolve(false);
+        });
+    });
+}
+
+async function verificarInternet() {
+    const online = await possuiInternet();
+
+    if (!online) {
+        console.log(
+            `[${new Date().toISOString()}] Sem conexão com a internet. Encerrando worker...`
+        );
+
+        if (parentPort) {
+            parentPort.postMessage({
+                tipo: 'SEM_INTERNET',
+                reiniciarEm: 5 * 60 * 1000
+            });
+        }
+
+        // Dá um pequeno tempo para a mensagem chegar ao processo principal
+        setTimeout(() => {
+            process.exit(1);
+        }, 100);
+
+        return false;
+    }
+
+    setTimeout(() => {
+        verificarInternet();
+    }, 30000);
+}
+
 // ============================================================
 // CACHE
 // ============================================================
@@ -2712,7 +2766,7 @@ enviarPai(
 // ============================================================
 // PRIMEIRO CICLO
 // ============================================================
-
+verificarInternet();
 startWorker();
 
 // ============================================================
