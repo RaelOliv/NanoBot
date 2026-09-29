@@ -411,6 +411,22 @@ function getCurrentDay() {
 // TELEGRAM
 // ============================================================
 
+/*
+ * IMPORTANTE:
+ *
+ * Esta função agora retorna um objeto estruturado em caso
+ * de erro, em vez de simplesmente retornar null.
+ *
+ * Isso permite diferenciar:
+ *
+ * - mensagem realmente inexistente;
+ * - erro temporário;
+ * - rate limit;
+ * - erro de servidor;
+ * - timeout;
+ * - mensagem não modificada.
+ */
+
 async function telegramRequest(
     method,
     payload = {}
@@ -422,7 +438,20 @@ async function telegramRequest(
             '[margWorker] TELEGRAM_TOKEN não configurado.'
         );
 
-        return null;
+        return {
+
+            ok: false,
+
+            type:
+                'configuration',
+
+            errorCode:
+                null,
+
+            description:
+                'TELEGRAM_TOKEN não configurado.'
+
+        };
 
     }
 
@@ -430,14 +459,18 @@ async function telegramRequest(
 
         const response =
             await axios({
+
                 method: 'POST',
 
                 url:
                     `${TELEGRAM_API}/${method}`,
 
-                data: payload,
+                data:
+                    payload,
 
-                timeout: 5000
+                timeout:
+                    5000
+
             });
 
         if (
@@ -445,18 +478,54 @@ async function telegramRequest(
             response.data.ok
         ) {
 
-            return response.data.result;
+            return {
+
+                ok: true,
+
+                result:
+                    response.data.result
+
+            };
 
         }
 
+        const errorCode =
+            response.data?.error_code ??
+            null;
+
+        const description =
+            response.data?.description ??
+            'Erro desconhecido do Telegram.';
+
         console.error(
-            '[margWorker] Erro Telegram:',
+            `[margWorker] Telegram ${method}:`,
             response.data
         );
 
-        return null;
+        return {
+
+            ok: false,
+
+            type:
+                'telegram',
+
+            errorCode,
+
+            description
+
+        };
 
     } catch (error) {
+
+        const errorCode =
+            error.response?.data?.error_code ??
+            error.response?.status ??
+            null;
+
+        const description =
+            error.response?.data?.description ||
+            error.message ||
+            'Erro desconhecido.';
 
         console.error(
             `[margWorker] Telegram ${method}:`,
@@ -464,9 +533,196 @@ async function telegramRequest(
             error.message
         );
 
-        return null;
+        return {
+
+            ok: false,
+
+            type:
+                'network',
+
+            errorCode,
+
+            description,
+
+            networkCode:
+                error.code || null
+
+        };
 
     }
+
+}
+
+// ============================================================
+// VERIFICAR SE MENSAGEM REALMENTE NÃO EXISTE
+// ============================================================
+
+function telegramMensagemNaoEncontrada(
+    resposta
+) {
+
+    if (
+        !resposta ||
+        resposta.ok
+    ) {
+
+        return false;
+
+    }
+
+    const description =
+        String(
+            resposta.description ||
+            ''
+        ).toLowerCase();
+
+    /*
+     * SOMENTE erros explicitamente relacionados à mensagem
+     * inexistente entram aqui.
+     *
+     * Não tratamos qualquer erro 400 como mensagem apagada.
+     */
+
+    return (
+        description.includes(
+            'message to edit not found'
+        ) ||
+
+        description.includes(
+            'message identifier is not specified'
+        ) ||
+
+        description.includes(
+            'message not found'
+        )
+    );
+
+}
+
+// ============================================================
+// VERIFICAR MENSAGEM NÃO MODIFICADA
+// ============================================================
+
+function telegramMensagemNaoModificada(
+    resposta
+) {
+
+    if (
+        !resposta ||
+        resposta.ok
+    ) {
+
+        return false;
+
+    }
+
+    const description =
+        String(
+            resposta.description ||
+            ''
+        ).toLowerCase();
+
+    return (
+        description.includes(
+            'message is not modified'
+        )
+    );
+
+}
+
+// ============================================================
+// VERIFICAR ERRO TEMPORÁRIO
+// ============================================================
+
+function telegramErroTemporario(
+    resposta
+) {
+
+    if (
+        !resposta ||
+        resposta.ok
+    ) {
+
+        return false;
+
+    }
+
+    const code =
+        Number(
+            resposta.errorCode
+        );
+
+    const description =
+        String(
+            resposta.description ||
+            ''
+        ).toLowerCase();
+
+    const networkCode =
+        String(
+            resposta.networkCode ||
+            ''
+        ).toUpperCase();
+
+    // --------------------------------------------------------
+    // Rate limit
+    // --------------------------------------------------------
+
+    if (
+        code === 429
+    ) {
+
+        return true;
+
+    }
+
+    // --------------------------------------------------------
+    // Erros de servidor Telegram
+    // --------------------------------------------------------
+
+    if (
+        code >= 500 &&
+        code <= 599
+    ) {
+
+        return true;
+
+    }
+
+    // --------------------------------------------------------
+    // Erros comuns de rede
+    // --------------------------------------------------------
+
+    if (
+        networkCode === 'ECONNRESET' ||
+        networkCode === 'ETIMEDOUT' ||
+        networkCode === 'ECONNABORTED' ||
+        networkCode === 'EAI_AGAIN' ||
+        networkCode === 'ENOTFOUND' ||
+        networkCode === 'EPIPE'
+    ) {
+
+        return true;
+
+    }
+
+    // --------------------------------------------------------
+    // Descrições de timeout/conexão
+    // --------------------------------------------------------
+
+    if (
+        description.includes('timeout') ||
+        description.includes('timed out') ||
+        description.includes('network') ||
+        description.includes('socket') ||
+        description.includes('connection')
+    ) {
+
+        return true;
+
+    }
+
+    return false;
 
 }
 
@@ -530,8 +786,10 @@ async function carregarUsuariosTelegram() {
                     ) {
 
                         return {
+
                             chatId:
                                 String(user)
+
                         };
 
                     }
@@ -562,9 +820,12 @@ async function carregarUsuariosTelegram() {
                     }
 
                     return {
+
                         ...user,
+
                         chatId:
                             String(chatId)
+
                     };
 
                 })
@@ -602,16 +863,21 @@ async function carregarUsuariosTelegram() {
                                 key;
 
                             return {
+
                                 ...user,
+
                                 chatId:
                                     String(chatId)
+
                             };
 
                         }
 
                         return {
+
                             chatId:
                                 String(key)
+
                         };
 
                     }
@@ -706,6 +972,7 @@ async function salvarTelegramMarginMessages(
     try {
 
         await fs.promises.writeFile(
+
             TELEGRAM_MARGIN_MESSAGES_FILE,
 
             JSON.stringify(
@@ -715,6 +982,7 @@ async function salvarTelegramMarginMessages(
             ),
 
             'utf8'
+
         );
 
         return true;
@@ -873,8 +1141,11 @@ function montarMensagemMargem(
         );
 
     return (
+
         `━━━━━━━━━━━━━━━\n` +
+
         `💰 <b>STATUS DA MARGEM</b>\n` +
+
         `━━━━━━━━━━━━━━━\n\n` +
 
         `🎯 <b>Saldo base:</b> ` +
@@ -917,6 +1188,7 @@ function montarMensagemMargem(
         `${data.updatedAtFormatted}\n` +
 
         `━━━━━━━━━━━━━━━`
+
     );
 
 }
@@ -1063,7 +1335,7 @@ async function atualizarMensagemMargemTelegram(
             messages[chatId];
 
         // ====================================================
-        // TENTAR EDITAR
+        // TENTAR EDITAR A MENSAGEM EXISTENTE
         // ====================================================
 
         if (
@@ -1071,10 +1343,11 @@ async function atualizarMensagemMargemTelegram(
             registro.messageId
         ) {
 
-            const resultado =
+            const respostaEdicao =
                 await telegramRequest(
                     'editMessageText',
                     {
+
                         chat_id:
                             chatId,
 
@@ -1089,11 +1362,17 @@ async function atualizarMensagemMargemTelegram(
 
                         disable_web_page_preview:
                             true
+
                     }
                 );
 
+            // ------------------------------------------------
+            // EDITOU COM SUCESSO
+            // ------------------------------------------------
+
             if (
-                resultado
+                respostaEdicao &&
+                respostaEdicao.ok
             ) {
 
                 messages[chatId] = {
@@ -1109,29 +1388,136 @@ async function atualizarMensagemMargemTelegram(
                 alterou =
                     true;
 
+                console.log(
+                    `[margWorker] Mensagem ${registro.messageId} ` +
+                    `atualizada para ${chatId}.`
+                );
+
                 continue;
 
             }
 
             // ------------------------------------------------
-            // Mensagem provavelmente apagada
+            // TELEGRAM DIZ QUE A MENSAGEM NÃO EXISTE
+            //
+            // SOMENTE neste caso vamos criar outra.
             // ------------------------------------------------
 
-            delete messages[chatId];
+            if (
+                telegramMensagemNaoEncontrada(
+                    respostaEdicao
+                )
+            ) {
 
-            alterou =
-                true;
+                console.log(
+                    `[margWorker] Mensagem ${registro.messageId} ` +
+                    `não encontrada para ${chatId}. ` +
+                    `Será criada uma nova.`
+                );
+
+                delete messages[chatId];
+
+                alterou =
+                    true;
+
+            }
+
+            // ------------------------------------------------
+            // MENSAGEM NÃO MODIFICADA
+            //
+            // Não é erro que justifique nova mensagem.
+            // ------------------------------------------------
+
+            else if (
+                telegramMensagemNaoModificada(
+                    respostaEdicao
+                )
+            ) {
+
+                messages[chatId] = {
+
+                    messageId:
+                        registro.messageId,
+
+                    updatedAt:
+                        Date.now()
+
+                };
+
+                alterou =
+                    true;
+
+                console.log(
+                    `[margWorker] Mensagem ${registro.messageId} ` +
+                    `já possuía o mesmo conteúdo.`
+                );
+
+                continue;
+
+            }
+
+            // ------------------------------------------------
+            // ERRO TEMPORÁRIO
+            //
+            // NÃO apagar messageId.
+            // NÃO criar mensagem nova.
+            // ------------------------------------------------
+
+            else if (
+                telegramErroTemporario(
+                    respostaEdicao
+                )
+            ) {
+
+                console.log(
+                    `[margWorker] ⚠️ Falha temporária ao editar ` +
+                    `mensagem ${registro.messageId} para ${chatId}. ` +
+                    `MessageId será preservado.`
+                );
+
+                continue;
+
+            }
+
+            // ------------------------------------------------
+            // ERRO DESCONHECIDO
+            //
+            // Por segurança, também NÃO criaremos outra
+            // mensagem.
+            //
+            // Isso evita duplicações causadas por erros que
+            // ainda não conhecemos.
+            // ------------------------------------------------
+
+            else {
+
+                console.log(
+                    `[margWorker] ⚠️ Falha ao editar mensagem ` +
+                    `${registro.messageId} para ${chatId}. ` +
+                    `MessageId preservado.`
+                );
+
+                continue;
+
+            }
 
         }
 
         // ====================================================
         // CRIAR NOVA MENSAGEM
+        //
+        // Só chegamos aqui quando:
+        //
+        // 1. Não havia messageId salvo; OU
+        // 2. Telegram confirmou que a mensagem anterior
+        //    realmente não existe.
         // ====================================================
 
         const novaMensagem =
             await telegramRequest(
                 'sendMessage',
                 {
+
                     chat_id:
                         chatId,
 
@@ -1143,18 +1529,24 @@ async function atualizarMensagemMargemTelegram(
 
                     disable_web_page_preview:
                         true
+
                 }
             );
 
         if (
             novaMensagem &&
-            novaMensagem.message_id
+            novaMensagem.ok &&
+            novaMensagem.result &&
+            novaMensagem.result.message_id
         ) {
+
+            const novoMessageId =
+                novaMensagem.result.message_id;
 
             messages[chatId] = {
 
                 messageId:
-                    novaMensagem.message_id,
+                    novoMessageId,
 
                 updatedAt:
                     Date.now()
@@ -1165,13 +1557,24 @@ async function atualizarMensagemMargemTelegram(
                 true;
 
             console.log(
-                `[margWorker] Mensagem de margem criada para ${chatId}. ` +
-                `ID=${novaMensagem.message_id}`
+                `[margWorker] Nova mensagem de margem criada ` +
+                `para ${chatId}. ID=${novoMessageId}`
+            );
+
+        } else {
+
+            console.log(
+                `[margWorker] Não foi possível criar nova mensagem ` +
+                `para ${chatId}.`
             );
 
         }
 
     }
+
+    // ========================================================
+    // SALVAR IDS
+    // ========================================================
 
     if (
         alterou
@@ -1216,17 +1619,6 @@ async function getBalance() {
 
         }
 
-        // ====================================================
-        // Binance /fapi/v2/account normalmente retorna:
-        //
-        // {
-        //   totalWalletBalance,
-        //   totalMarginBalance,
-        //   availableBalance,
-        //   assets: [...]
-        // }
-        // ====================================================
-
         let usdt = null;
 
         if (
@@ -1256,10 +1648,6 @@ async function getBalance() {
                 );
 
         }
-
-        // ====================================================
-        // Se encontrou USDT
-        // ====================================================
 
         if (
             usdt
@@ -1303,10 +1691,6 @@ async function getBalance() {
             };
 
         }
-
-        // ====================================================
-        // Fallback para os campos totais da conta
-        // ====================================================
 
         if (
             !Array.isArray(
@@ -1499,10 +1883,6 @@ async function monitorarMargem() {
 
     try {
 
-        // ====================================================
-        // HISTÓRICO
-        // ====================================================
-
         let balanceHist =
             await carregarCache(
                 'BalanceHist'
@@ -1561,14 +1941,11 @@ async function monitorarMargem() {
         // ====================================================
         // OLD BALANCE
         //
-        // IMPORTANTE:
-        //
-        // walletBalance aqui representa o SALDO BASE.
+        // walletBalance representa o SALDO BASE.
         //
         // Ele NÃO é atualizado a cada ciclo.
         //
-        // Só será substituído quando ocorrer um reset
-        // por Take Profit ou Stop Loss.
+        // Só é substituído quando ocorre reset por TP/SL.
         // ====================================================
 
         let oldBalance =
@@ -1604,9 +1981,6 @@ async function monitorarMargem() {
 
         // ====================================================
         // VARIAÇÕES
-        //
-        // O percentual é sempre calculado contra o
-        // saldo-base armazenado em oldBalance.
         // ====================================================
 
         const perc =
@@ -1676,14 +2050,7 @@ async function monitorarMargem() {
         }
 
         // ====================================================
-        // ATUALIZAR APENAS OS DADOS DO CICLO
-        //
-        // NÃO alterar:
-        //
-        // oldBalance.walletBalance
-        // oldBalance.marginBalance
-        //
-        // pois eles representam o saldo-base.
+        // ATUALIZAR APENAS DADOS DO CICLO
         // ====================================================
 
         oldBalance.percent =
@@ -1705,8 +2072,6 @@ async function monitorarMargem() {
 
         // ====================================================
         // SALVAR OLD BALANCE
-        //
-        // O saldo-base permanece intacto.
         // ====================================================
 
         await salvarCache(
@@ -1817,19 +2182,11 @@ async function monitorarMargem() {
 
         const telegramData = {
 
-            // ------------------------------------------------
-            // SALDO BASE
-            // ------------------------------------------------
-
             baseBalance:
                 arredondar(
                     oldBalance.walletBalance,
                     2
                 ),
-
-            // ------------------------------------------------
-            // SALDOS ATUAIS
-            // ------------------------------------------------
 
             walletBalance:
                 arredondar(
@@ -1849,10 +2206,6 @@ async function monitorarMargem() {
                     2
                 ),
 
-            // ------------------------------------------------
-            // VARIAÇÕES
-            // ------------------------------------------------
-
             variation:
                 arredondar(
                     perc,
@@ -1865,10 +2218,6 @@ async function monitorarMargem() {
                     2
                 ),
 
-            // ------------------------------------------------
-            // MÁXIMO / MÍNIMO
-            // ------------------------------------------------
-
             maxPercent:
                 arredondar(
                     oldBalance.maxPercent,
@@ -1880,10 +2229,6 @@ async function monitorarMargem() {
                     oldBalance.minPercent,
                     2
                 ),
-
-            // ------------------------------------------------
-            // CONTADORES
-            // ------------------------------------------------
 
             resetCount:
                 Number(
@@ -2002,10 +2347,6 @@ async function monitorarMargem() {
                 process.env.TPDIA ||
                 100
             );
-
-        // ====================================================
-        // VERIFICAR DISPARO
-        // ====================================================
 
         const atingiuLimite =
             perc <= SLDIA ||
@@ -2131,10 +2472,7 @@ async function monitorarMargem() {
         );
 
         // ====================================================
-        // TAKE PROFIT >= 90%
-        //
-        // Quando o limite é atingido, o saldo atual passa
-        // a ser o novo saldo-base.
+        // TP >= 90%
         // ====================================================
 
         if (
@@ -2193,13 +2531,6 @@ async function monitorarMargem() {
 
             }
 
-            // ------------------------------------------------
-            // NOVO CICLO
-            //
-            // O reset do oldBalance acontece somente agora,
-            // depois do Take Profit.
-            // ------------------------------------------------
-
             oldBalance =
                 criarNovoOldBalance(
                     balance
@@ -2214,19 +2545,6 @@ async function monitorarMargem() {
                 `[margWorker] 🎯 Novo saldo base após TP: ` +
                 `${oldBalance.walletBalance}`
             );
-
-            /*
-             * IMPORTANTE:
-             *
-             * Seu api.js atual não possui uma função
-             * closeAllPositions().
-             *
-             * Portanto NÃO chamamos uma função inexistente.
-             *
-             * A rotina de fechamento global deverá ser
-             * executada pelo seu mecanismo existente de
-             * positionWorker/monitorWorker.
-             */
 
             return;
 
@@ -2261,13 +2579,6 @@ async function monitorarMargem() {
 
             }
 
-            // ------------------------------------------------
-            // NOVO CICLO
-            //
-            // O reset do oldBalance acontece somente agora,
-            // depois do Stop Loss.
-            // ------------------------------------------------
-
             oldBalance =
                 criarNovoOldBalance(
                     balance
@@ -2282,11 +2593,6 @@ async function monitorarMargem() {
                 `[margWorker] 🎯 Novo saldo base após SL: ` +
                 `${oldBalance.walletBalance}`
             );
-
-            /*
-             * Não chamamos closeAllPositions()
-             * porque essa função não existe no api.js.
-             */
 
             return;
 
