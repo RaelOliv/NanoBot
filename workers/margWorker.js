@@ -6,6 +6,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 const {
     parentPort
@@ -53,58 +54,103 @@ const GLOBAL_AXIOS_TIMEOUT =
 axios.defaults.timeout =
     GLOBAL_AXIOS_TIMEOUT;
 
-const https = require('https');
+// ============================================================
+// INTERNET
+// ============================================================
 
 function possuiInternet(timeout = 5000) {
-    return new Promise((resolve) => {
-        const req = https.get(
-            'https://fapi.binance.com/fapi/v1/time',
-            {
-                timeout
-            },
-            (res) => {
-                res.resume();
 
-                // Qualquer resposta HTTP significa que existe conexão
-                resolve(res.statusCode >= 200 && res.statusCode < 500);
+    return new Promise((resolve) => {
+
+        const req =
+            https.get(
+                'https://fapi.binance.com/fapi/v1/time',
+                {
+                    timeout
+                },
+                (res) => {
+
+                    res.resume();
+
+                    // Qualquer resposta HTTP significa
+                    // que existe conexão.
+                    resolve(
+                        res.statusCode >= 200 &&
+                        res.statusCode < 500
+                    );
+
+                }
+            );
+
+        req.on(
+            'error',
+            () => resolve(false)
+        );
+
+        req.on(
+            'timeout',
+            () => {
+
+                req.destroy();
+
+                resolve(false);
+
             }
         );
 
-        req.on('error', () => resolve(false));
-
-        req.on('timeout', () => {
-            req.destroy();
-            resolve(false);
-        });
     });
+
 }
 
 async function verificarInternet() {
-    const online = await possuiInternet();
+
+    const online =
+        await possuiInternet();
 
     if (!online) {
+
         console.log(
-            `[${new Date().toISOString()}] Sem conexão com a internet. Encerrando worker...`
+            `[${new Date().toISOString()}] ` +
+            `Sem conexão com a internet. ` +
+            `Encerrando worker...`
         );
 
         if (parentPort) {
+
             parentPort.postMessage({
-                tipo: 'SEM_INTERNET',
-                reiniciarEm: 5 * 60 * 1000
+
+                tipo:
+                    'SEM_INTERNET',
+
+                reiniciarEm:
+                    5 * 60 * 1000
+
             });
+
         }
 
-        // Dá um pequeno tempo para a mensagem chegar ao processo principal
-        setTimeout(() => {
-            process.exit(1);
-        }, 100);
+        // Dá um pequeno tempo para a mensagem
+        // chegar ao processo principal.
+        setTimeout(
+            () => {
+                process.exit(1);
+            },
+            100
+        );
 
         return false;
+
     }
 
-    setTimeout(() => {
-        verificarInternet();
-    }, 30000);
+    setTimeout(
+        () => {
+            verificarInternet();
+        },
+        30000
+    );
+
+    return true;
+
 }
 
 // ============================================================
@@ -117,7 +163,11 @@ const CACHE_DIR =
         'cache'
     );
 
-if (!fs.existsSync(CACHE_DIR)) {
+if (
+    !fs.existsSync(
+        CACHE_DIR
+    )
+) {
 
     fs.mkdirSync(
         CACHE_DIR,
@@ -152,9 +202,21 @@ let offset = 0;
 
 let workerRunning = false;
 
+// Controle do último estado realmente processado
+// pelo Telegram.
+let ultimoEstadoTelegram = null;
+
 let ultimoTextoTelegram = null;
 
 let ultimoEnvioTelegram = 0;
+
+// ============================================================
+// RATE LIMIT TELEGRAM
+// ============================================================
+
+// Timestamp até quando o Telegram determinou
+// que devemos aguardar.
+let telegramBloqueadoAte = 0;
 
 // ============================================================
 // LOG
@@ -465,22 +527,6 @@ function getCurrentDay() {
 // TELEGRAM
 // ============================================================
 
-/*
- * IMPORTANTE:
- *
- * Esta função agora retorna um objeto estruturado em caso
- * de erro, em vez de simplesmente retornar null.
- *
- * Isso permite diferenciar:
- *
- * - mensagem realmente inexistente;
- * - erro temporário;
- * - rate limit;
- * - erro de servidor;
- * - timeout;
- * - mensagem não modificada.
- */
-
 async function telegramRequest(
     method,
     payload = {}
@@ -509,12 +555,50 @@ async function telegramRequest(
 
     }
 
+    // ========================================================
+    // RESPEITAR RATE LIMIT
+    // ========================================================
+
+    if (
+        Date.now() <
+        telegramBloqueadoAte
+    ) {
+
+        const restante =
+            Math.ceil(
+                (
+                    telegramBloqueadoAte -
+                    Date.now()
+                ) / 1000
+            );
+
+        return {
+
+            ok: false,
+
+            type:
+                'rate_limit',
+
+            errorCode:
+                429,
+
+            description:
+                'Telegram temporariamente bloqueado.',
+
+            retryAfter:
+                restante
+
+        };
+
+    }
+
     try {
 
         const response =
             await axios({
 
-                method: 'POST',
+                method:
+                    'POST',
 
                 url:
                     `${TELEGRAM_API}/${method}`,
@@ -534,7 +618,8 @@ async function telegramRequest(
 
             return {
 
-                ok: true,
+                ok:
+                    true,
 
                 result:
                     response.data.result
@@ -551,6 +636,39 @@ async function telegramRequest(
             response.data?.description ??
             'Erro desconhecido do Telegram.';
 
+        const retryAfter =
+            Number(
+                response.data?.parameters?.retry_after
+            ) || 0;
+
+        // ====================================================
+        // RATE LIMIT
+        // ====================================================
+
+        if (
+            errorCode === 429
+        ) {
+
+            const segundos =
+                retryAfter > 0
+                    ? retryAfter
+                    : 60;
+
+            telegramBloqueadoAte =
+                Date.now() +
+                (
+                    segundos *
+                    1000
+                );
+
+            console.warn(
+                `[margWorker] ⚠️ Telegram 429. ` +
+                `Aguardando ${segundos}s ` +
+                `(${(segundos / 60).toFixed(1)} min).`
+            );
+
+        }
+
         console.error(
             `[margWorker] Telegram ${method}:`,
             response.data
@@ -558,45 +676,92 @@ async function telegramRequest(
 
         return {
 
-            ok: false,
+            ok:
+                false,
 
             type:
-                'telegram',
+                errorCode === 429
+                    ? 'rate_limit'
+                    : 'telegram',
 
             errorCode,
 
-            description
+            description,
+
+            retryAfter
 
         };
 
     } catch (error) {
 
+        const errorData =
+            error.response?.data;
+
         const errorCode =
-            error.response?.data?.error_code ??
+            errorData?.error_code ??
             error.response?.status ??
             null;
 
         const description =
-            error.response?.data?.description ||
+            errorData?.description ||
             error.message ||
             'Erro desconhecido.';
 
+        const retryAfter =
+            Number(
+                errorData?.parameters?.retry_after
+            ) || 0;
+
+        // ====================================================
+        // RATE LIMIT
+        // ====================================================
+
+        if (
+            errorCode === 429
+        ) {
+
+            const segundos =
+                retryAfter > 0
+                    ? retryAfter
+                    : 60;
+
+            telegramBloqueadoAte =
+                Date.now() +
+                (
+                    segundos *
+                    1000
+                );
+
+            console.warn(
+                `[margWorker] ⚠️ Telegram 429. ` +
+                `retry_after=${segundos}s. ` +
+                `Nenhuma nova requisição será feita ` +
+                `até o desbloqueio.`
+            );
+
+        }
+
         console.error(
             `[margWorker] Telegram ${method}:`,
-            error.response?.data ||
+            errorData ||
             error.message
         );
 
         return {
 
-            ok: false,
+            ok:
+                false,
 
             type:
-                'network',
+                errorCode === 429
+                    ? 'rate_limit'
+                    : 'network',
 
             errorCode,
 
             description,
+
+            retryAfter,
 
             networkCode:
                 error.code || null
@@ -630,14 +795,8 @@ function telegramMensagemNaoEncontrada(
             ''
         ).toLowerCase();
 
-    /*
-     * SOMENTE erros explicitamente relacionados à mensagem
-     * inexistente entram aqui.
-     *
-     * Não tratamos qualquer erro 400 como mensagem apagada.
-     */
-
     return (
+
         description.includes(
             'message to edit not found'
         ) ||
@@ -649,6 +808,7 @@ function telegramMensagemNaoEncontrada(
         description.includes(
             'message not found'
         )
+
     );
 
 }
@@ -1318,7 +1478,35 @@ async function atualizarMensagemMargemTelegram(
     ) {
 
         console.log(
-            '[margWorker] Dados inválidos. Telegram não atualizado.'
+            '[margWorker] Dados inválidos. ' +
+            'Telegram não atualizado.'
+        );
+
+        return;
+
+    }
+
+    // ========================================================
+    // VERIFICAR RATE LIMIT ANTES DE TUDO
+    // ========================================================
+
+    if (
+        Date.now() <
+        telegramBloqueadoAte
+    ) {
+
+        const restante =
+            Math.ceil(
+                (
+                    telegramBloqueadoAte -
+                    Date.now()
+                ) / 1000
+            );
+
+        console.log(
+            `[margWorker] Telegram em rate limit. ` +
+            `Nenhuma atualização será enviada. ` +
+            `Restam ${restante}s.`
         );
 
         return;
@@ -1328,26 +1516,73 @@ async function atualizarMensagemMargemTelegram(
     const agora =
         Date.now();
 
-    const texto =
-        montarMensagemMargem(
-            data
-        );
+    // ========================================================
+    // ESTADO REAL DA MARGEM
+    //
+    // O horário NÃO entra aqui.
+    //
+    // Isso evita editar a mensagem somente porque
+    // o relógio mudou.
+    // ========================================================
 
-    // --------------------------------------------------------
-    // Evita chamadas desnecessárias
-    // --------------------------------------------------------
+    const estadoTelegram =
+        JSON.stringify({
+
+            baseBalance:
+                data.baseBalance,
+
+            walletBalance:
+                data.walletBalance,
+
+            marginBalance:
+                data.marginBalance,
+
+            availableBalance:
+                data.availableBalance,
+
+            variation:
+                data.variation,
+
+            variationReal:
+                data.variationReal,
+
+            maxPercent:
+                data.maxPercent,
+
+            minPercent:
+                data.minPercent,
+
+            resetCount:
+                data.resetCount,
+
+            positiveCount:
+                data.positiveCount,
+
+            negativeCount:
+                data.negativeCount,
+
+            lastResult:
+                data.lastResult
+
+        });
+
+    // ========================================================
+    // EVITAR EDIÇÃO DESNECESSÁRIA
+    // ========================================================
 
     if (
-        texto ===
-        ultimoTextoTelegram &&
-        agora -
-        ultimoEnvioTelegram <
-        9000
+        estadoTelegram ===
+        ultimoEstadoTelegram
     ) {
 
         return;
 
     }
+
+    const texto =
+        montarMensagemMargem(
+            data
+        );
 
     const usuarios =
         await carregarUsuariosTelegram();
@@ -1366,6 +1601,13 @@ async function atualizarMensagemMargemTelegram(
     let alterou =
         false;
 
+    let telegramAtualizado =
+        false;
+
+    // ========================================================
+    // USUÁRIOS
+    // ========================================================
+
     for (
         const user of usuarios
     ) {
@@ -1382,6 +1624,33 @@ async function atualizarMensagemMargemTelegram(
         ) {
 
             continue;
+
+        }
+
+        // ====================================================
+        // SE O TELEGRAM ENTROU EM RATE LIMIT DURANTE O LOOP
+        // ====================================================
+
+        if (
+            Date.now() <
+            telegramBloqueadoAte
+        ) {
+
+            const restante =
+                Math.ceil(
+                    (
+                        telegramBloqueadoAte -
+                        Date.now()
+                    ) / 1000
+                );
+
+            console.warn(
+                `[margWorker] Telegram entrou em rate limit ` +
+                `durante o processamento. ` +
+                `Interrompendo envio. Restam ${restante}s.`
+            );
+
+            break;
 
         }
 
@@ -1442,9 +1711,13 @@ async function atualizarMensagemMargemTelegram(
                 alterou =
                     true;
 
+                telegramAtualizado =
+                    true;
+
                 console.log(
-                    `[margWorker] Mensagem ${registro.messageId} ` +
-                    `atualizada para ${chatId}.`
+                    `[margWorker] Mensagem ` +
+                    `${registro.messageId} atualizada ` +
+                    `para ${chatId}.`
                 );
 
                 continue;
@@ -1452,37 +1725,10 @@ async function atualizarMensagemMargemTelegram(
             }
 
             // ------------------------------------------------
-            // TELEGRAM DIZ QUE A MENSAGEM NÃO EXISTE
-            //
-            // SOMENTE neste caso vamos criar outra.
+            // MENSAGEM NÃO MODIFICADA
             // ------------------------------------------------
 
             if (
-                telegramMensagemNaoEncontrada(
-                    respostaEdicao
-                )
-            ) {
-
-                console.log(
-                    `[margWorker] Mensagem ${registro.messageId} ` +
-                    `não encontrada para ${chatId}. ` +
-                    `Será criada uma nova.`
-                );
-
-                delete messages[chatId];
-
-                alterou =
-                    true;
-
-            }
-
-            // ------------------------------------------------
-            // MENSAGEM NÃO MODIFICADA
-            //
-            // Não é erro que justifique nova mensagem.
-            // ------------------------------------------------
-
-            else if (
                 telegramMensagemNaoModificada(
                     respostaEdicao
                 )
@@ -1501,12 +1747,67 @@ async function atualizarMensagemMargemTelegram(
                 alterou =
                     true;
 
+                telegramAtualizado =
+                    true;
+
                 console.log(
-                    `[margWorker] Mensagem ${registro.messageId} ` +
-                    `já possuía o mesmo conteúdo.`
+                    `[margWorker] Mensagem ` +
+                    `${registro.messageId} já possuía ` +
+                    `o mesmo conteúdo.`
                 );
 
                 continue;
+
+            }
+
+            // ------------------------------------------------
+            // RATE LIMIT
+            //
+            // NÃO apagar messageId.
+            // NÃO criar mensagem nova.
+            // INTERROMPER o loop.
+            // ------------------------------------------------
+
+            if (
+                respostaEdicao &&
+                Number(
+                    respostaEdicao.errorCode
+                ) === 429
+            ) {
+
+                console.warn(
+                    `[margWorker] ⚠️ Rate limit Telegram ` +
+                    `para ${chatId}. ` +
+                    `MessageId preservado.`
+                );
+
+                break;
+
+            }
+
+            // ------------------------------------------------
+            // MENSAGEM REALMENTE NÃO ENCONTRADA
+            //
+            // SOMENTE aqui podemos criar outra.
+            // ------------------------------------------------
+
+            if (
+                telegramMensagemNaoEncontrada(
+                    respostaEdicao
+                )
+            ) {
+
+                console.log(
+                    `[margWorker] Mensagem ` +
+                    `${registro.messageId} não encontrada ` +
+                    `para ${chatId}. ` +
+                    `Será criada uma nova.`
+                );
+
+                delete messages[chatId];
+
+                alterou =
+                    true;
 
             }
 
@@ -1524,8 +1825,9 @@ async function atualizarMensagemMargemTelegram(
             ) {
 
                 console.log(
-                    `[margWorker] ⚠️ Falha temporária ao editar ` +
-                    `mensagem ${registro.messageId} para ${chatId}. ` +
+                    `[margWorker] ⚠️ Falha temporária ao ` +
+                    `editar mensagem ${registro.messageId} ` +
+                    `para ${chatId}. ` +
                     `MessageId será preservado.`
                 );
 
@@ -1536,11 +1838,7 @@ async function atualizarMensagemMargemTelegram(
             // ------------------------------------------------
             // ERRO DESCONHECIDO
             //
-            // Por segurança, também NÃO criaremos outra
-            // mensagem.
-            //
-            // Isso evita duplicações causadas por erros que
-            // ainda não conhecemos.
+            // NÃO criar nova mensagem.
             // ------------------------------------------------
 
             else {
@@ -1560,7 +1858,7 @@ async function atualizarMensagemMargemTelegram(
         // ====================================================
         // CRIAR NOVA MENSAGEM
         //
-        // Só chegamos aqui quando:
+        // Só acontece quando:
         //
         // 1. Não havia messageId salvo; OU
         // 2. Telegram confirmou que a mensagem anterior
@@ -1587,6 +1885,32 @@ async function atualizarMensagemMargemTelegram(
                 }
             );
 
+        // ----------------------------------------------------
+        // RATE LIMIT
+        // ----------------------------------------------------
+
+        if (
+            novaMensagem &&
+            Number(
+                novaMensagem.errorCode
+            ) === 429
+        ) {
+
+            console.warn(
+                `[margWorker] ⚠️ Rate limit ao criar ` +
+                `mensagem para ${chatId}. ` +
+                `Nenhuma nova tentativa será feita ` +
+                `neste ciclo.`
+            );
+
+            break;
+
+        }
+
+        // ----------------------------------------------------
+        // NOVA MENSAGEM CRIADA
+        // ----------------------------------------------------
+
         if (
             novaMensagem &&
             novaMensagem.ok &&
@@ -1610,6 +1934,9 @@ async function atualizarMensagemMargemTelegram(
             alterou =
                 true;
 
+            telegramAtualizado =
+                true;
+
             console.log(
                 `[margWorker] Nova mensagem de margem criada ` +
                 `para ${chatId}. ID=${novoMessageId}`
@@ -1618,8 +1945,8 @@ async function atualizarMensagemMargemTelegram(
         } else {
 
             console.log(
-                `[margWorker] Não foi possível criar nova mensagem ` +
-                `para ${chatId}.`
+                `[margWorker] Não foi possível criar nova ` +
+                `mensagem para ${chatId}.`
             );
 
         }
@@ -1640,11 +1967,25 @@ async function atualizarMensagemMargemTelegram(
 
     }
 
-    ultimoTextoTelegram =
-        texto;
+    // ========================================================
+    // SÓ MARCAR O ESTADO COMO PROCESSADO SE PELO MENOS
+    // UMA OPERAÇÃO TELEGRAM FOI REALMENTE CONCLUÍDA.
+    // ========================================================
 
-    ultimoEnvioTelegram =
-        agora;
+    if (
+        telegramAtualizado
+    ) {
+
+        ultimoEstadoTelegram =
+            estadoTelegram;
+
+        ultimoTextoTelegram =
+            texto;
+
+        ultimoEnvioTelegram =
+            agora;
+
+    }
 
 }
 
@@ -1994,12 +2335,6 @@ async function monitorarMargem() {
 
         // ====================================================
         // OLD BALANCE
-        //
-        // walletBalance representa o SALDO BASE.
-        //
-        // Ele NÃO é atualizado a cada ciclo.
-        //
-        // Só é substituído quando ocorre reset por TP/SL.
         // ====================================================
 
         let oldBalance =
@@ -2104,7 +2439,7 @@ async function monitorarMargem() {
         }
 
         // ====================================================
-        // ATUALIZAR APENAS DADOS DO CICLO
+        // ATUALIZAR DADOS DO CICLO
         // ====================================================
 
         oldBalance.percent =
@@ -2374,12 +2709,16 @@ async function monitorarMargem() {
 
         console.log(
             `[margWorker] 🔼 Máximo: ` +
-            `${Number(oldBalance.maxPercent).toFixed(2)}%`
+            `${Number(
+                oldBalance.maxPercent
+            ).toFixed(2)}%`
         );
 
         console.log(
             `[margWorker] 🔽 Mínimo: ` +
-            `${Number(oldBalance.minPercent).toFixed(2)}%`
+            `${Number(
+                oldBalance.minPercent
+            ).toFixed(2)}%`
         );
 
         console.log(
@@ -2766,7 +3105,9 @@ enviarPai(
 // ============================================================
 // PRIMEIRO CICLO
 // ============================================================
+
 verificarInternet();
+
 startWorker();
 
 // ============================================================

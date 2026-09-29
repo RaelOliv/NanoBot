@@ -3,6 +3,10 @@ const path = require("path");
 const axios = require("axios");
 const crypto = require("crypto");
 
+const {
+  parentPort
+} = require("worker_threads");
+
 require("dotenv").config();
 
 // ============================================================
@@ -10,6 +14,7 @@ require("dotenv").config();
 // ============================================================
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+
 const TELEGRAM_API =
   `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
@@ -40,67 +45,288 @@ const MESSAGES_PATH =
     "telegramMessages.json"
   );
 
+const https = require("https");
 
-const https = require('https');
+// ============================================================
+// CONTROLE DE RATE LIMIT DO TELEGRAM
+// ============================================================
 
-function possuiInternet(timeout = 5000) {
-    return new Promise((resolve) => {
-        const req = https.get(
-            'https://fapi.binance.com/fapi/v1/time',
-            {
-                timeout
-            },
-            (res) => {
-                res.resume();
+/*
+ * Intervalo mínimo entre chamadas para
+ * o mesmo chat.
+ *
+ * 1100 ms = aproximadamente 1 chamada
+ * por segundo por usuário.
+ *
+ * Pode ser alterado no .env:
+ *
+ * TELEGRAM_MIN_INTERVAL=1100
+ */
 
-                // Qualquer resposta HTTP significa que existe conexão
-                resolve(res.statusCode >= 200 && res.statusCode < 500);
-            }
+const TELEGRAM_INTERVALO_MINIMO =
+  Number(
+    process.env.TELEGRAM_MIN_INTERVAL || 1100
+  );
+
+/*
+ * Número máximo de tentativas após
+ * receber 429/418.
+ */
+
+const TELEGRAM_MAX_RETRIES =
+  Number(
+    process.env.TELEGRAM_MAX_RETRIES || 5
+  );
+
+/*
+ * Fila independente para cada usuário.
+ *
+ * Isso evita que duas chamadas para
+ * o mesmo chat sejam executadas ao
+ * mesmo tempo.
+ */
+
+const filasTelegram =
+  new Map();
+
+/*
+ * Guarda o momento da última chamada
+ * efetivamente enviada ao Telegram
+ * para cada usuário.
+ */
+
+const ultimaChamadaTelegram =
+  new Map();
+
+// ============================================================
+// SLEEP
+// ============================================================
+
+function sleep(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+}
+
+// ============================================================
+// FILA DO TELEGRAM
+// ============================================================
+
+function executarTelegram(
+  uid,
+  operacao
+) {
+
+  const chave =
+    String(uid);
+
+  /*
+   * Recupera a última operação
+   * desse usuário.
+   */
+
+  const anterior =
+    filasTelegram.get(chave) ||
+    Promise.resolve();
+
+  /*
+   * Encadeia a nova operação.
+   *
+   * Mesmo que a operação anterior
+   * tenha falhado, a fila continua.
+   */
+
+  const atual =
+    anterior
+      .catch(() => {})
+      .then(
+        async () => {
+
+          /*
+           * Calcula quanto tempo falta
+           * para respeitar o intervalo
+           * mínimo entre chamadas.
+           */
+
+          const agora =
+            Date.now();
+
+          const ultima =
+            ultimaChamadaTelegram.get(
+              chave
+            ) || 0;
+
+          const espera =
+            TELEGRAM_INTERVALO_MINIMO -
+            (agora - ultima);
+
+          if (espera > 0) {
+
+            await sleep(
+              espera
+            );
+          }
+
+          /*
+           * Marca o momento em que
+           * a chamada está sendo liberada.
+           */
+
+          ultimaChamadaTelegram.set(
+            chave,
+            Date.now()
+          );
+
+          return operacao();
+        }
+      );
+
+  filasTelegram.set(
+    chave,
+    atual
+  );
+
+  /*
+   * Limpa a fila quando ela termina,
+   * desde que nenhuma nova operação
+   * tenha sido adicionada nesse meio tempo.
+   */
+
+  atual.finally(() => {
+
+    if (
+      filasTelegram.get(chave) ===
+      atual
+    ) {
+
+      filasTelegram.delete(
+        chave
+      );
+    }
+  });
+
+  return atual;
+}
+
+// ============================================================
+// VERIFICAÇÃO DE INTERNET
+// ============================================================
+
+function possuiInternet(
+  timeout = 5000
+) {
+
+  return new Promise(
+    resolve => {
+
+      const req =
+        https.get(
+          "https://fapi.binance.com/fapi/v1/time",
+          {
+            timeout
+          },
+          res => {
+
+            res.resume();
+
+            /*
+             * Qualquer resposta HTTP
+             * entre 200 e 499 significa
+             * que existe conexão com a internet.
+             */
+
+            resolve(
+              res.statusCode >= 200 &&
+              res.statusCode < 500
+            );
+          }
         );
 
-        req.on('error', () => resolve(false));
+      req.on(
+        "error",
+        () => resolve(false)
+      );
 
-        req.on('timeout', () => {
-            req.destroy();
-            resolve(false);
-        });
-    });
+      req.on(
+        "timeout",
+        () => {
+
+          req.destroy();
+
+          resolve(false);
+        }
+      );
+    }
+  );
 }
 
 async function verificarInternet() {
-    const online = await possuiInternet();
 
-    if (!online) {
-        console.log(
-            `[${new Date().toISOString()}] Sem conexão com a internet. Encerrando worker...`
-        );
+  const online =
+    await possuiInternet();
 
-        if (parentPort) {
-            parentPort.postMessage({
-                tipo: 'SEM_INTERNET',
-                reiniciarEm: 5 * 60 * 1000
-            });
-        }
+  if (!online) {
 
-        // Dá um pequeno tempo para a mensagem chegar ao processo principal
-        setTimeout(() => {
-            process.exit(1);
-        }, 100);
+    console.log(
+      `[${new Date().toISOString()}] ` +
+      `Sem conexão com a internet. ` +
+      `Encerrando worker...`
+    );
 
-        return false;
+    if (parentPort) {
+
+      parentPort.postMessage({
+        tipo: "SEM_INTERNET",
+        reiniciarEm:
+          5 * 60 * 1000
+      });
     }
 
-    setTimeout(() => {
-        verificarInternet();
-    }, 30000);
-}
+    /*
+     * Dá um pequeno tempo para
+     * a mensagem chegar ao processo
+     * principal.
+     */
 
+    setTimeout(
+      () => {
+        process.exit(1);
+      },
+      100
+    );
+
+    return false;
+  }
+
+  /*
+   * Verifica novamente a cada 30 segundos.
+   */
+
+  setTimeout(
+    () => {
+      verificarInternet();
+    },
+    30000
+  );
+
+  return true;
+}
 
 // ============================================================
 // PREPARAÇÃO DOS ARQUIVOS
 // ============================================================
 
-if (!fs.existsSync(CACHE_DIR)) {
+if (
+  !fs.existsSync(
+    CACHE_DIR
+  )
+) {
+
   fs.mkdirSync(
     CACHE_DIR,
     {
@@ -109,14 +335,24 @@ if (!fs.existsSync(CACHE_DIR)) {
   );
 }
 
-if (!fs.existsSync(USERS_PATH)) {
+if (
+  !fs.existsSync(
+    USERS_PATH
+  )
+) {
+
   fs.writeFileSync(
     USERS_PATH,
     "{}"
   );
 }
 
-if (!fs.existsSync(MESSAGES_PATH)) {
+if (
+  !fs.existsSync(
+    MESSAGES_PATH
+  )
+) {
+
   fs.writeFileSync(
     MESSAGES_PATH,
     "{}"
@@ -135,11 +371,18 @@ let usuarios = {};
 let mensagensAtivas =
   carregarMensagens();
 
-// Evita duas verificações simultâneas
+/*
+ * Evita duas verificações
+ * simultâneas.
+ */
+
 let monitorando = false;
 
-// Evita duas confirmações de fechamento
-// simultâneas para o mesmo símbolo
+/*
+ * Evita duas confirmações de fechamento
+ * simultâneas para o mesmo símbolo.
+ */
+
 const fechamentosPendentes =
   new Map();
 
@@ -151,7 +394,12 @@ function carregarCache() {
 
   try {
 
-    if (!fs.existsSync(CACHE_PATH)) {
+    if (
+      !fs.existsSync(
+        CACHE_PATH
+      )
+    ) {
+
       return {};
     }
 
@@ -207,7 +455,9 @@ function carregarUsuarios() {
   }
 }
 
-function salvarUsuarios(users) {
+function salvarUsuarios(
+  users
+) {
 
   try {
 
@@ -293,12 +543,18 @@ function registrarMensagem(
   if (
     !mensagensAtivas[symbol]
   ) {
+
     mensagensAtivas[symbol] = {};
   }
 
   mensagensAtivas[symbol][uid] = {
-    message_id: messageId,
-    openedAt: openedAt || Date.now()
+
+    message_id:
+      messageId,
+
+    openedAt:
+      openedAt ||
+      Date.now()
   };
 
   salvarMensagens();
@@ -312,6 +568,7 @@ function obterMensagem(
   if (
     !mensagensAtivas[symbol]
   ) {
+
     return null;
   }
 
@@ -329,6 +586,7 @@ function removerMensagem(
   if (
     !mensagensAtivas[symbol]
   ) {
+
     return;
   }
 
@@ -352,76 +610,134 @@ function removerMensagem(
 
 async function obterUsuarios() {
 
-  try {
+  for (
+    let tentativa = 1;
+    tentativa <= TELEGRAM_MAX_RETRIES;
+    tentativa++
+  ) {
 
-    const res =
-      await axios.get(
-        `${TELEGRAM_API}/getUpdates`,
-        {
-          timeout: 10000
+    try {
+
+      const res =
+        await axios.get(
+          `${TELEGRAM_API}/getUpdates`,
+          {
+            timeout: 10000
+          }
+        );
+
+      const updates =
+        res.data?.result || [];
+
+      const users =
+        carregarUsuarios();
+
+      for (
+        const update of updates
+      ) {
+
+        const msg =
+          update.message;
+
+        if (
+          !msg ||
+          !msg.chat ||
+          !msg.chat.id
+        ) {
+
+          continue;
         }
+
+        const id =
+          String(
+            msg.chat.id
+          );
+
+        if (
+          !users[id]
+        ) {
+
+          users[id] = {
+
+            first_name:
+              msg.chat.first_name ||
+              "Usuário",
+
+            username:
+              msg.chat.username ||
+              null,
+
+            active:
+              true
+          };
+
+          console.log(
+            `👤 Novo usuário detectado: ` +
+            `${users[id].first_name} (${id})`
+          );
+        }
+      }
+
+      salvarUsuarios(
+        users
       );
 
-    const updates =
-      res.data?.result || [];
+      return users;
 
-    const users =
-      carregarUsuarios();
+    } catch (err) {
 
-    for (
-      const update of updates
-    ) {
+      const status =
+        err.response?.status;
 
-      const msg =
-        update.message;
+      /*
+       * Rate Limit do Telegram.
+       */
 
       if (
-        !msg ||
-        !msg.chat ||
-        !msg.chat.id
+        status === 429 ||
+        status === 418
       ) {
+
+        const retryAfter =
+          Number(
+            err.response?.data
+              ?.parameters
+              ?.retry_after || 5
+          );
+
+        console.warn(
+          `[Telegram] Rate limit ` +
+          `em getUpdates. ` +
+          `Tentativa ${tentativa}/` +
+          `${TELEGRAM_MAX_RETRIES}. ` +
+          `Aguardando ${retryAfter}s.`
+        );
+
+        await sleep(
+          (retryAfter + 1) * 1000
+        );
+
         continue;
       }
 
-      const id =
-        String(msg.chat.id);
+      console.error(
+        "[telegramWorker] " +
+        "Erro ao obter usuários:",
+        err.response?.data ||
+        err.message
+      );
 
-      if (!users[id]) {
-
-        users[id] = {
-
-          first_name:
-            msg.chat.first_name ||
-            "Usuário",
-
-          username:
-            msg.chat.username ||
-            null,
-
-          active: true
-        };
-
-        console.log(
-          `👤 Novo usuário detectado: ` +
-          `${users[id].first_name} (${id})`
-        );
-      }
+      return carregarUsuarios();
     }
-
-    salvarUsuarios(users);
-
-    return users;
-
-  } catch (err) {
-
-    console.error(
-      "[telegramWorker] " +
-      "Erro ao obter usuários:",
-      err.message
-    );
-
-    return carregarUsuarios();
   }
+
+  console.error(
+    "[telegramWorker] " +
+    "Número máximo de tentativas " +
+    "atingido em getUpdates."
+  );
+
+  return carregarUsuarios();
 }
 
 // ============================================================
@@ -433,63 +749,97 @@ async function enviarMensagem(
   texto
 ) {
 
-  try {
+  return executarTelegram(
+    uid,
+    async () => {
 
-    const res =
-      await axios.post(
-        `${TELEGRAM_API}/sendMessage`,
-        {
-          chat_id: uid,
-          text: texto,
-          parse_mode: "HTML"
-        },
-        {
-          timeout: 10000
+      for (
+        let tentativa = 1;
+        tentativa <= TELEGRAM_MAX_RETRIES;
+        tentativa++
+      ) {
+
+        try {
+
+          const res =
+            await axios.post(
+              `${TELEGRAM_API}/sendMessage`,
+              {
+                chat_id:
+                  uid,
+
+                text:
+                  texto,
+
+                parse_mode:
+                  "HTML"
+              },
+              {
+                timeout:
+                  10000
+              }
+            );
+
+          return (
+            res.data?.result ||
+            null
+          );
+
+        } catch (err) {
+
+          const status =
+            err.response?.status;
+
+          /*
+           * Rate Limit Telegram.
+           */
+
+          if (
+            status === 429 ||
+            status === 418
+          ) {
+
+            const retryAfter =
+              Number(
+                err.response?.data
+                  ?.parameters
+                  ?.retry_after || 5
+              );
+
+            console.warn(
+              `[Telegram] Rate limit ` +
+              `para ${uid}. ` +
+              `Tentativa ${tentativa}/` +
+              `${TELEGRAM_MAX_RETRIES}. ` +
+              `Aguardando ${retryAfter}s.`
+            );
+
+            await sleep(
+              (retryAfter + 1) * 1000
+            );
+
+            continue;
+          }
+
+          console.error(
+            `[Telegram] Erro enviando ` +
+            `para ${uid}:`,
+            err.response?.data ||
+            err.message
+          );
+
+          return null;
         }
-      );
-
-    return (
-      res.data?.result ||
-      null
-    );
-
-  } catch (err) {
-
-    const status =
-      err.response?.status;
-
-    if (
-      status === 429 ||
-      status === 418
-    ) {
-
-      const retryAfter =
-        err.response?.data
-          ?.parameters
-          ?.retry_after || 5;
+      }
 
       console.error(
-        `[Telegram] Rate limit ` +
-        `para ${uid}. ` +
-        `Aguardando ${retryAfter}s.`
-      );
-
-      await sleep(
-        (retryAfter + 1) * 1000
+        `[Telegram] Número máximo ` +
+        `de tentativas atingido para ${uid}.`
       );
 
       return null;
     }
-
-    console.error(
-      `[Telegram] Erro enviando ` +
-      `para ${uid}:`,
-      err.response?.data ||
-      err.message
-    );
-
-    return null;
-  }
+  );
 }
 
 // ============================================================
@@ -502,50 +852,120 @@ async function editarMensagem(
   texto
 ) {
 
-  try {
+  return executarTelegram(
+    uid,
+    async () => {
 
-    await axios.post(
-      `${TELEGRAM_API}/editMessageText`,
-      {
-        chat_id: uid,
-        message_id: messageId,
-        text: texto,
-        parse_mode: "HTML"
-      },
-      {
-        timeout: 10000
+      for (
+        let tentativa = 1;
+        tentativa <= TELEGRAM_MAX_RETRIES;
+        tentativa++
+      ) {
+
+        try {
+
+          await axios.post(
+            `${TELEGRAM_API}/editMessageText`,
+            {
+              chat_id:
+                uid,
+
+              message_id:
+                messageId,
+
+              text:
+                texto,
+
+              parse_mode:
+                "HTML"
+            },
+            {
+              timeout:
+                10000
+            }
+          );
+
+          return true;
+
+        } catch (err) {
+
+          const status =
+            err.response?.status;
+
+          const description =
+            err.response?.data
+              ?.description || "";
+
+          /*
+           * A mensagem já possui exatamente
+           * o mesmo conteúdo.
+           *
+           * Para nosso sistema isso significa
+           * que a atualização foi concluída.
+           */
+
+          if (
+            description.includes(
+              "message is not modified"
+            )
+          ) {
+
+            return true;
+          }
+
+          /*
+           * Rate Limit Telegram.
+           */
+
+          if (
+            status === 429 ||
+            status === 418
+          ) {
+
+            const retryAfter =
+              Number(
+                err.response?.data
+                  ?.parameters
+                  ?.retry_after || 5
+              );
+
+            console.warn(
+              `[Telegram] Rate limit ` +
+              `editando mensagem ${messageId} ` +
+              `para ${uid}. ` +
+              `Tentativa ${tentativa}/` +
+              `${TELEGRAM_MAX_RETRIES}. ` +
+              `Aguardando ${retryAfter}s.`
+            );
+
+            await sleep(
+              (retryAfter + 1) * 1000
+            );
+
+            continue;
+          }
+
+          console.error(
+            `[Telegram] Falha editando ` +
+            `mensagem ${messageId} ` +
+            `para ${uid}:`,
+            err.response?.data ||
+            err.message
+          );
+
+          return false;
+        }
       }
-    );
 
-    return true;
+      console.error(
+        `[Telegram] Número máximo ` +
+        `de tentativas atingido ao editar ` +
+        `${messageId} para ${uid}.`
+      );
 
-  } catch (err) {
-
-    const description =
-      err.response?.data
-        ?.description || "";
-
-    // Telegram informa isso quando
-    // o conteúdo não mudou.
-    if (
-      description.includes(
-        "message is not modified"
-      )
-    ) {
-
-      return true;
+      return false;
     }
-
-    console.error(
-      `[Telegram] Falha editando ` +
-      `mensagem ${messageId} ` +
-      `para ${uid}:`,
-      description ||
-      err.message
-    );
-
-    return false;
-  }
+  );
 }
 
 // ============================================================
@@ -561,7 +981,8 @@ function gerarMensagemInicial(
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
     `🟢 <b>Posición Abierta</b>\n` +
-    `💵 Precio al entrar (USDT): ${parseFloat(pos.entryPrice).toFixed(6)}\n` +
+    `💵 Precio al entrar (USDT): ` +
+    `${parseFloat(pos.entryPrice).toFixed(6)}\n` +
     `📈 Lado: ${pos.positionSide}\n` +
     `📊 Quantidade: ${pos.positionAmt}\n` +
     `⚙️ Alavancagem: ${pos.leverage}x\n` +
@@ -602,7 +1023,9 @@ function gerarMensagemAtiva(
 ) {
 
   const resultado =
-    calcularPnL(pos);
+    calcularPnL(
+      pos
+    );
 
   const pnlFmt =
     resultado.pnl >= 0
@@ -614,55 +1037,61 @@ function gerarMensagemAtiva(
       ? ` 🟩 +${resultado.percent.toFixed(1)} %`
       : ` 🟥 ${resultado.percent.toFixed(1)} %`;
 
-if (parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0) ){
-    side = 'VENTA';
-  }else if( parseFloat(pos.entryPrice) < parseFloat(pos.markPrice) && parseFloat(resultado.percent) > parseFloat(0.0)) {
-    side = 'COMPRA'
-  }else if( parseFloat(pos.entryPrice) < parseFloat(pos.markPrice) && parseFloat(resultado.percent) < parseFloat(0.0)) {
-    side = 'VENTA'
-  }else if( parseFloat(pos.entryPrice) > parseFloat(pos.markPrice) && parseFloat(resultado.percent) < parseFloat(0.0)) {
-    side = 'COMPRA'
-}
-  
-/*
+  let side = "";
+
+  if (
+    parseFloat(pos.entryPrice) >
+      parseFloat(pos.markPrice) &&
+    parseFloat(resultado.percent) > 0
+  ) {
+
+    side = "VENTA";
+
+  } else if (
+    parseFloat(pos.entryPrice) <
+      parseFloat(pos.markPrice) &&
+    parseFloat(resultado.percent) > 0
+  ) {
+
+    side = "COMPRA";
+
+  } else if (
+    parseFloat(pos.entryPrice) <
+      parseFloat(pos.markPrice) &&
+    parseFloat(resultado.percent) < 0
+  ) {
+
+    side = "VENTA";
+
+  } else if (
+    parseFloat(pos.entryPrice) >
+      parseFloat(pos.markPrice) &&
+    parseFloat(resultado.percent) < 0
+  ) {
+
+    side = "COMPRA";
+  }
+
   return (
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${pos.symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `🟢 <b>Posição Ativa - ${side}</b> 🟢 \n` +
-    ` \n` +
-    `💵 Entrada: ${pos.entryPrice}\n` +
-    `💰 Preço atual: ${pos.markPrice}\n` +
-    ` \n` +
-    `📊 Lucro atual: ${pnlFmt}\n` +
-    `📉 Variação: ${pctFmt}\n` +
-    ` \n` +
-    `🕒 Abertura: ` +
+    `🟢 <b>Operación en Curso - ${side}</b> 🟢\n` +
+    `\n` +
+    `💵 Precio al entrar (USDT): ` +
+    `${parseFloat(pos.entryPrice).toFixed(6)}\n` +
+    `💰 Precio actual (USDT): ` +
+    `${parseFloat(pos.markPrice).toFixed(6)}\n` +
+    `\n` +
+    `📊 Resultado actual: ${pnlFmt}\n` +
+    `📉 Cambio actual: ${pctFmt}\n` +
+    `\n` +
+    `🕒 Hora de inicio: ` +
     `${new Date(
       pos.openedAt
     ).toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━`
   );
-*/
-  return (
-  `━━━━━━━━━━━━━━━\n` +
-  `📊 <b>${pos.symbol}</b>\n` +
-  `━━━━━━━━━━━━━━━\n` +
-  `🟢 <b>Operación en Curso - ${side}</b> 🟢\n` +
-  `\n` +
-  `💵 Precio al entrar (USDT): ${parseFloat(pos.entryPrice).toFixed(6)}\n` +
-  `💰 Precio actual (USDT): ${parseFloat(pos.markPrice).toFixed(6)}\n` +
-  `\n` +
-  `📊 Resultado actual: ${pnlFmt}\n` +
-  `📉 Cambio actual: ${pctFmt}\n` +
-  `\n` +
-  `🕒 Hora de inicio: ` +
-  `${new Date(
-    pos.openedAt
-  ).toLocaleString()}\n` +
-  `━━━━━━━━━━━━━━━`
-);
-  
 }
 
 // ============================================================
@@ -701,12 +1130,16 @@ function gerarMensagemFinal(
 
   const openedAt =
     pos.openedAt
-      ? new Date(pos.openedAt)
+      ? new Date(
+          pos.openedAt
+        )
       : new Date();
 
   const closedAt =
     fechamento?.closedAt
-      ? new Date(fechamento.closedAt)
+      ? new Date(
+          fechamento.closedAt
+        )
       : new Date();
 
   const duration =
@@ -741,55 +1174,62 @@ function gerarMensagemFinal(
       ? ` 🟩 +${percent.toFixed(1)} %`
       : ` 🟥 ${percent.toFixed(1)} %`;
 
-  var side = '';
+  let side = "";
 
-  if (parseFloat(entry) > parseFloat(exitPrice) && parseFloat(percent) > parseFloat(0.0) ){
-    side = 'VENTA';
-  }else if( parseFloat(entry) < parseFloat(exitPrice) && parseFloat(percent) > parseFloat(0.0)) {
-    side = 'COMPRA'
-  }else if( parseFloat(entry) < parseFloat(exitPrice) && parseFloat(percent) < parseFloat(0.0)) {
-    side = 'VENTA'
-  }else if( parseFloat(entry) > parseFloat(exitPrice) && parseFloat(percent) < parseFloat(0.0)) {
-    side = 'COMPRA'
+  if (
+    parseFloat(entry) >
+      parseFloat(exitPrice) &&
+    parseFloat(percent) > 0
+  ) {
+
+    side = "VENTA";
+
+  } else if (
+    parseFloat(entry) <
+      parseFloat(exitPrice) &&
+    parseFloat(percent) > 0
+  ) {
+
+    side = "COMPRA";
+
+  } else if (
+    parseFloat(entry) <
+      parseFloat(exitPrice) &&
+    parseFloat(percent) < 0
+  ) {
+
+    side = "VENTA";
+
+  } else if (
+    parseFloat(entry) >
+      parseFloat(exitPrice) &&
+    parseFloat(percent) < 0
+  ) {
+
+    side = "COMPRA";
   }
-  
-/*
+
   return (
     `━━━━━━━━━━━━━━━\n` +
     `📊 <b>${symbol}</b>\n` +
     `━━━━━━━━━━━━━━━\n` +
-    `⚫ <b>Posição Encerrada</b>\n` +
-    `💵 Entrada: ${entry}\n` +
-    `💸 Saída: ${exitPrice.toFixed(4)}\n` +
+    `⚫ <b>Operación Finalizada - ${side}</b>\n` +
+    `\n` +
+    `💵 Precio al entrar (USDT): ` +
+    `${parseFloat(entry).toFixed(6)}\n` +
+    `💸 Precio al salir (USDT): ` +
+    `${parseFloat(exitPrice).toFixed(6)}\n` +
+    `\n` +
     `📊 Resultado: ${pnlFmt}\n` +
-    `📉 Variação: ${pctFmt}\n` +
-    `⏱️ Duração: ${durationFmt}\n` +
-    `🕒 Abertura: ` +
+    `📉 Cambio: ${pctFmt}\n` +
+    `\n` +
+    `⏱️ Tiempo de la operación: ${durationFmt}\n` +
+    `🕒 Inicio: ` +
     `${openedAt.toLocaleString()}\n` +
-    `🕒 Fechamento: ` +
+    `🕒 Finalización: ` +
     `${closedAt.toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━`
   );
-*/
-  return (
-  `━━━━━━━━━━━━━━━\n` +
-  `📊 <b>${symbol}</b>\n` +
-  `━━━━━━━━━━━━━━━\n` +
-  `⚫ <b>Operación Finalizada - ${side}</b>\n` +
-      `\n` +
-  `💵 Precio al entrar (USDT): ${parseFloat(entry).toFixed(6)}\n` +
-  `💸 Precio al salir (USDT): ${parseFloat(exitPrice).toFixed(6)}\n` +
-      `\n` +
-  `📊 Resultado: ${pnlFmt}\n` +
-  `📉 Cambio: ${pctFmt}\n` +
-      `\n` +
-  `⏱️ Tiempo de la operación: ${durationFmt}\n` +
-  `🕒 Inicio: ` +
-  `${openedAt.toLocaleString()}\n` +
-  `🕒 Finalización: ` +
-  `${closedAt.toLocaleString()}\n` +
-  `━━━━━━━━━━━━━━━`
-);
 }
 
 // ============================================================
@@ -827,7 +1267,9 @@ async function obterPosicaoBinance(
       `&timestamp=${timestamp}`;
 
     const signature =
-      assinar(query);
+      assinar(
+        query
+      );
 
     const url =
       `${BASE_URL}/fapi/v2/positionRisk?` +
@@ -838,21 +1280,29 @@ async function obterPosicaoBinance(
         url,
         {
           headers: {
-            "X-MBX-APIKEY": API_KEY
+            "X-MBX-APIKEY":
+              API_KEY
           },
-          timeout: 5000
+
+          timeout:
+            5000
         }
       );
 
     if (
-      !Array.isArray(res.data)
+      !Array.isArray(
+        res.data
+      )
     ) {
+
       return null;
     }
 
     return (
       res.data.find(
-        p => p.symbol === symbol
+        p =>
+          p.symbol ===
+          symbol
       ) || null
     );
 
@@ -911,11 +1361,12 @@ function obterDeltaPosicao(
    * SHORT:
    *
    * SELL = +qty
-   * BUY  = -qty
+   * BUY = -qty
    */
 
   if (
-    positionSide === "SHORT"
+    positionSide ===
+    "SHORT"
   ) {
 
     return side === "SELL"
@@ -937,23 +1388,34 @@ function tradeReduzPosicao(
   positionBefore
 ) {
 
-  if (!positionBefore) {
+  if (
+    !positionBefore
+  ) {
+
     return false;
   }
 
-  // posição positiva sendo reduzida
+  /*
+   * Posição positiva sendo reduzida.
+   */
+
   if (
     positionBefore > 0 &&
     delta < 0
   ) {
+
     return true;
   }
 
-  // posição negativa sendo reduzida
+  /*
+   * Posição negativa sendo reduzida.
+   */
+
   if (
     positionBefore < 0 &&
     delta > 0
   ) {
+
     return true;
   }
 
@@ -974,21 +1436,15 @@ async function obterUltimoFechamento(
     const timestamp =
       Date.now();
 
-    /*
-     * Binance Futures permite até 1000
-     * userTrades por consulta.
-     *
-     * Não usamos somente o último trade.
-     * Reconstruímos os ciclos de posição.
-     */
-
     const query =
       `symbol=${encodeURIComponent(symbol)}` +
       `&timestamp=${timestamp}` +
       `&limit=1000`;
 
     const signature =
-      assinar(query);
+      assinar(
+        query
+      );
 
     const url =
       `${BASE_URL}/fapi/v1/userTrades?` +
@@ -999,33 +1455,45 @@ async function obterUltimoFechamento(
         url,
         {
           headers: {
-            "X-MBX-APIKEY": API_KEY
+            "X-MBX-APIKEY":
+              API_KEY
           },
-          timeout: 10000
+
+          timeout:
+            10000
         }
       );
 
     let trades =
-      Array.isArray(res.data)
+      Array.isArray(
+        res.data
+      )
         ? res.data
         : [];
 
-    if (!trades.length) {
+    if (
+      !trades.length
+    ) {
+
       return null;
     }
 
-    // Mais antigo → mais recente
+    /*
+     * Mais antigo → mais recente.
+     */
+
     trades.sort(
       (a, b) =>
-        Number(a.time || 0) -
-        Number(b.time || 0)
+        Number(
+          a.time || 0
+        ) -
+        Number(
+          b.time || 0
+        )
     );
 
     /*
      * Agrupamos por positionSide.
-     *
-     * Isso é importante caso a conta esteja
-     * em Hedge Mode.
      */
 
     const grupos = {};
@@ -1043,7 +1511,9 @@ async function obterUltimoFechamento(
       if (
         !grupos[positionSide]
       ) {
-        grupos[positionSide] = [];
+
+        grupos[positionSide] =
+          [];
       }
 
       grupos[positionSide].push(
@@ -1051,7 +1521,8 @@ async function obterUltimoFechamento(
       );
     }
 
-    const fechamentos = [];
+    const fechamentos =
+      [];
 
     // ========================================================
     // RECONSTRUÇÃO DE CADA POSITION SIDE
@@ -1059,15 +1530,19 @@ async function obterUltimoFechamento(
 
     for (
       const positionSide
-      of Object.keys(grupos)
+      of Object.keys(
+        grupos
+      )
     ) {
 
       const lista =
         grupos[positionSide];
 
-      let positionQty = 0;
+      let positionQty =
+        0;
 
-      let fechamentoAtual = null;
+      let fechamentoAtual =
+        null;
 
       for (
         const trade of lista
@@ -1091,27 +1566,41 @@ async function obterUltimoFechamento(
         // FILL DE FECHAMENTO
         // ====================================================
 
-        if (reduzindo) {
+        if (
+          reduzindo
+        ) {
 
           if (
             !fechamentoAtual
           ) {
 
             fechamentoAtual = {
+
               symbol,
+
               positionSide,
-              pnl: 0,
-              quantity: 0,
-              exitNotional: 0,
+
+              pnl:
+                0,
+
+              quantity:
+                0,
+
+              exitNotional:
+                0,
+
               firstTime:
                 Number(
                   trade.time || 0
                 ),
+
               lastTime:
                 Number(
                   trade.time || 0
                 ),
-              trades: []
+
+              trades:
+                []
             };
           }
 
@@ -1129,7 +1618,8 @@ async function obterUltimoFechamento(
 
           const realizedPnl =
             Number(
-              trade.realizedPnl || 0
+              trade.realizedPnl ||
+              0
             );
 
           fechamentoAtual.pnl +=
@@ -1151,17 +1641,26 @@ async function obterUltimoFechamento(
           );
         }
 
-        // Atualiza posição
-        positionQty += delta;
+        /*
+         * Atualiza posição.
+         */
+
+        positionQty +=
+          delta;
 
         /*
-         * Normalização de pequenos erros
-         * de ponto flutuante.
+         * Normalização de pequenos
+         * erros de ponto flutuante.
          */
+
         if (
-          Math.abs(positionQty) < 1e-12
+          Math.abs(
+            positionQty
+          ) < 1e-12
         ) {
-          positionQty = 0;
+
+          positionQty =
+            0;
         }
 
         // ====================================================
@@ -1186,19 +1685,24 @@ async function obterUltimoFechamento(
 
           fechamentoAtual.pnl =
             Number(
-              fechamentoAtual.pnl.toFixed(8)
+              fechamentoAtual.pnl.toFixed(
+                8
+              )
             );
 
           fechamentoAtual.exitPrice =
             Number(
-              fechamentoAtual.exitPrice.toFixed(8)
+              fechamentoAtual.exitPrice.toFixed(
+                8
+              )
             );
 
           fechamentos.push(
             fechamentoAtual
           );
 
-          fechamentoAtual = null;
+          fechamentoAtual =
+            null;
         }
       }
     }
@@ -1216,43 +1720,43 @@ async function obterUltimoFechamento(
       return null;
     }
 
-    // Mais recente primeiro
+    /*
+     * Mais recente primeiro.
+     */
+
     fechamentos.sort(
       (a, b) =>
         b.lastTime -
         a.lastTime
     );
 
-    /*
-     * O primeiro fechamento é o mais recente.
-     */
     const fechamento =
       fechamentos[0];
 
     /*
-     * Percentual:
-     *
-     * Se o positionWorker já calculou
-     * o percentual da posição anterior,
-     * usamos esse valor como referência.
-     *
-     * Caso contrário calculamos a partir
-     * do PNL e margem aproximada.
+     * Percentual.
      */
 
     let percent =
       Number(
-        posAnterior?.percent || 0
+        posAnterior?.percent ||
+        0
       );
 
     if (
-      !Number.isFinite(percent)
+      !Number.isFinite(
+        percent
+      )
     ) {
-      percent = 0;
+
+      percent =
+        0;
     }
 
     return {
+
       symbol,
+
       positionSide:
         fechamento.positionSide,
 
@@ -1309,12 +1813,14 @@ async function processarAbertura(
       !usuario ||
       !usuario.active
     ) {
+
       continue;
     }
 
     /*
-     * Se já existe mensagem para esse
-     * usuário/símbolo, não criamos outra.
+     * Se já existe mensagem para
+     * esse usuário/símbolo,
+     * não criamos outra.
      */
 
     if (
@@ -1323,6 +1829,7 @@ async function processarAbertura(
         uid
       )
     ) {
+
       continue;
     }
 
@@ -1386,6 +1893,7 @@ async function processarAtualizacao(
       !usuario ||
       !usuario.active
     ) {
+
       continue;
     }
 
@@ -1396,12 +1904,13 @@ async function processarAtualizacao(
       );
 
     /*
-     * Se por algum motivo não existe
-     * message_id, criamos uma mensagem
-     * inicial e passamos a controlá-la.
+     * Se não existe message_id,
+     * criamos uma mensagem inicial.
      */
 
-    if (!registro) {
+    if (
+      !registro
+    ) {
 
       await processarAbertura(
         symbol,
@@ -1442,10 +1951,13 @@ async function processarFechamento(
 
       /*
        * Pequeno intervalo para permitir
-       * que a Binance consolide ACCOUNT_UPDATE.
+       * que a Binance consolide
+       * ACCOUNT_UPDATE.
        */
 
-      await sleep(1500);
+      await sleep(
+        1500
+      );
 
       const posAtual =
         await obterPosicaoBinance(
@@ -1506,11 +2018,13 @@ async function processarFechamento(
 
       /*
        * Se não conseguimos reconstruir
-       * o fechamento, NÃO devemos declarar
-       * um resultado falso.
+       * o fechamento, não declaramos
+       * resultado falso.
        */
 
-      if (!fechamento) {
+      if (
+        !fechamento
+      ) {
 
         console.log(
           `[telegramWorker] ` +
@@ -1547,6 +2061,7 @@ async function processarFechamento(
           !usuario ||
           !usuario.active
         ) {
+
           continue;
         }
 
@@ -1556,26 +2071,35 @@ async function processarFechamento(
             uid
           );
 
-        if (registro) {
+        if (
+          registro
+        ) {
 
-          await editarMensagem(
-            uid,
-            registro.message_id,
-            texto
-          );
+          const sucesso =
+            await editarMensagem(
+              uid,
+              registro.message_id,
+              texto
+            );
 
-          console.log(
-            `[telegramWorker] ` +
-            `Mensagem final editada: ` +
-            `${symbol} → ${uid} → ` +
-            `${registro.message_id}`
-          );
+          if (
+            sucesso
+          ) {
+
+            console.log(
+              `[telegramWorker] ` +
+              `Mensagem final editada: ` +
+              `${symbol} → ${uid} → ` +
+              `${registro.message_id}`
+            );
+          }
 
         } else {
 
           /*
-           * Fallback para o caso de o worker
-           * ter reiniciado e perdido o message_id.
+           * Fallback para o caso de
+           * o worker ter reiniciado e
+           * perdido o message_id.
            */
 
           const msg =
@@ -1599,8 +2123,9 @@ async function processarFechamento(
 
         /*
          * A operação terminou.
-         * O message_id deixa de ser uma
-         * mensagem ativa.
+         *
+         * O message_id deixa de ser
+         * uma mensagem ativa.
          */
 
         removerMensagem(
@@ -1634,11 +2159,15 @@ async function processarFechamento(
 
 async function verificarAlteracoes() {
 
-  if (monitorando) {
+  if (
+    monitorando
+  ) {
+
     return;
   }
 
-  monitorando = true;
+  monitorando =
+    true;
 
   try {
 
@@ -1663,14 +2192,16 @@ async function verificarAlteracoes() {
 
       const novaAberta =
         Number(
-          nova.positionAmt || 0
+          nova.positionAmt ||
+          0
         ) !== 0;
 
       const antigaAberta =
         !!(
           antiga &&
           Number(
-            antiga.positionAmt || 0
+            antiga.positionAmt ||
+            0
           ) !== 0
         );
 
@@ -1727,7 +2258,9 @@ async function verificarAlteracoes() {
             antiga.percent
           );
 
-        if (mudou) {
+        if (
+          mudou
+        ) {
 
           await processarAtualizacao(
             symbol,
@@ -1752,14 +2285,16 @@ async function verificarAlteracoes() {
 
       const existiaAberta =
         Number(
-          antiga.positionAmt || 0
+          antiga.positionAmt ||
+          0
         ) !== 0;
 
       const aindaExiste =
         novoCache[symbol] &&
         Number(
           novoCache[symbol]
-            .positionAmt || 0
+            .positionAmt ||
+          0
         ) !== 0;
 
       if (
@@ -1793,23 +2328,9 @@ async function verificarAlteracoes() {
 
   } finally {
 
-    monitorando = false;
+    monitorando =
+      false;
   }
-}
-
-// ============================================================
-// SLEEP
-// ============================================================
-
-function sleep(ms) {
-
-  return new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        ms
-      )
-  );
 }
 
 // ============================================================
@@ -1817,8 +2338,20 @@ function sleep(ms) {
 // ============================================================
 
 (async () => {
+
+  /*
+   * Inicia o monitor de internet.
+   */
+
   verificarInternet();
-  if (!TELEGRAM_TOKEN) {
+
+  // ==========================================================
+  // VALIDAR TELEGRAM
+  // ==========================================================
+
+  if (
+    !TELEGRAM_TOKEN
+  ) {
 
     console.error(
       "❌ TELEGRAM_TOKEN não definido no .env"
@@ -1826,6 +2359,10 @@ function sleep(ms) {
 
     process.exit(1);
   }
+
+  // ==========================================================
+  // VALIDAR BINANCE
+  // ==========================================================
 
   if (
     !API_KEY ||
@@ -1838,6 +2375,10 @@ function sleep(ms) {
 
     process.exit(1);
   }
+
+  // ==========================================================
+  // CARREGAR USUÁRIOS
+  // ==========================================================
 
   usuarios =
     await obterUsuarios();
@@ -1862,17 +2403,19 @@ function sleep(ms) {
   );
 
   /*
-   * Importante:
-   *
    * O cache inicial NÃO é tratado como
-   * novas operações. Isso evita que o
-   * restart do worker envie mensagens
-   * duplicadas para posições que já
-   * estavam abertas.
+   * novas operações.
+   *
+   * Isso evita mensagens duplicadas
+   * após reiniciar o worker.
    */
 
   ultimoCache =
     carregarCache();
+
+  // ==========================================================
+  // LOOP PRINCIPAL
+  // ==========================================================
 
   setInterval(
     async () => {
