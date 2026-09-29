@@ -71,6 +71,7 @@ if (!fs.existsSync(CACHE_DIR)) {
             recursive: true
         }
     );
+
 }
 
 // ============================================================
@@ -876,6 +877,9 @@ function montarMensagemMargem(
         `💰 <b>STATUS DA MARGEM</b>\n` +
         `━━━━━━━━━━━━━━━\n\n` +
 
+        `🎯 <b>Saldo base:</b> ` +
+        `${formatarDinheiro(data.baseBalance)}\n\n` +
+
         `💵 <b>Margem:</b> ` +
         `${formatarDinheiro(data.marginBalance)}\n` +
 
@@ -891,10 +895,10 @@ function montarMensagemMargem(
         `📈 <b>Variação real:</b> ` +
         `${variationReal}\n\n` +
 
-        `🔺 <b>Máximo:</b> ` +
+        `🔼 <b>Máximo:</b> ` +
         `${maxPercent}\n` +
 
-        `🔻 <b>Mínimo:</b> ` +
+        `🔽 <b>Mínimo:</b> ` +
         `${minPercent}\n\n` +
 
         `🔄 <b>Reinícios:</b> ` +
@@ -944,6 +948,16 @@ function statusMargemValido(
     if (
         !numeroValido(
             data.walletBalance
+        )
+    ) {
+
+        return false;
+
+    }
+
+    if (
+        !numeroValido(
+            data.baseBalance
         )
     ) {
 
@@ -1430,6 +1444,54 @@ function normalizarResetData(
 }
 
 // ============================================================
+// CRIAR NOVO SALDO BASE
+// ============================================================
+
+function criarNovoOldBalance(
+    balance
+) {
+
+    const agora =
+        Date.now();
+
+    return {
+
+        walletBalance:
+            balance.walletBalance,
+
+        marginBalance:
+            balance.marginBalance,
+
+        availableBalance:
+            balance.availableBalance,
+
+        percent:
+            0,
+
+        maxPercent:
+            0,
+
+        minPercent:
+            0,
+
+        lastUpdate:
+            formatTime(
+                agora
+            ),
+
+        resetAt:
+            agora,
+
+        resetAtFormatted:
+            formatTime(
+                agora
+            )
+
+    };
+
+}
+
+// ============================================================
 // MONITORAR MARGEM
 // ============================================================
 
@@ -1498,6 +1560,15 @@ async function monitorarMargem() {
 
         // ====================================================
         // OLD BALANCE
+        //
+        // IMPORTANTE:
+        //
+        // walletBalance aqui representa o SALDO BASE.
+        //
+        // Ele NÃO é atualizado a cada ciclo.
+        //
+        // Só será substituído quando ocorrer um reset
+        // por Take Profit ou Stop Loss.
         // ====================================================
 
         let oldBalance =
@@ -1514,32 +1585,10 @@ async function monitorarMargem() {
             )
         ) {
 
-            oldBalance = {
-
-                walletBalance:
-                    balance.walletBalance,
-
-                marginBalance:
-                    balance.marginBalance,
-
-                availableBalance:
-                    balance.availableBalance,
-
-                percent:
-                    0,
-
-                maxPercent:
-                    0,
-
-                minPercent:
-                    0,
-
-                lastUpdate:
-                    formatTime(
-                        Date.now()
-                    )
-
-            };
+            oldBalance =
+                criarNovoOldBalance(
+                    balance
+                );
 
             await salvarCache(
                 oldBalance,
@@ -1547,13 +1596,17 @@ async function monitorarMargem() {
             );
 
             console.log(
-                '[margWorker] oldBalance inicializado.'
+                '[margWorker] Saldo base inicializado: ' +
+                `${oldBalance.walletBalance}`
             );
 
         }
 
         // ====================================================
         // VARIAÇÕES
+        //
+        // O percentual é sempre calculado contra o
+        // saldo-base armazenado em oldBalance.
         // ====================================================
 
         const perc =
@@ -1623,20 +1676,18 @@ async function monitorarMargem() {
         }
 
         // ====================================================
-        // ATUALIZAR OLD BALANCE
+        // ATUALIZAR APENAS OS DADOS DO CICLO
+        //
+        // NÃO alterar:
+        //
+        // oldBalance.walletBalance
+        // oldBalance.marginBalance
+        //
+        // pois eles representam o saldo-base.
         // ====================================================
 
         oldBalance.percent =
             perc;
-
-        oldBalance.walletBalance =
-            balance.walletBalance;
-
-        oldBalance.marginBalance =
-            balance.marginBalance;
-
-        oldBalance.availableBalance =
-            balance.availableBalance;
 
         oldBalance.lastUpdate =
             formatTime(
@@ -1644,13 +1695,19 @@ async function monitorarMargem() {
             );
 
         // ====================================================
-        // SALVAR BALANCE
+        // SALVAR BALANCE ATUAL
         // ====================================================
 
         await salvarCache(
             balance,
             'Balance'
         );
+
+        // ====================================================
+        // SALVAR OLD BALANCE
+        //
+        // O saldo-base permanece intacto.
+        // ====================================================
 
         await salvarCache(
             oldBalance,
@@ -1670,6 +1727,9 @@ async function monitorarMargem() {
                 formatTime(
                     Date.now()
                 ),
+
+            baseBalance:
+                oldBalance.walletBalance,
 
             walletBalance:
                 balance.walletBalance,
@@ -1757,6 +1817,20 @@ async function monitorarMargem() {
 
         const telegramData = {
 
+            // ------------------------------------------------
+            // SALDO BASE
+            // ------------------------------------------------
+
+            baseBalance:
+                arredondar(
+                    oldBalance.walletBalance,
+                    2
+                ),
+
+            // ------------------------------------------------
+            // SALDOS ATUAIS
+            // ------------------------------------------------
+
             walletBalance:
                 arredondar(
                     balance.walletBalance,
@@ -1775,6 +1849,10 @@ async function monitorarMargem() {
                     2
                 ),
 
+            // ------------------------------------------------
+            // VARIAÇÕES
+            // ------------------------------------------------
+
             variation:
                 arredondar(
                     perc,
@@ -1787,6 +1865,10 @@ async function monitorarMargem() {
                     2
                 ),
 
+            // ------------------------------------------------
+            // MÁXIMO / MÍNIMO
+            // ------------------------------------------------
+
             maxPercent:
                 arredondar(
                     oldBalance.maxPercent,
@@ -1798,6 +1880,10 @@ async function monitorarMargem() {
                     oldBalance.minPercent,
                     2
                 ),
+
+            // ------------------------------------------------
+            // CONTADORES
+            // ------------------------------------------------
 
             resetCount:
                 Number(
@@ -1858,6 +1944,11 @@ async function monitorarMargem() {
         );
 
         console.log(
+            `[margWorker] 🎯 Saldo base: ` +
+            `${oldBalance.walletBalance}`
+        );
+
+        console.log(
             `[margWorker] 💰 Margem: ` +
             `${balance.marginBalance}`
         );
@@ -1883,12 +1974,12 @@ async function monitorarMargem() {
         );
 
         console.log(
-            `[margWorker] 🔺 Máximo: ` +
+            `[margWorker] 🔼 Máximo: ` +
             `${Number(oldBalance.maxPercent).toFixed(2)}%`
         );
 
         console.log(
-            `[margWorker] 🔻 Mínimo: ` +
+            `[margWorker] 🔽 Mínimo: ` +
             `${Number(oldBalance.minPercent).toFixed(2)}%`
         );
 
@@ -2041,6 +2132,9 @@ async function monitorarMargem() {
 
         // ====================================================
         // TAKE PROFIT >= 90%
+        //
+        // Quando o limite é atingido, o saldo atual passa
+        // a ser o novo saldo-base.
         // ====================================================
 
         if (
@@ -2051,36 +2145,19 @@ async function monitorarMargem() {
                 '[margWorker] 🔥 Margem >= 90%.'
             );
 
-            oldBalance = {
-
-                walletBalance:
-                    balance.walletBalance,
-
-                marginBalance:
-                    balance.marginBalance,
-
-                availableBalance:
-                    balance.availableBalance,
-
-                percent:
-                    0,
-
-                maxPercent:
-                    0,
-
-                minPercent:
-                    0,
-
-                lastUpdate:
-                    formatTime(
-                        Date.now()
-                    )
-
-            };
+            oldBalance =
+                criarNovoOldBalance(
+                    balance
+                );
 
             await salvarCache(
                 oldBalance,
                 'oldBalance'
+            );
+
+            console.log(
+                `[margWorker] 🎯 Novo saldo base: ` +
+                `${oldBalance.walletBalance}`
             );
 
             return;
@@ -2115,6 +2192,28 @@ async function monitorarMargem() {
                 );
 
             }
+
+            // ------------------------------------------------
+            // NOVO CICLO
+            //
+            // O reset do oldBalance acontece somente agora,
+            // depois do Take Profit.
+            // ------------------------------------------------
+
+            oldBalance =
+                criarNovoOldBalance(
+                    balance
+                );
+
+            await salvarCache(
+                oldBalance,
+                'oldBalance'
+            );
+
+            console.log(
+                `[margWorker] 🎯 Novo saldo base após TP: ` +
+                `${oldBalance.walletBalance}`
+            );
 
             /*
              * IMPORTANTE:
@@ -2161,6 +2260,28 @@ async function monitorarMargem() {
                 );
 
             }
+
+            // ------------------------------------------------
+            // NOVO CICLO
+            //
+            // O reset do oldBalance acontece somente agora,
+            // depois do Stop Loss.
+            // ------------------------------------------------
+
+            oldBalance =
+                criarNovoOldBalance(
+                    balance
+                );
+
+            await salvarCache(
+                oldBalance,
+                'oldBalance'
+            );
+
+            console.log(
+                `[margWorker] 🎯 Novo saldo base após SL: ` +
+                `${oldBalance.walletBalance}`
+            );
 
             /*
              * Não chamamos closeAllPositions()
